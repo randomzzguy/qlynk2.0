@@ -802,8 +802,9 @@ export default function AgentConfigPage() {
                   <ExternalLink size={18} />
                   View Public Page
                 </a>
-              </div>
             </div>
           </div>
-  );
+        </div>
+      </div>
+    );
 }

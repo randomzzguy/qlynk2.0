@@ -16,8 +16,14 @@ import {
   Clock,
   Zap,
   FileText,
-  Sparkles
+  Sparkles,
+  CreditCard
 } from 'lucide-react';
+import { 
+  getTrialDaysRemaining, 
+  isTrialExpired,
+  PLAN_LIMITS 
+} from '@/lib/subscriptionHelpers';
 import UpgradePrompt from '@/components/UpgradePrompt';
 
 export default function DashboardPage() {
@@ -27,7 +33,10 @@ export default function DashboardPage() {
     totalConversations: 0,
     totalMessages: 0,
     messagesThisWeek: 0,
-    avgMessagesPerConvo: 0
+    avgMessagesPerConvo: 0,
+    messagesUsed: 0,
+    messagesLimit: 0,
+    tier: 'Trial'
   });
   const [recentConversations, setRecentConversations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -52,6 +61,13 @@ export default function DashboardPage() {
         
         setAgentConfig(config);
 
+        // Load subscription for usage limits
+        const { data: subscription } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
         // Load conversation stats
         const { data: conversations } = await supabase
           .from('agent_conversations')
@@ -72,7 +88,10 @@ export default function DashboardPage() {
             totalConversations: totalConvos,
             totalMessages: totalMsgs,
             messagesThisWeek: msgsThisWeek,
-            avgMessagesPerConvo: totalConvos > 0 ? Math.round(totalMsgs / totalConvos) : 0
+            avgMessagesPerConvo: totalConvos > 0 ? Math.round(totalMsgs / totalConvos) : 0,
+            messagesUsed: subscription?.messages_used || 0,
+            messagesLimit: PLAN_LIMITS[subscription?.tier?.toLowerCase()] || 1000,
+            tier: subscription?.tier || 'Trial'
           });
 
           setRecentConversations(conversations.slice(0, 5));
@@ -100,6 +119,23 @@ export default function DashboardPage() {
     
     if (!error) {
       setAgentConfig(prev => ({ ...prev, is_enabled: newStatus }));
+    }
+  };
+
+  const handlePortal = async () => {
+    try {
+      const response = await fetch('/api/portal', {
+        method: 'POST',
+      });
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        // Fallback to pricing if no portal (e.g. trial with no stripe customer yet)
+        router.push('/pricing');
+      }
+    } catch (error) {
+      console.error('Error opening portal:', error);
     }
   };
 
@@ -133,6 +169,13 @@ export default function DashboardPage() {
             <ExternalLink size={18} />
             View Live Page
           </Link>
+          <button 
+            onClick={handlePortal}
+            className="flex items-center gap-2 px-4 py-2.5 bg-gray-800/60 border border-gray-700 rounded-xl text-gray-300 hover:text-white hover:border-purple-500/50 hover:bg-gray-800 transition-all"
+          >
+            <CreditCard size={18} />
+            Manage Billing
+          </button>
           <Link 
             href="/dashboard/agent"
             className="flex items-center gap-2 px-4 py-2.5 bg-[#f46530] text-white rounded-xl font-semibold hover:bg-[#f46530]/90 shadow-lg shadow-[#f46530]/20 transition-all"
@@ -199,6 +242,46 @@ export default function DashboardPage() {
               }`} />
             </button>
           </div>
+        </div>
+      </div>
+    
+      {/* Usage & Plan Card */}
+      <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="md:col-span-2 bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 flex flex-col md:flex-row items-center gap-8">
+          <div className="text-center md:text-left">
+            <p className="text-sm text-gray-400 mb-1 uppercase tracking-wider font-bold">Current Plan</p>
+            <h3 className="text-3xl font-black text-white capitalize mb-1">{stats.tier}</h3>
+            {stats.tier === 'trial' && !isTrialExpired(profile?.trial_ends_at) && (
+              <p className="text-[#f46530] text-sm font-bold">
+                {getTrialDaysRemaining(profile?.trial_ends_at)} days left
+              </p>
+            )}
+          </div>
+          
+          <div className="flex-1 w-full">
+            <div className="flex justify-between items-end mb-2">
+              <p className="text-sm text-gray-400 font-bold">Message Usage</p>
+              <p className="text-sm font-bold text-white">
+                {stats.messagesUsed} / {stats.messagesLimit}
+              </p>
+            </div>
+            <div className="w-full h-3 bg-gray-700 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-[#f46530] to-purple-500 transition-all duration-1000"
+                style={{ width: `${Math.min(100, (stats.messagesUsed / stats.messagesLimit) * 100)}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-purple-600/20 to-blue-600/10 backdrop-blur-sm rounded-2xl border border-purple-500/30 p-6 flex flex-col justify-center text-center">
+          <p className="text-white font-bold mb-3">Need more power?</p>
+          <Link 
+            href="/pricing"
+            className="bg-white text-purple-600 py-2.5 rounded-xl font-bold hover:bg-gray-100 transition-all shadow-lg"
+          >
+            Upgrade Plan
+          </Link>
         </div>
       </div>
 

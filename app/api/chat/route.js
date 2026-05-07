@@ -3,6 +3,8 @@ import { createGroq } from '@ai-sdk/groq';
 import { createClient } from '@/utils/supabase/server';
 import { buildAgentSystemPrompt, getAgentDocuments } from '@/lib/agent';
 import { cookies } from 'next/headers';
+import { canSendMessage, PLAN_LIMITS } from '@/lib/subscriptionHelpers';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
 
 export const maxDuration = 30;
 
@@ -50,6 +52,23 @@ export async function POST(req) {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
       });
+    }
+
+    // ENFORCE USAGE LIMITS
+    const { data: subscription } = await supabase
+      .from('subscriptions')
+      .select('tier, messages_used')
+      .eq('user_id', profile.id)
+      .single();
+
+    if (subscription) {
+      const limit = PLAN_LIMITS[subscription.tier.toLowerCase()] || 0;
+      if ((subscription.messages_used || 0) >= limit) {
+        return new Response(JSON.stringify({ error: 'Message limit reached. Please upgrade to continue.' }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     // Get documents for knowledge base
@@ -118,6 +137,16 @@ export async function POST(req) {
             conversation_id: activeConversationId,
             role: 'assistant',
             content: text,
+          });
+
+          // Increment usage using Admin client to bypass RLS
+          const supabaseAdmin = createAdminClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+          );
+
+          await supabaseAdmin.rpc('increment_messages_used', { 
+            owner_id: profile.id 
           });
         }
       },

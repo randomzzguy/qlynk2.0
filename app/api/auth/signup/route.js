@@ -94,6 +94,38 @@ export async function POST(request) {
       if (subError) {
         console.error('[v0] Manual Subscription Error:', subError.message);
       }
+
+      // Create Default Page (so URL works immediately)
+      const { error: pageError } = await supabaseAdmin
+        .from('pages')
+        .insert({
+          user_id: signUpData.user.id,
+          name: username,
+          tagline: 'Welcome to my Qlynk page!',
+          theme: 'quickpitch',
+          theme_category: 'freelancers',
+          theme_data: { config_version: 'v1' },
+          is_published: true
+        });
+
+      if (pageError) {
+        console.error('[v0] Manual Page Error:', pageError.message);
+      }
+
+      // Create Default Agent Config
+      const { error: agentError } = await supabaseAdmin
+        .from('agent_configs')
+        .insert({
+          user_id: signUpData.user.id,
+          agent_name: 'Q-Agent',
+          welcome_message: `Hi! I'm ${username}'s AI clone. Ask me anything about their work!`,
+          is_enabled: true,
+          primary_color: '#f46530'
+        });
+
+      if (agentError) {
+        console.error('[v0] Manual Agent Error:', agentError.message);
+      }
     }
 
     return NextResponse.json({ message: 'Signup successful! Please check your email to verify your account.' });

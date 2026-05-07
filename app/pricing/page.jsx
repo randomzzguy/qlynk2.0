@@ -3,7 +3,9 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Check, X, Zap, Crown, ArrowRight, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { getCurrentUser } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import QlynkBackground from '@/components/QlynkBackground';
 
@@ -148,9 +150,19 @@ function FAQAccordion() {
 }
 
 export default function PricingPage() {
+  const router = useRouter();
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [loadingPlan, setLoadingPlan] = useState(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+    };
+    checkUser();
+  }, []);
 
   const priceIds = {
     monthly: {
@@ -166,6 +178,11 @@ export default function PricingPage() {
   };
 
   const handleCheckout = async (plan) => {
+    if (!user) {
+      router.push(`/auth/signup?plan=${plan.name.toLowerCase()}&cycle=${billingCycle}`);
+      return;
+    }
+
     setLoadingPlan(plan.name);
     try {
       const priceId = priceIds[billingCycle][plan.name.toLowerCase()];

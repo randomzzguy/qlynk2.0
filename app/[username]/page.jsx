@@ -4,6 +4,7 @@ import { THEMES } from '@/lib/themeRegistry';
 import Link from 'next/link';
 import { Sparkles, ArrowRight, Lock } from 'lucide-react';
 import ChatWidget from '@/components/ChatWidget';
+import QlynkBackground from '@/components/QlynkBackground';
 import { isAgentLive } from '@/lib/subscriptionHelpers';
 
 // This tells Next.js to generate pages dynamically
@@ -23,11 +24,13 @@ export default async function PublicPage({ params }) {
 
   if (profileError || !profile) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center text-center px-6 relative overflow-hidden">
+      <div className="min-h-screen bg-[#0f0f14] flex flex-col items-center justify-center text-center px-6 relative overflow-hidden">
         {/* Techy background elements */}
-        <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
-          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#f46530]/20 rounded-full blur-[120px] animate-pulse" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="fixed inset-0 z-0 pointer-events-none">
+          <QlynkBackground />
+          <div className="absolute top-[10%] left-[-10%] w-[40%] h-[40%] bg-[#f46530]/10 rounded-full blur-[120px] animate-pulse" />
+          <div className="absolute bottom-[10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-[120px] animate-pulse" />
+          <div className="grid-overlay" />
         </div>
 
         <div className="relative z-10 max-w-md">
@@ -61,20 +64,28 @@ export default async function PublicPage({ params }) {
 
   if (pageError || !page) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center text-center px-6">
-        <div className="w-20 h-20 bg-gray-800/50 rounded-2xl flex items-center justify-center mb-8 border border-gray-700/50">
-          <Lock className="text-gray-500" size={32} />
+      <div className="min-h-screen bg-[#0f0f14] flex flex-col items-center justify-center text-center px-6 relative overflow-hidden">
+        {/* Background elements */}
+        <div className="fixed inset-0 z-0 pointer-events-none">
+          <QlynkBackground />
+          <div className="grid-overlay" />
         </div>
-        <h1 className="text-3xl font-black text-white mb-4">
-          Page Under Construction
-        </h1>
-        <p className="text-gray-400 mb-10 max-w-sm">
-          @{username} is setting up their digital space. Check back very soon!
-        </p>
-        <Link href="/" className="text-[#f46530] font-bold hover:underline flex items-center gap-2 transition-all hover:gap-3">
-          Create your own Qlynk
-          <ArrowRight size={18} />
-        </Link>
+        
+        <div className="relative z-10">
+          <div className="w-20 h-20 bg-gray-800/50 rounded-2xl flex items-center justify-center mx-auto mb-8 border border-gray-700/50 backdrop-blur-xl">
+            <Lock className="text-[#f46530]" size={32} />
+          </div>
+          <h1 className="text-4xl font-black text-white mb-4">
+            Setting up the clone...
+          </h1>
+          <p className="text-gray-400 mb-10 max-w-sm text-lg">
+            @{username} is currently fine-tuning their digital presence.
+          </p>
+          <Link href="/" className="inline-flex items-center gap-2 bg-gray-800/50 text-white px-6 py-3 rounded-xl font-bold border border-white/10 hover:bg-gray-800 transition-all">
+            Get your own Qlynk
+            <ArrowRight size={18} />
+          </Link>
+        </div>
       </div>
     );
   }
@@ -127,13 +138,11 @@ export default async function PublicPage({ params }) {
   // If agent is not live, show unavailable message
   if (!agentIsLive) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center text-center px-6 relative overflow-hidden">
-        {/* Animated grid/techy background */}
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-             style={{ backgroundImage: 'radial-gradient(circle, #f46530 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-        
-        <div className="fixed inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-[#f46530]/10 rounded-full blur-[120px] animate-pulse" />
+      <div className="min-h-screen bg-[#0f0f14] flex flex-col items-center justify-center text-center px-6 relative overflow-hidden">
+        {/* Background elements */}
+        <div className="fixed inset-0 z-0 pointer-events-none">
+          <QlynkBackground />
+          <div className="grid-overlay" />
         </div>
 
         <div className="relative z-10 max-w-md">
@@ -148,7 +157,7 @@ export default async function PublicPage({ params }) {
           </p>
           <Link 
             href="/" 
-            className="inline-flex items-center gap-3 bg-white/5 hover:bg-white/10 text-white px-8 py-4 rounded-2xl font-bold border border-white/10 transition-all hover:border-white/20 active:scale-95"
+            className="inline-flex items-center gap-3 bg-gray-800/50 text-white px-8 py-4 rounded-2xl font-bold border border-white/10 transition-all hover:bg-gray-800 active:scale-95 shadow-xl"
           >
             Return to Qlynk
             <ArrowRight size={20} />

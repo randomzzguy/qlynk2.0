@@ -174,6 +174,22 @@ export default function OnboardingPage() {
     router.push('/dashboard');
   };
 
+  const handleSkip = async () => {
+    setSaving(true);
+    const supabase = createClient();
+    
+    // Mark onboarding complete so dashboard allows access
+    await supabase
+      .from('profiles')
+      .update({ 
+        onboarding_completed: true,
+        onboarding_step: 'skipped'
+      })
+      .eq('id', userId);
+
+    router.push('/dashboard');
+  };
+
   const nextStep = async () => {
     if (currentStep < STEPS.length - 1) {
       await saveAgentConfig();
@@ -234,19 +250,27 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gray-900">
-      <QlynkBackground />
+    <div className="min-h-screen relative overflow-hidden bg-[#0f0f14]">
+      {/* Background - neon lines, particles and gradient orbs matching homepage */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <QlynkBackground />
+        <div className="gradient-sphere sphere-1" />
+        <div className="gradient-sphere sphere-2" />
+        <div className="gradient-sphere sphere-3" />
+        <div className="grid-overlay" />
+      </div>
       
       {/* Header */}
       <div className="relative z-10 px-6 py-4 flex items-center justify-between">
         <Link href="/">
-          <Image width={120} height={40} src="/assets/logoWhite.svg" alt="qlynk logo" priority />
+          <Image width={120} height={40} src="/logoWhite.svg" alt="qlynk logo" priority />
         </Link>
         <button 
-          onClick={() => router.push('/dashboard')}
-          className="text-gray-400 hover:text-white text-sm"
+          onClick={handleSkip}
+          className="text-gray-400 hover:text-white text-sm transition-colors"
+          disabled={saving}
         >
-          Skip for now
+          {saving ? 'Processing...' : 'Skip for now'}
         </button>
       </div>
 
@@ -287,7 +311,7 @@ export default function OnboardingPage() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 max-w-2xl mx-auto px-6 py-8">
+      <div className="relative z-10 max-w-2xl mx-auto px-6 py-8 semi-translucent-card rounded-2xl border border-white/10 mb-12">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentStep}

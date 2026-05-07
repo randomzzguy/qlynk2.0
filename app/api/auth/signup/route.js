@@ -1,4 +1,5 @@
-import { createClient } from '@/utils/supabase/server';
+import { createClient as createServerClient } from '@/utils/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
@@ -38,7 +39,7 @@ export async function POST(request) {
 
     // Proceed with signup
     const cookieStore = await cookies();
-    const supabase = createClient(cookieStore);
+    const supabase = createServerClient(cookieStore);
     console.log('[v0] Attempting signup for:', { email, username });
     
     const { data: signUpData, error } = await supabase.auth.signUp({
@@ -58,8 +59,42 @@ export async function POST(request) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
 
-    // Profile is automatically created via database trigger (handle_new_user_profile)
-    // No manual insert needed - the trigger runs with SECURITY DEFINER to bypass RLS
+    // MANUALLY create the profile and subscription using the Admin client
+    // This bypasses the need for database triggers which are currently failing
+    if (signUpData?.user) {
+      const supabaseAdmin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY
+      );
+
+      console.log('[v0] Manually creating records for user:', signUpData.user.id);
+
+      // Create Profile
+      const { error: profileError } = await supabaseAdmin
+        .from('profiles')
+        .insert({
+          id: signUpData.user.id,
+          username: username
+        });
+
+      if (profileError) {
+        console.error('[v0] Manual Profile Error:', profileError.message);
+      }
+
+      // Create Subscription
+      const { error: subError } = await supabaseAdmin
+        .from('subscriptions')
+        .insert({
+          user_id: signUpData.user.id,
+          tier: 'trial',
+          status: 'trialing',
+          trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+        });
+
+      if (subError) {
+        console.error('[v0] Manual Subscription Error:', subError.message);
+      }
+    }
 
     return NextResponse.json({ message: 'Signup successful! Please check your email to verify your account.' });
   } catch (error) {

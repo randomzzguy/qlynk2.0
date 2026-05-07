@@ -756,13 +756,12 @@ export default function AgentConfigPage() {
                   <div className="absolute -inset-1 bg-gradient-to-r from-[#f46530]/20 to-orange-600/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
                   <div className="relative bg-gray-900/80 border border-gray-700/50 rounded-xl p-6 font-mono text-sm overflow-x-auto custom-scrollbar">
                     <pre className="text-gray-300">
-                      {`<script src="${typeof window !== 'undefined' ? window.location.origin : ''}/q-agent.js" data-username="${username}" defer></script>`}
+                      {`<script src="${typeof window !== 'undefined' ? window.location.origin : ''}/q-agent.js" data-username="${username}" defer><\/script>`}
                     </pre>
                     <button 
                       onClick={() => {
-                        const code = `<script src="${window.location.origin}/q-agent.js" data-username="${username}" defer></script>`;
+                        const code = `<script src="${window.location.origin}/q-agent.js" data-username="${username}" defer><\/script>`;
                         navigator.clipboard.writeText(code);
-                        // Optional: show a toast
                       }}
                       className="absolute top-4 right-4 p-2 bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white rounded-lg border border-gray-700 transition-all"
                       title="Copy to clipboard"
@@ -806,7 +805,5 @@ export default function AgentConfigPage() {
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    );
+  );
 }

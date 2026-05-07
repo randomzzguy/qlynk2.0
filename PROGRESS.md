@@ -99,4 +99,4 @@ Q-Agent is a SaaS platform that allows users to create AI-powered clones of them
 - **AI:** Vercel AI SDK 6.0
 - **Payments:** Stripe (Next task)
 
-*Last updated: May 7, 2026*
+*Last updated: May 7, 2026 (Updated home page CTA for card-upfront trial)*

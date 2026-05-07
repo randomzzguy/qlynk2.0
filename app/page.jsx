@@ -198,7 +198,7 @@ const AgentDemoHero = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-lg text-[#f46530]">&#10003;</span>
-                  <span>No credit card</span>
+                  <span>No charge today</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-lg text-[#f46530]">&#10003;</span>
@@ -717,7 +717,7 @@ export default function App() {
           </motion.div>
 
           <p className="text-[#ffecd9]/80 text-sm mt-8">
-            14-day free trial | No credit card | 5 minute setup
+            14-day free trial | No charge today | 5 minute setup
           </p>
         </div>
       </section>

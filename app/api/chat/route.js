@@ -2,6 +2,7 @@ import { streamText, convertToModelMessages } from 'ai';
 import { createGroq } from '@ai-sdk/groq';
 import { createClient } from '@/utils/supabase/server';
 import { buildAgentSystemPrompt, getAgentDocuments } from '@/lib/agent';
+import { cookies } from 'next/headers';
 
 export const maxDuration = 30;
 
@@ -20,7 +21,8 @@ export async function POST(req) {
       });
     }
 
-    const supabase = await createClient();
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
 
     // Get the profile for this username
     const { data: profile, error: profileError } = await supabase

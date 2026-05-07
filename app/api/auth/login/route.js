@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 
 export async function POST(request) {
     try {
@@ -37,7 +38,8 @@ export async function POST(request) {
         }
 
         // Proceed with login
-        const supabase = await createClient();
+        const cookieStore = await cookies();
+        const supabase = createClient(cookieStore);
         const { error } = await supabase.auth.signInWithPassword({
             email,
             password,

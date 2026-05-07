@@ -150,6 +150,52 @@ function FAQAccordion() {
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [loadingPlan, setLoadingPlan] = useState(null);
+
+  const priceIds = {
+    monthly: {
+      trial: 'price_creator_monthly', // Map trial to creator monthly
+      creator: 'price_1TUVu9DMxhyZS2wA05Hr9eZF',
+      agency: 'price_1TUX2FDMxhyZS2wA9weEnXSH',
+    },
+    annual: {
+      trial: 'price_creator_annual',
+      creator: 'price_1TUVvSDMxhyZS2wA5QH7RGUM',
+      agency: 'price_1TUWzcDMxhyZS2wA0VQr5bzq',
+    }
+  };
+
+  const handleCheckout = async (plan) => {
+    setLoadingPlan(plan.name);
+    try {
+      const priceId = priceIds[billingCycle][plan.name.toLowerCase()];
+
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId,
+          planName: plan.name,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        // If not logged in, redirect to signup
+        window.location.href = `/auth/signup?plan=${plan.name.toLowerCase()}&cycle=${billingCycle}`;
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      alert('Something went wrong. Please try again.');
+    } finally {
+      setLoadingPlan(null);
+    }
+  };
 
   const plans = [
     {
@@ -212,7 +258,7 @@ export default function PricingPage() {
     <div className="min-h-screen bg-gray-900 relative overflow-hidden">
       {/* Background effects matching home page */}
       <QlynkBackground />
-      
+
       {/* Animated Floating Orbs */}
       <GlowingOrb top="10%" left="5%" size={400} color="orange" delay={0} />
       <GlowingOrb top="60%" left="80%" size={500} color="teal" delay={1} />
@@ -291,7 +337,7 @@ export default function PricingPage() {
       {/* Content */}
       <div className="relative z-10 pt-24">
         {/* Header */}
-        <motion.div 
+        <motion.div
           className="pt-16 pb-12 text-center px-4"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -306,7 +352,7 @@ export default function PricingPage() {
         </motion.div>
 
         {/* Billing Toggle */}
-        <motion.div 
+        <motion.div
           className="flex justify-center mb-16"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -315,21 +361,19 @@ export default function PricingPage() {
           <div className="inline-flex rounded-full bg-gray-800/50 backdrop-blur-sm border border-gray-700 p-1">
             <button
               onClick={() => setBillingCycle('monthly')}
-              className={`px-6 py-2 rounded-full font-semibold transition-all ${
-                billingCycle === 'monthly'
-                  ? 'bg-[#f46530] text-white'
-                  : 'text-gray-400 hover:text-gray-300'
-              }`}
+              className={`px-6 py-2 rounded-full font-semibold transition-all ${billingCycle === 'monthly'
+                ? 'bg-[#f46530] text-white'
+                : 'text-gray-400 hover:text-gray-300'
+                }`}
             >
               Monthly
             </button>
             <button
               onClick={() => setBillingCycle('annual')}
-              className={`px-6 py-2 rounded-full font-semibold transition-all ${
-                billingCycle === 'annual'
-                  ? 'bg-[#f46530] text-white'
-                  : 'text-gray-400 hover:text-gray-300'
-              }`}
+              className={`px-6 py-2 rounded-full font-semibold transition-all ${billingCycle === 'annual'
+                ? 'bg-[#f46530] text-white'
+                : 'text-gray-400 hover:text-gray-300'
+                }`}
             >
               Annual (Save 21%)
             </button>
@@ -347,11 +391,10 @@ export default function PricingPage() {
                   initial={{ opacity: 0, y: 40 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.3 + index * 0.1 }}
-                  className={`relative rounded-2xl backdrop-blur-sm transition-all duration-300 ${
-                    plan.highlight
-                      ? 'md:scale-105 border-2 border-[#f46530]/50 bg-gradient-to-br from-[#f46530]/10 to-[#c14f22]/10'
-                      : 'border border-gray-700 bg-gray-800/50 hover:border-gray-600'
-                  }`}
+                  className={`relative rounded-2xl backdrop-blur-sm transition-all duration-300 ${plan.highlight
+                    ? 'md:scale-105 border-2 border-[#f46530]/50 bg-gradient-to-br from-[#f46530]/10 to-[#c14f22]/10'
+                    : 'border border-gray-700 bg-gray-800/50 hover:border-gray-600'
+                    }`}
                 >
                   {/* Badge */}
                   {plan.highlight && (
@@ -381,16 +424,20 @@ export default function PricingPage() {
                     </div>
 
                     {/* CTA */}
-                    <Link
-                      href="/auth/signup"
-                      className={`w-full block text-center py-3 rounded-lg font-bold transition-all mb-8 ${
-                        plan.highlight
-                          ? 'bg-[#f46530] hover:bg-[#c14f22] text-white shadow-lg shadow-[#f46530]/30 hover:shadow-[#f46530]/50'
-                          : 'bg-gray-700 text-white hover:bg-gray-600'
-                      }`}
+                    <button
+                      onClick={() => handleCheckout(plan)}
+                      disabled={loadingPlan !== null}
+                      className={`w-full block text-center py-3 rounded-lg font-bold transition-all mb-8 flex items-center justify-center gap-2 ${plan.highlight
+                        ? 'bg-[#f46530] hover:bg-[#c14f22] text-white shadow-lg shadow-[#f46530]/30 hover:shadow-[#f46530]/50'
+                        : 'bg-gray-700 text-white hover:bg-gray-600'
+                        } disabled:opacity-50`}
                     >
-                      {plan.cta}
-                    </Link>
+                      {loadingPlan === plan.name ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        plan.cta
+                      )}
+                    </button>
 
                     {/* Features */}
                     <div className="space-y-4">
@@ -415,7 +462,7 @@ export default function PricingPage() {
         </div>
 
         {/* FAQ */}
-        <motion.div 
+        <motion.div
           className="max-w-3xl mx-auto px-4 mb-24"
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
@@ -429,7 +476,7 @@ export default function PricingPage() {
         </motion.div>
 
         {/* Footer CTA */}
-        <motion.div 
+        <motion.div
           className="text-center pb-20 px-4"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}

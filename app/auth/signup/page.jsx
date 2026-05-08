@@ -113,7 +113,7 @@ function SignupForm() {
         throw new Error(data.message || 'Something went wrong');
       }
 
-      router.push('/auth/login?message=Signup successful! Please check your email to verify your account.');
+      router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
     } catch (error) {
       setError(error.message);
       if (captchaRef.current) {

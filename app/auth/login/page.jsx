@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -17,6 +17,38 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
+
+  useEffect(() => {
+    async function checkSession() {
+      try {
+        const { createClient } = await import('@/utils/supabase/client');
+        const supabase = createClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          // Check onboarding status
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('onboarding_completed')
+            .eq('id', session.user.id)
+            .single();
+
+          if (!profile?.onboarding_completed) {
+            router.push('/onboarding');
+          } else {
+            router.push('/dashboard');
+          }
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+      } finally {
+        setCheckingSession(false);
+      }
+    }
+    checkSession();
+  }, [router]);
+
   const [hcaptchaToken, setHcaptchaToken] = useState(null);
   const captchaRef = useRef(null);
 
@@ -91,7 +123,16 @@ export default function LoginPage() {
     }
   };
 
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-orange border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   return (
+
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center py-12 px-6">
       <QlynkBackground />
 

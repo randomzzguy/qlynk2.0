@@ -20,13 +20,8 @@ export async function GET(request) {
         .eq('id', data.user.id)
         .single();
 
-      // New users or users who haven't completed onboarding go to onboarding
-      if (!profile?.onboarding_completed) {
-        return NextResponse.redirect(new URL('/onboarding', requestUrl.origin));
-      }
-
-      // Existing users go to dashboard
-      return NextResponse.redirect(new URL('/dashboard', requestUrl.origin));
+      // Redirect to success page as requested by user
+      return NextResponse.redirect(new URL('/auth/confirm-success', requestUrl.origin));
     }
   }
 

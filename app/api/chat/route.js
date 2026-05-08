@@ -8,9 +8,11 @@ import { createClient as createAdminClient } from '@supabase/supabase-js';
 
 export const maxDuration = 30;
 
-const groq = createGroq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+const getGroqClient = () => {
+  return createGroq({
+    apiKey: process.env.GROQ_API_KEY || 'gsk_placeholder_for_build',
+  });
+};
 
 export async function POST(req) {
   try {
@@ -121,6 +123,7 @@ export async function POST(req) {
     }
 
     // Stream the response
+    const groq = getGroqClient();
     const result = streamText({
       model: groq('llama-3.3-70b-versatile'),
       system: systemPrompt,

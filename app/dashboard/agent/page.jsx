@@ -147,7 +147,7 @@ export default function AgentConfigPage() {
       setSaveStatus('success');
       setTimeout(() => setSaveStatus(null), 3000);
     } catch (error) {
-      console.error('Error saving config:', error);
+      console.error('[v0] Error saving config:', error);
       setSaveStatus('error');
       setTimeout(() => setSaveStatus(null), 3000);
     } finally {

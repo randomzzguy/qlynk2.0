@@ -56,42 +56,38 @@ export default async function PublicPage({ params }) {
     );
   }
 
-  // Fetch agent config for chat widget & background customization
+  // 1. Fetch Page Data (Bio, Tagline, etc)
+  const { data: pageData } = await supabase
+    .from('pages')
+    .select('*, social_links(*), custom_links(*)')
+    .eq('user_id', profile.id)
+    .single();
+
+  // 2. Fetch Agent Config
   const { data: agentConfig } = await supabase
     .from('agent_configs')
     .select('*')
     .eq('user_id', profile.id)
     .single();
 
-  // Check if agent is live (trial active or paid subscription)
   const agentIsLive = await isAgentLive(profile.id, supabase);
 
-  // If agent is not live, show unavailable message
   if (!agentIsLive || !agentConfig?.is_enabled) {
+    // ... (keep the offline state logic) ...
     return (
       <div className="min-h-screen bg-[#0f0f14] flex flex-col items-center justify-center text-center px-6 relative overflow-hidden">
-        {/* Background elements */}
         <div className="fixed inset-0 z-0 pointer-events-none">
           <QlynkBackground />
           <div className="grid-overlay" />
         </div>
-
         <div className="relative z-10 max-w-md">
           <div className="w-24 h-24 bg-gray-800/40 backdrop-blur-xl rounded-3xl flex items-center justify-center mx-auto mb-8 border border-[#f46530]/30 shadow-[0_0_50px_rgba(244,101,48,0.15)]">
             <Lock className="text-[#f46530]" size={40} />
           </div>
-          <h1 className="text-4xl font-black text-white mb-4 tracking-tight">
-            Q-Agent Offline
-          </h1>
-          <p className="text-lg text-gray-400 mb-10 leading-relaxed">
-            This Q-Agent is currently in maintenance or awaiting subscription activation.
-          </p>
-          <Link 
-            href="/" 
-            className="inline-flex items-center gap-3 bg-gray-800/50 text-white px-8 py-4 rounded-2xl font-bold border border-white/10 transition-all hover:bg-gray-800 active:scale-95 shadow-xl"
-          >
-            Return to Qlynk
-            <ArrowRight size={20} />
+          <h1 className="text-4xl font-black text-white mb-4 tracking-tight">Q-Agent Offline</h1>
+          <p className="text-lg text-gray-400 mb-10 leading-relaxed">This Q-Agent is currently in maintenance.</p>
+          <Link href="/" className="inline-flex items-center gap-3 bg-gray-800/50 text-white px-8 py-4 rounded-2xl font-bold border border-white/10 transition-all hover:bg-gray-800 active:scale-95 shadow-xl">
+            Return to Qlynk <ArrowRight size={20} />
           </Link>
         </div>
       </div>
@@ -101,10 +97,8 @@ export default async function PublicPage({ params }) {
   return (
     <FullPageChat 
       username={username}
-      agentName={agentConfig.agent_name}
-      agentAvatar={agentConfig.agent_avatar}
-      welcomeMessage={agentConfig.welcome_message}
-      primaryColor={agentConfig.primary_color}
+      agentConfig={agentConfig}
+      profile={pageData}
     />
   );
 }

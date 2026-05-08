@@ -37,11 +37,37 @@ export async function POST(req) {
       return new Response(JSON.stringify({ error: 'Agent not available' }), { status: 404 });
     }
 
-    // Get knowledge base
-    const { documents } = await getAgentDocuments(profile.id);
+    // Handle knowledge base and prompt
+    const { knowledge: documents } = await getAgentKnowledge(profile.id);
     const systemPrompt = buildAgentSystemPrompt(config, documents);
 
-    // TALK DIRECTLY TO GROQ (No AI Library needed)
+    // 1. CONVERSATION TRACKING
+    const { visitorId, conversationId } = body;
+    let activeConversationId = conversationId;
+
+    if (!activeConversationId && visitorId) {
+      const { data: newConv } = await supabase
+        .from('agent_conversations')
+        .insert({
+          agent_owner_id: profile.id,
+          visitor_id: visitorId,
+        })
+        .select('id')
+        .single();
+      activeConversationId = newConv?.id;
+    }
+
+    // 2. SAVE USER MESSAGE
+    if (activeConversationId && messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      await supabase.from('agent_messages').insert({
+        conversation_id: activeConversationId,
+        role: 'user',
+        content: lastMessage.content
+      });
+    }
+
+    // TALK DIRECTLY TO GROQ
     const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -63,12 +89,13 @@ export async function POST(req) {
       throw new Error(error.error?.message || 'Groq connection failed');
     }
 
-    // Pass the stream directly back to the browser
+    // Pass the stream directly back to the browser with the conversation ID in headers
     return new Response(groqResponse.body, {
       headers: {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
+        'x-conversation-id': activeConversationId || '',
       },
     });
   } catch (error) {

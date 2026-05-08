@@ -96,9 +96,9 @@ const AgentDemoHero = () => {
     <div className="w-full py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Header */}
-        <div className="text-center space-y-6">
+        <div className="text-center space-y-6 max-w-4xl mx-auto">
           <motion.div
-            className="inline-flex items-center gap-3 px-6 py-3 rounded-full border-2 border-[#f46530] bg-gray-800/50"
+            className="inline-flex items-center gap-3 px-6 py-2.5 rounded-full border border-orange/30 bg-orange/10 backdrop-blur-md"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -106,22 +106,23 @@ const AgentDemoHero = () => {
             <div className="w-5 h-5 flex-shrink-0">
               <Image src="/assets/iconWhite.svg" alt="qlynk" width={20} height={20} />
             </div>
-            <span className="text-sm font-bold tracking-wide text-[#f46530]">
-              THE AGENTIC HUB
+            <span className="text-xs font-black tracking-[0.2em] text-orange uppercase">
+              The Future of Personal Presence
             </span>
           </motion.div>
 
           <motion.h1
-            className="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight text-white"
+            className="text-5xl sm:text-6xl lg:text-7xl font-black leading-[1.1] text-white tracking-tight"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            Your Personal <span className="bg-gradient-to-r from-[#f46530] to-[#c14f22] bg-clip-text text-transparent">AI Ambassador</span>
+            Your Personal <br />
+            <span className="bg-gradient-to-r from-orange via-[#f46530] to-[#c14f22] bg-clip-text text-transparent">AI Ambassador</span>
           </motion.h1>
 
           <motion.p
-            className="text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed text-gray-300"
+            className="text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed text-gray-400"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
@@ -130,185 +131,181 @@ const AgentDemoHero = () => {
           </motion.p>
         </div>
 
-        {/* Main Content: Description + Live Demo */}
-        <div className="grid lg:grid-cols-2 gap-8 items-start">
-          {/* Left Column - Value Props */}
-          <div className="space-y-8">
-            <motion.div
-              className="p-8 rounded-3xl bg-gray-800/50 relative overflow-hidden"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
-            >
-              <div className="space-y-6 relative z-10">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#f46530]/20 flex items-center justify-center text-[#f46530] shrink-0">
-                    <Brain size={24} />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white mb-2">Train Your Agent</h3>
-                    <p className="text-gray-400">Upload your bio, resume, projects, and expertise. Your q-agent learns everything about you.</p>
-                  </div>
-                </div>
+        {/* Main Content Stage */}
+        <div className="relative">
+          {/* Background Stage Glow */}
+          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[120%] w-[100%] bg-orange/5 blur-[120px] rounded-full pointer-events-none z-0" />
 
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#f46530]/20 flex items-center justify-center text-[#f46530] shrink-0">
-                    <MessageSquare size={24} />
+          <div className="grid lg:grid-cols-12 gap-12 items-center relative z-10">
+            {/* Left Column - Floating Feature Cards */}
+            <div className="lg:col-span-5 space-y-4">
+              {[
+                {
+                  icon: Brain,
+                  title: "Train Your Agent",
+                  desc: "Upload your bio, resume, projects, and expertise. Your q-agent learns everything about you."
+                },
+                {
+                  icon: MessageSquare,
+                  title: "24/7 Conversations",
+                  desc: "Visitors can ask questions, request info, or book meetings - your agent handles it all."
+                },
+                {
+                  icon: BarChart3,
+                  title: "Track Everything",
+                  desc: "See what visitors ask, popular topics, and conversation insights in your dashboard."
+                }
+              ].map((feature, i) => (
+                <motion.div
+                  key={i}
+                  className="p-6 rounded-2xl bg-gray-800/40 backdrop-blur-md border border-white/5 hover:border-orange/30 transition-all duration-300 group"
+                  initial={{ opacity: 0, x: -30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.6 + (i * 0.1) }}
+                >
+                  <div className="flex gap-5">
+                    <div className="w-12 h-12 rounded-xl bg-orange/10 flex items-center justify-center text-orange shrink-0 group-hover:scale-110 transition-transform">
+                      <feature.icon size={22} />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-white mb-1">{feature.title}</h3>
+                      <p className="text-sm text-gray-400 leading-relaxed">{feature.desc}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white mb-2">24/7 Conversations</h3>
-                    <p className="text-gray-400">Visitors can ask questions, request info, or book meetings - your agent handles it all.</p>
-                  </div>
-                </div>
+                </motion.div>
+              ))}
 
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#f46530]/20 flex items-center justify-center text-[#f46530] shrink-0">
-                    <BarChart3 size={24} />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white mb-2">Track Everything</h3>
-                    <p className="text-gray-400">See what visitors ask, popular topics, and conversation insights in your dashboard.</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* CTA */}
-            <motion.div
-              className="text-center space-y-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 1.2 }}
-            >
-              <motion.a
-                href="/auth/signup"
-                className="px-12 py-6 rounded-xl text-xl font-bold bg-[#f46530] text-white shadow-lg shadow-[#f46530]/30 inline-block w-full"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+              {/* CTA Integration */}
+              <motion.div
+                className="pt-6 space-y-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 1.1 }}
               >
-                Create Your q-agent Free
-              </motion.a>
-              <div className="flex items-center justify-center gap-6 text-sm flex-wrap text-gray-400">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg text-[#f46530]">&#10003;</span>
-                  <span>14-day free trial</span>
+                <div className="relative group">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-orange to-[#c14f22] rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                  <motion.a
+                    href="/auth/signup"
+                    className="relative px-8 py-5 rounded-2xl text-lg font-bold bg-orange text-white flex items-center justify-center gap-3 shadow-xl w-full"
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Create Your q-agent Free
+                    <ArrowRight size={20} />
+                  </motion.a>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-lg text-[#f46530]">&#10003;</span>
-                  <span>No charge today</span>
+
+                <div className="flex items-center justify-center gap-4 text-[13px] font-medium text-gray-500">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-4 h-4 rounded-full bg-orange/10 flex items-center justify-center text-orange text-[10px]">✓</div>
+                    <span>14-day free trial</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-4 h-4 rounded-full bg-orange/10 flex items-center justify-center text-orange text-[10px]">✓</div>
+                    <span>No charge today</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-4 h-4 rounded-full bg-orange/10 flex items-center justify-center text-orange text-[10px]">✓</div>
+                    <span>5 min setup</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-lg text-[#f46530]">&#10003;</span>
-                  <span>5 min setup</span>
+              </motion.div>
+            </div>
+
+            {/* Right: Live Agent Demo Stage */}
+            <motion.div
+              className="lg:col-span-7"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, delay: 0.8 }}
+            >
+              <div className="relative">
+                {/* Floating Elements Around Demo */}
+                <motion.div 
+                  className="absolute -top-6 -right-6 p-4 rounded-2xl bg-gray-800/80 backdrop-blur-xl border border-white/10 shadow-2xl z-20 hidden sm:block"
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                    <span className="text-xs font-bold text-white uppercase tracking-wider">Live Interactions</span>
+                  </div>
+                </motion.div>
+
+                <div className="rounded-[2.5rem] bg-gray-900 shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden border-[8px] border-gray-800/80 relative">
+                  {/* Mock Browser Header */}
+                  <div className="bg-gray-800/50 px-6 py-4 flex items-center gap-3 border-b border-white/5">
+                    <div className="flex gap-2">
+                      <div className="w-3 h-3 rounded-full bg-white/10"></div>
+                      <div className="w-3 h-3 rounded-full bg-white/10"></div>
+                      <div className="w-3 h-3 rounded-full bg-white/10"></div>
+                    </div>
+                    <div className="flex-1 mx-4 bg-black/20 rounded-full px-4 py-1.5 text-[11px] text-gray-500 font-mono text-center border border-white/5">
+                      qlynk.site/{currentConvo.name.split(' ')[0].toLowerCase()}
+                    </div>
+                  </div>
+
+                  {/* Chat Demo Content */}
+                  <div className="bg-[#0c0c12] p-8 min-h-[520px] flex flex-col">
+                    {/* Profile Header */}
+                    <div className="flex items-center gap-5 mb-8 pb-6 border-b border-white/5">
+                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange to-[#c14f22] flex items-center justify-center text-xl text-white font-black shadow-lg shadow-orange/20">
+                        {currentConvo.name.split(' ').map(n => n[0]).join('')}
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-white leading-none mb-1.5">{currentConvo.name}</h3>
+                        <p className="text-sm text-gray-500 font-medium tracking-wide uppercase">{currentConvo.role}</p>
+                      </div>
+                    </div>
+
+                    {/* Chat Messages */}
+                    <div className="flex-1 space-y-6 overflow-hidden">
+                      {/* User Message */}
+                      <motion.div
+                        className="flex justify-end"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.2 }}
+                      >
+                        <div className="bg-white/5 border border-white/10 text-white px-5 py-3.5 rounded-2xl rounded-tr-sm max-w-[80%] shadow-xl">
+                          <p className="text-sm leading-relaxed">{currentConvo.question}</p>
+                        </div>
+                      </motion.div>
+
+                      {/* Agent Response */}
+                      <motion.div
+                        className="flex justify-start"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.5 }}
+                      >
+                        <div className="bg-orange/10 border border-orange/20 text-white px-5 py-3.5 rounded-2xl rounded-tl-sm max-w-[90%] shadow-xl">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Image src="/assets/iconWhite.svg" alt="qlynk" width={14} height={14} />
+                            <span className="text-[11px] font-black text-orange uppercase tracking-[0.1em]">q-agent response</span>
+                          </div>
+                          <p className="text-sm leading-relaxed text-gray-100">
+                            {displayedResponse}
+                            {phase === 'typing' && <span className="inline-block w-1.5 h-4 bg-orange ml-1.5 animate-pulse rounded-full"></span>}
+                          </p>
+                        </div>
+                      </motion.div>
+                    </div>
+
+                    {/* Chat Input Mock */}
+                    <div className="mt-8 flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl p-2.5">
+                      <div className="flex-1 text-gray-600 text-sm px-4">
+                        Ask me anything...
+                      </div>
+                      <div className="w-10 h-10 bg-orange/20 rounded-xl flex items-center justify-center text-orange">
+                        <ArrowRight size={18} />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </motion.div>
           </div>
-
-          {/* Right: Live Agent Demo */}
-          <motion.div
-            className="lg:sticky lg:top-24"
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.8 }}
-          >
-            <div className="mb-4 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#f46530]/10 border border-[#f46530]/20 text-[#f46530] font-bold text-sm">
-                <Image src="/assets/iconWhite.svg" alt="qlynk" width={16} height={16} />
-                LIVE DEMO
-              </div>
-            </div>
-
-            <motion.div
-              className="rounded-3xl bg-white shadow-2xl overflow-hidden border-4 border-gray-700"
-              key={currentMessage}
-              initial={{ opacity: 0.8 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              {/* Mock Browser Header */}
-              <div className="bg-gray-800 px-4 py-3 flex items-center gap-2 border-b-2 border-gray-700">
-                <div className="flex gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                </div>
-                <div className="flex-1 mx-4 bg-gray-700 rounded px-3 py-1 text-xs text-gray-400 font-mono">
-                  qlynk.site/{currentConvo.name.split(' ')[0].toLowerCase()}
-                </div>
-              </div>
-
-              {/* Chat Demo Content */}
-              <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 min-h-[480px] flex flex-col">
-                {/* Profile Header */}
-                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-700">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#f46530] to-[#c14f22] flex items-center justify-center text-2xl text-white font-bold">
-                    {currentConvo.name.split(' ').map(n => n[0]).join('')}
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white">{currentConvo.name}</h3>
-                    <p className="text-gray-400">{currentConvo.role}</p>
-                  </div>
-                </div>
-
-                {/* Chat Messages */}
-                <div className="flex-1 space-y-4 overflow-hidden">
-                  {/* User Message */}
-                  <motion.div
-                    className="flex justify-end"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                  >
-                    <div className="bg-[#f46530] text-white px-4 py-3 rounded-2xl rounded-tr-md max-w-[80%]">
-                      <p className="text-sm">{currentConvo.question}</p>
-                    </div>
-                  </motion.div>
-
-                  {/* Agent Response */}
-                  <motion.div
-                    className="flex justify-start"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
-                  >
-                    <div className="bg-gray-700 text-white px-4 py-3 rounded-2xl rounded-tl-md max-w-[85%]">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Image src="/assets/iconWhite.svg" alt="qlynk" width={16} height={16} />
-                        <span className="text-xs font-semibold text-[#f46530]">q-agent</span>
-                      </div>
-                      <p className="text-sm leading-relaxed">
-                        {displayedResponse}
-                        {phase === 'typing' && <span className="inline-block w-1 h-4 bg-[#f46530] ml-1 animate-pulse"></span>}
-                      </p>
-                    </div>
-                  </motion.div>
-                </div>
-
-                {/* Chat Input Mock */}
-                <div className="mt-4 flex items-center gap-2 bg-gray-700/50 rounded-xl p-2">
-                  <input
-                    type="text"
-                    placeholder="Ask me anything..."
-                    className="flex-1 bg-transparent text-white text-sm px-3 py-2 outline-none placeholder-gray-500"
-                    disabled
-                  />
-                  <button className="bg-[#f46530] text-white p-2 rounded-lg">
-                    <ArrowRight size={18} />
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.p
-              className="text-center text-sm text-gray-400 mt-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1 }}
-            >
-              This could be your AI agent in 5 minutes
-            </motion.p>
-          </motion.div>
         </div>
 
         {/* Use Case Cards */}

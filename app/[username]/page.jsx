@@ -1,10 +1,9 @@
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
-import { THEMES } from '@/lib/themeRegistry';
 import Link from 'next/link';
 import { Sparkles, ArrowRight, Lock } from 'lucide-react';
-import ChatWidget from '@/components/ChatWidget';
 import QlynkBackground from '@/components/QlynkBackground';
+import FullPageChat from '@/components/FullPageChat';
 import { isAgentLive } from '@/lib/subscriptionHelpers';
 
 // This tells Next.js to generate pages dynamically
@@ -18,11 +17,12 @@ export default async function PublicPage({ params }) {
   // Fetch page data from Supabase by joining with profiles
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('id')
-    .eq('username', username)
+    .select('id, username')
+    .ilike('username', username)
     .single();
 
   if (profileError || !profile) {
+    // ... rest of the error state ...
     return (
       <div className="min-h-screen bg-[#0f0f14] flex flex-col items-center justify-center text-center px-6 relative overflow-hidden">
         {/* Techy background elements */}
@@ -56,87 +56,18 @@ export default async function PublicPage({ params }) {
     );
   }
 
-  const { data: page, error: pageError } = await supabase
-    .from('pages')
-    .select('*, social_links(*), custom_links(*)')
-    .eq('user_id', profile.id)
-    .single();
-
-  if (pageError || !page) {
-    return (
-      <div className="min-h-screen bg-[#0f0f14] flex flex-col items-center justify-center text-center px-6 relative overflow-hidden">
-        {/* Background elements */}
-        <div className="fixed inset-0 z-0 pointer-events-none">
-          <QlynkBackground />
-          <div className="grid-overlay" />
-        </div>
-        
-        <div className="relative z-10">
-          <div className="w-20 h-20 bg-gray-800/50 rounded-2xl flex items-center justify-center mx-auto mb-8 border border-gray-700/50 backdrop-blur-xl">
-            <Lock className="text-[#f46530]" size={32} />
-          </div>
-          <h1 className="text-4xl font-black text-white mb-4">
-            Setting up the clone...
-          </h1>
-          <p className="text-gray-400 mb-10 max-w-sm text-lg">
-            @{username} is currently fine-tuning their digital presence.
-          </p>
-          <Link href="/" className="inline-flex items-center gap-2 bg-gray-800/50 text-white px-6 py-3 rounded-xl font-bold border border-white/10 hover:bg-gray-800 transition-all">
-            Get your own Qlynk
-            <ArrowRight size={18} />
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  // Get the theme configuration
-  const themeConfig = THEMES[page.theme];
-
-  // Fallback to quickpitch if theme not found
-  if (!themeConfig) {
-    console.warn(`Theme "${page.theme}" not found, falling back to quickpitch`);
-    const QuickPitch = THEMES.quickpitch.component;
-    return <QuickPitch data={{
-      config_version: 'v1',
-      headline: page.name || 'Welcome',
-      subhead: page.tagline || page.profession || '',
-      email: page.email || ''
-    }} />;
-  }
-
-  // Get the theme component
-  const ThemeComponent = themeConfig.component;
-
-  // Merge theme_data with basic page fields
-  // Theme components expect data from theme_data JSONB field
-  const componentData = {
-    ...page.theme_data, // Theme-specific data from JSONB
-    // Add common fields that might be used across themes
-    name: page.name,
-    profession: page.profession,
-    tagline: page.tagline,
-    bio: page.bio,
-    profileImage: page.profile_image,
-    email: page.email,
-    phone: page.phone,
-    socialLinks: page.social_links || [],
-    customLinks: page.custom_links || []
-  };
-
-  // Fetch agent config for chat widget
+  // Fetch agent config for chat widget & background customization
   const { data: agentConfig } = await supabase
     .from('agent_configs')
     .select('*')
     .eq('user_id', profile.id)
-    .eq('is_enabled', true)
     .single();
 
   // Check if agent is live (trial active or paid subscription)
-  const agentIsLive = await isAgentLive(profile.id);
+  const agentIsLive = await isAgentLive(profile.id, supabase);
 
   // If agent is not live, show unavailable message
-  if (!agentIsLive) {
+  if (!agentIsLive || !agentConfig?.is_enabled) {
     return (
       <div className="min-h-screen bg-[#0f0f14] flex flex-col items-center justify-center text-center px-6 relative overflow-hidden">
         {/* Background elements */}
@@ -168,18 +99,12 @@ export default async function PublicPage({ params }) {
   }
 
   return (
-    <>
-      <ThemeComponent data={componentData} />
-      {agentConfig && (
-        <ChatWidget 
-          username={username}
-          agentName={agentConfig.agent_name}
-          agentAvatar={agentConfig.agent_avatar}
-          welcomeMessage={agentConfig.welcome_message}
-          primaryColor={agentConfig.primary_color}
-          position={agentConfig.position}
-        />
-      )}
-    </>
+    <FullPageChat 
+      username={username}
+      agentName={agentConfig.agent_name}
+      agentAvatar={agentConfig.agent_avatar}
+      welcomeMessage={agentConfig.welcome_message}
+      primaryColor={agentConfig.primary_color}
+    />
   );
 }

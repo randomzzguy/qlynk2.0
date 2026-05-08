@@ -52,33 +52,52 @@ export default function DashboardPage() {
 
         const supabase = createClient();
 
-        // Load agent config
-        const { data: config } = await supabase
+        // Load agent config - rescue if missing
+        let { data: config } = await supabase
           .from('agent_configs')
           .select('*')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
+        
+        if (!config) {
+          console.log('[v0] Auto-repairing missing agent config for user:', user.id);
+          const { data: newConfig } = await supabase.from('agent_configs').insert({
+            user_id: user.id,
+            agent_name: 'Q-Agent',
+            welcome_message: "Hi! I'm the AI assistant for this page. How can I help you?",
+            is_enabled: true,
+            primary_color: '#f46530'
+          }).select().single();
+          config = newConfig;
+        }
         
         setAgentConfig(config);
 
-        // Load public page - rescue if missing (Fixes "Setting up the clone" error)
-        const { data: pageData } = await supabase
+        // Load public page - ensure it exists (Fixes "Setting up the clone" error)
+        const { data: pageData, error: pageFetchError } = await supabase
           .from('pages')
-          .select('id')
+          .select('id, theme')
           .eq('user_id', user.id)
           .maybeSingle();
         
-        if (!pageData) {
-          console.log('[v0] Rescuing missing public page for user:', user.id);
-          await supabase.from('pages').insert({
+        // If missing or broken, force-create a default
+        if (!pageData || pageFetchError) {
+          console.log('[v0] Auto-repairing missing public page for user:', user.id);
+          await supabase.from('pages').upsert({
             user_id: user.id,
-            name: userProfile?.username || 'User',
+            name: userProfile?.full_name || userProfile?.username || 'User',
             tagline: 'Welcome to my Qlynk page!',
+            profession: 'Creative Professional',
             theme: 'quickpitch',
             theme_category: 'freelancers',
-            theme_data: { config_version: 'v1' },
+            theme_data: { 
+              config_version: 'v1',
+              headline: userProfile?.full_name || userProfile?.username || 'User',
+              subhead: 'Welcome to my digital twin.',
+              email: user.email || ''
+            },
             is_published: true
-          });
+          }, { onConflict: 'user_id' });
         }
 
         // Load subscription for usage limits

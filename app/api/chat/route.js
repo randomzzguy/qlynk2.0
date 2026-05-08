@@ -32,7 +32,7 @@ export async function POST(req) {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('id')
-      .eq('username', username)
+      .ilike('username', username)
       .single();
 
     if (profileError || !profile) {

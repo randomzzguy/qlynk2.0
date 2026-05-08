@@ -57,7 +57,8 @@ export default function AgentConfigPage() {
     custom_knowledge: '',
     primary_color: '#f46530',
     position: 'bottom-right',
-    is_enabled: true
+    is_enabled: true,
+    tone: 'professional'
   });
 
   // Form input states for arrays
@@ -387,6 +388,23 @@ export default function AgentConfigPage() {
                   <option value="bottom-left">Bottom Left</option>
                   <option value="top-right">Top Right</option>
                   <option value="top-left">Top Left</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
+                  AI Tone & Personality
+                  <Sparkles size={14} className="text-[#f46530]" />
+                </label>
+                <select
+                  value={config.tone || 'professional'}
+                  onChange={(e) => updateConfig('tone', e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all appearance-none cursor-pointer"
+                >
+                  <option value="professional">Professional (Polished & Formal)</option>
+                  <option value="friendly">Friendly (Approachable & Warm)</option>
+                  <option value="funny">Funny (Witty & Entertaining)</option>
+                  <option value="creative">Creative (Visionary & Bold)</option>
                 </select>
               </div>
 

@@ -155,12 +155,36 @@ export default function OnboardingPage() {
     setSaving(false);
   };
 
+  const savePageData = async () => {
+    const supabase = createClient();
+    
+    // Upsert public page data
+    await supabase
+      .from('pages')
+      .upsert({
+        user_id: userId,
+        name: formData.full_name || username,
+        tagline: formData.bio?.substring(0, 100) || 'Welcome to my page',
+        profession: formData.full_name ? 'Professional' : '',
+        theme: 'quickpitch',
+        theme_category: 'freelancers',
+        theme_data: {
+          config_version: 'v1',
+          headline: formData.full_name || username,
+          subhead: formData.bio || 'Welcome to my page',
+          email: '', // Optional during onboarding
+        },
+        is_published: true
+      }, { onConflict: 'user_id' });
+  };
+
   const completeOnboarding = async () => {
     setSaving(true);
     const supabase = createClient();
     
     // Save final config
     await saveAgentConfig();
+    await savePageData();
     
     // Mark onboarding complete
     await supabase
@@ -186,6 +210,9 @@ export default function OnboardingPage() {
         onboarding_step: 'skipped'
       })
       .eq('id', userId);
+
+    // Ensure a page exists even on skip
+    await savePageData();
 
     router.push('/dashboard');
   };

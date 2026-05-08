@@ -61,6 +61,26 @@ export default function DashboardPage() {
         
         setAgentConfig(config);
 
+        // Load public page - rescue if missing (Fixes "Setting up the clone" error)
+        const { data: pageData } = await supabase
+          .from('pages')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        if (!pageData) {
+          console.log('[v0] Rescuing missing public page for user:', user.id);
+          await supabase.from('pages').insert({
+            user_id: user.id,
+            name: userProfile?.username || 'User',
+            tagline: 'Welcome to my Qlynk page!',
+            theme: 'quickpitch',
+            theme_category: 'freelancers',
+            theme_data: { config_version: 'v1' },
+            is_published: true
+          });
+        }
+
         // Load subscription for usage limits
         const { data: subscription } = await supabase
           .from('subscriptions')

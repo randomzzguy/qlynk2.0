@@ -144,7 +144,7 @@ function SignupForm() {
         {/* Card */}
         <div className="semi-translucent-card rounded-2xl p-8">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-black text-cream mb-2">Create Your Q-Agent</h1>
+            <h1 className="text-3xl font-black text-cream mb-2">Create Your q-agent</h1>
             <p className="text-beige">Your AI ambassador starts here</p>
           </div>
 
@@ -172,7 +172,7 @@ function SignupForm() {
                   disabled={loading}
                 />
                 <p className="text-xs text-white mt-1.5 ml-1">
-                  Your Q-Agent will be at: qlynk.site/{formData.username || 'username'}
+                  Your q-agent will be at: qlynk.site/{formData.username || 'username'}
                 </p>
               </div>
 

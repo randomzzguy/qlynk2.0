@@ -63,7 +63,7 @@ export default function DashboardPage() {
           console.log('[v0] Auto-repairing missing agent config for user:', user.id);
           const { data: newConfig } = await supabase.from('agent_configs').insert({
             user_id: user.id,
-            agent_name: 'Q-Agent',
+            agent_name: 'q-agent',
             welcome_message: "Hi! I'm the AI assistant for this page. How can I help you?",
             is_enabled: true,
             primary_color: '#f46530'
@@ -196,7 +196,7 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-black text-white mb-2">
             Welcome back, {profile?.username || 'there'}
           </h1>
-          <p className="text-lg text-gray-400">Here&apos;s how your Q-Agent is performing</p>
+          <p className="text-lg text-gray-400">Here&apos;s how your q-agent is performing</p>
         </div>
         
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
@@ -238,7 +238,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                {agentConfig?.agent_name || 'Q-Agent'}
+                {agentConfig?.agent_name || 'q-agent'}
                 {agentConfig?.is_enabled && <Sparkles size={16} className="text-[#f46530]" />}
               </h2>
               <p className="text-gray-400">

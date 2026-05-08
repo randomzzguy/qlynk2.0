@@ -48,7 +48,7 @@ export default function OnboardingPage() {
     projects: [],
     custom_knowledge: '',
     // Branding
-    agent_name: 'Q-Agent',
+    agent_name: 'q-agent',
     welcome_message: "Hi! I'm the AI assistant for this page. How can I help you?",
     primary_color: '#f46530',
   });
@@ -101,7 +101,7 @@ export default function OnboardingPage() {
           skills: agentConfig.skills || [],
           projects: agentConfig.projects || [],
           custom_knowledge: agentConfig.custom_knowledge || '',
-          agent_name: agentConfig.agent_name || 'Q-Agent',
+          agent_name: agentConfig.agent_name || 'q-agent',
           welcome_message: agentConfig.welcome_message || "Hi! I'm the AI assistant for this page. How can I help you?",
           primary_color: agentConfig.primary_color || '#f46530',
         }));
@@ -354,10 +354,10 @@ export default function OnboardingPage() {
                   <Sparkles className="w-12 h-12 text-orange-500" />
                 </div>
                 <h1 className="text-4xl font-black text-white mb-4">
-                  Welcome to Qlynk, {username}!
+                  Welcome to qlynk, {username}!
                 </h1>
                 <p className="text-xl text-gray-300 mb-8 max-w-md mx-auto">
-                  Let&apos;s set up your Q-Agent in just a few steps. Your AI ambassador will be ready to chat with visitors 24/7.
+                  Let&apos;s set up your q-agent in just a few steps. Your AI ambassador will be ready to chat with visitors 24/7.
                 </p>
                 <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6 text-left max-w-md mx-auto">
                   <h3 className="font-bold text-white mb-4">What we&apos;ll cover:</h3>
@@ -387,7 +387,7 @@ export default function OnboardingPage() {
             {currentStep === 1 && (
               <div>
                 <h2 className="text-3xl font-black text-white mb-2 text-center">Tell us about yourself</h2>
-                <p className="text-gray-400 mb-8 text-center">This helps your Q-Agent introduce you to visitors.</p>
+                <p className="text-gray-400 mb-8 text-center">This helps your q-agent introduce you to visitors.</p>
                 
                 <div className="space-y-6">
                   <div>
@@ -515,7 +515,7 @@ export default function OnboardingPage() {
             {currentStep === 3 && (
               <div>
                 <h2 className="text-3xl font-black text-white mb-2 text-center">Customize Your Agent</h2>
-                <p className="text-gray-400 mb-8 text-center">Make your Q-Agent feel personal and on-brand.</p>
+                <p className="text-gray-400 mb-8 text-center">Make your q-agent feel personal and on-brand.</p>
                 
                 <div className="space-y-6">
                   <div>
@@ -524,7 +524,7 @@ export default function OnboardingPage() {
                       type="text"
                       value={formData.agent_name}
                       onChange={(e) => setFormData(prev => ({ ...prev, agent_name: e.target.value }))}
-                      placeholder="Q-Agent"
+                      placeholder="q-agent"
                       className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none"
                     />
                   </div>
@@ -587,7 +587,7 @@ export default function OnboardingPage() {
                   You&apos;re All Set!
                 </h1>
                 <p className="text-xl text-gray-300 mb-8 max-w-md mx-auto">
-                  Your Q-Agent is ready to go live. Visitors can now chat with your AI ambassador at:
+                  Your q-agent is ready to go live. Visitors can now chat with your AI ambassador at:
                 </p>
                 <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-4 mb-8 inline-block">
                   <p className="text-orange-500 font-mono text-lg">qlynk.site/{username}</p>

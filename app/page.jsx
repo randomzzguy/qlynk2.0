@@ -103,12 +103,9 @@ const AgentDemoHero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <motion.span
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <Bot size={20} className="text-[#f46530]" />
-            </motion.span>
+            <div className="w-5 h-5 flex-shrink-0">
+              <Image src="/assets/iconWhite.svg" alt="qlynk" width={20} height={20} />
+            </div>
             <span className="text-sm font-bold tracking-wide text-[#f46530]">
               THE AGENTIC HUB
             </span>
@@ -150,7 +147,7 @@ const AgentDemoHero = () => {
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-white mb-2">Train Your Agent</h3>
-                    <p className="text-gray-400">Upload your bio, resume, projects, and expertise. Your Q-Agent learns everything about you.</p>
+                    <p className="text-gray-400">Upload your bio, resume, projects, and expertise. Your q-agent learns everything about you.</p>
                   </div>
                 </div>
 
@@ -189,7 +186,7 @@ const AgentDemoHero = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                Create Your Q-Agent Free
+                Create Your q-agent Free
               </motion.a>
               <div className="flex items-center justify-center gap-6 text-sm flex-wrap text-gray-400">
                 <div className="flex items-center gap-2">
@@ -217,7 +214,7 @@ const AgentDemoHero = () => {
           >
             <div className="mb-4 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#f46530]/10 border border-[#f46530]/20 text-[#f46530] font-bold text-sm">
-                <Sparkles size={16} />
+                <Image src="/assets/iconWhite.svg" alt="qlynk" width={16} height={16} />
                 LIVE DEMO
               </div>
             </div>
@@ -277,8 +274,8 @@ const AgentDemoHero = () => {
                   >
                     <div className="bg-gray-700 text-white px-4 py-3 rounded-2xl rounded-tl-md max-w-[85%]">
                       <div className="flex items-center gap-2 mb-2">
-                        <Bot size={16} className="text-[#f46530]" />
-                        <span className="text-xs font-semibold text-[#f46530]">Q-Agent</span>
+                        <Image src="/assets/iconWhite.svg" alt="qlynk" width={16} height={16} />
+                        <span className="text-xs font-semibold text-[#f46530]">q-agent</span>
                       </div>
                       <p className="text-sm leading-relaxed">
                         {displayedResponse}
@@ -325,7 +322,7 @@ const AgentDemoHero = () => {
             className="p-6 rounded-2xl border border-gray-700 bg-gray-800/50 hover:border-[#f46530] transition-all duration-300"
             whileHover={{ y: -5 }}
           >
-            <div className="text-3xl mb-3"><Bot /></div>
+            <div className="text-3xl mb-3"><Image src="/assets/iconWhite.svg" alt="qlynk" width={32} height={32} /></div>
             <div className="font-bold mb-2 text-white">Freelancers</div>
             <div className="text-sm text-gray-400">Let clients learn about your services 24/7</div>
           </motion.div>
@@ -343,7 +340,7 @@ const AgentDemoHero = () => {
             className="p-6 rounded-2xl border border-gray-700 bg-gray-800/50 hover:border-[#f46530] transition-all duration-300"
             whileHover={{ y: -5 }}
           >
-            <div className="text-3xl mb-3"><Sparkles /></div>
+            <div className="text-3xl mb-3"><Image src="/assets/iconWhite.svg" alt="qlynk" width={32} height={32} /></div>
             <div className="font-bold mb-2 text-white">Creators</div>
             <div className="text-sm text-gray-400">Engage your audience with personalized AI interactions</div>
           </motion.div>
@@ -380,7 +377,7 @@ const AboutUs = () => {
               Pioneering the future of <span className="text-orange">personal AI</span>
             </h2>
             <p className="text-xl text-gray-300 leading-relaxed">
-              Qlynk started with a vision: what if you could clone your expertise into an AI that works for you around the clock? We made it real with Q-Agent - your intelligent digital ambassador.
+              qlynk started with a vision: what if you could clone your expertise into an AI that works for you around the clock? We made it real with q-agent - your intelligent digital ambassador.
             </p>
             <div className="grid sm:grid-cols-3 gap-6 pt-4">
               <div className="text-center p-4 rounded-2xl bg-gray-800/40 border border-gray-700">
@@ -508,7 +505,7 @@ export default function App() {
   }, [text, isDeleting, loopNum]);
 
   const features = [
-    { icon: Brain, title: "Train Your Knowledge", desc: "Upload your bio, resume, projects, and expertise. Your Q-Agent learns everything about you instantly." },
+    { icon: Brain, title: "Train Your Knowledge", desc: "Upload your bio, resume, projects, and expertise. Your q-agent learns everything about you instantly." },
     { icon: MessageSquare, title: "Smart Conversations", desc: "Powered by advanced AI, your agent answers questions naturally and accurately about you." },
     { icon: Shield, title: "Your Brand, Your Rules", desc: "Customize your agent's personality, responses, and appearance to match your personal brand." },
     { icon: BarChart3, title: "Actionable Insights", desc: "See what visitors ask, track engagement, and understand what people want to know about you." }
@@ -516,7 +513,7 @@ export default function App() {
 
   const steps = [
     { num: "1", title: "Create Your Agent", desc: "Sign up and claim your unique qlynk.site/username URL in seconds." },
-    { num: "2", title: "Train Your Q-Agent", desc: "Add your bio, skills, projects, and upload documents. Your AI learns it all." },
+    { num: "2", title: "Train Your q-agent", desc: "Add your bio, skills, projects, and upload documents. Your AI learns it all." },
     { num: "3", title: "Share & Engage", desc: "Drop your link anywhere. Visitors chat with your AI while you sleep, work, or play." }
   ];
 
@@ -697,7 +694,7 @@ export default function App() {
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
           >
-            Join professionals, creators, and founders who use Q-Agent to engage visitors 24/7 while focusing on what matters most.
+            Join professionals, creators, and founders who use q-agent to engage visitors 24/7 while focusing on what matters most.
           </motion.p>
 
           <motion.div
@@ -711,7 +708,7 @@ export default function App() {
               href="/auth/signup"
               className="inline-flex items-center justify-center gap-2 bg-white text-[#f46530] px-10 py-5 rounded-xl font-bold text-xl shadow-lg hover:bg-gray-100 transition-all"
             >
-              Create Your Q-Agent
+              Create Your q-agent
               <ArrowRight size={24} />
             </Link>
           </motion.div>

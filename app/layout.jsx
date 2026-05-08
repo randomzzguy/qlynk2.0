@@ -4,7 +4,7 @@ import ToasterClient from '../components/ToasterClient'
 import QlynkBackground from '../components/QlynkBackground'
 
 export const metadata = {
-  title: 'Qlynk - Your AI clone, in a blink',
+  title: 'qlynk - Your AI clone, in a blink',
   description: 'Create your digital identity in seconds',
   icons: {
     icon: [

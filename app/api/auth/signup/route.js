@@ -101,10 +101,16 @@ export async function POST(request) {
         .insert({
           user_id: signUpData.user.id,
           name: username,
-          tagline: 'Welcome to my Qlynk page!',
+          tagline: 'Welcome to my qlynk page!',
+          profession: profession || 'Creative Professional',
           theme: 'quickpitch',
           theme_category: 'freelancers',
-          theme_data: { config_version: 'v1' },
+          theme_data: { 
+            config_version: 'v1',
+            headline: username,
+            subhead: 'Welcome to my digital twin.',
+            email: email
+          },
           is_published: true
         });
 
@@ -117,7 +123,7 @@ export async function POST(request) {
         .from('agent_configs')
         .insert({
           user_id: signUpData.user.id,
-          agent_name: 'Q-Agent',
+          agent_name: 'q-agent',
           welcome_message: `Hi! I'm ${username}'s AI clone. Ask me anything about their work!`,
           is_enabled: true,
           primary_color: '#f46530'

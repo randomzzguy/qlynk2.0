@@ -84,10 +84,10 @@ export default async function PublicPage({ params }) {
           <div className="w-24 h-24 bg-gray-800/40 backdrop-blur-xl rounded-3xl flex items-center justify-center mx-auto mb-8 border border-[#f46530]/30 shadow-[0_0_50px_rgba(244,101,48,0.15)]">
             <Lock className="text-[#f46530]" size={40} />
           </div>
-          <h1 className="text-4xl font-black text-white mb-4 tracking-tight">Q-Agent Offline</h1>
-          <p className="text-lg text-gray-400 mb-10 leading-relaxed">This Q-Agent is currently in maintenance.</p>
+          <h1 className="text-4xl font-black text-white mb-4 tracking-tight">q-agent Offline</h1>
+          <p className="text-lg text-gray-400 mb-10 leading-relaxed">This q-agent is currently in maintenance.</p>
           <Link href="/" className="inline-flex items-center gap-3 bg-gray-800/50 text-white px-8 py-4 rounded-2xl font-bold border border-white/10 transition-all hover:bg-gray-800 active:scale-95 shadow-xl">
-            Return to Qlynk <ArrowRight size={20} />
+            Return to qlynk <ArrowRight size={20} />
           </Link>
         </div>
       </div>

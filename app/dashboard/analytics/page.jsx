@@ -155,11 +155,11 @@ export default function AnalyticsPage() {
             ))}
           </div>
 
-          {/* Q-Agent Stats */}
+          {/* q-agent Stats */}
           <div className="mb-10">
             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
               <Bot className="text-[#f46530]" size={20} />
-              Q-Agent Performance
+              q-agent Performance
             </h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50 p-5 hover:border-[#f46530]/30 transition-all group">

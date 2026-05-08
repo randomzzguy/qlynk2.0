@@ -40,7 +40,7 @@ export default function AgentConfigPage() {
   
   // Agent config state
   const [config, setConfig] = useState({
-    agent_name: 'Q-Agent',
+    agent_name: 'q-agent',
     agent_avatar: '',
     welcome_message: 'Hi! I\'m the AI assistant for this page. How can I help you?',
     bio: '',
@@ -233,7 +233,7 @@ export default function AgentConfigPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
         <div>
           <h1 className="text-3xl font-black text-white mb-2 flex items-center gap-3">
-            Q-Agent
+            q-agent
             <Sparkles size={20} className="text-[#f46530]" />
           </h1>
           <p className="text-lg text-gray-400">Configure your AI assistant&apos;s personality and branding</p>
@@ -287,7 +287,7 @@ export default function AgentConfigPage() {
                     {config.is_enabled && <Sparkles size={16} className="text-[#f46530]" />}
                   </h3>
                   <p className="text-gray-400">
-                    {config.is_enabled ? 'Your Q-Agent is live and visible to visitors' : 'Your Q-Agent is currently offline'}
+                    {config.is_enabled ? 'Your q-agent is live and visible to visitors' : 'Your q-agent is currently offline'}
                   </p>
                 </div>
               </div>
@@ -343,7 +343,7 @@ export default function AgentConfigPage() {
                   type="text"
                   value={config.agent_name}
                   onChange={(e) => updateConfig('agent_name', e.target.value)}
-                  placeholder="Q-Agent"
+                  placeholder="q-agent"
                   className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all"
                 />
               </div>
@@ -766,7 +766,7 @@ export default function AgentConfigPage() {
                   Share & Embed
                 </h2>
                 <p className="text-gray-400 mb-6 max-w-2xl text-lg">
-                  Integrate your Q-Agent on any website by adding this small script tag to your HTML. 
+                  Integrate your q-agent on any website by adding this small script tag to your HTML. 
                   It will automatically add the chat widget to your site.
                 </p>
                 

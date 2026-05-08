@@ -31,7 +31,7 @@ export default function ConfirmSuccessPage() {
 
           <h1 className="text-3xl font-black text-cream mb-4">Email Verified!</h1>
           <p className="text-beige mb-8">
-            Your account has been successfully verified. You can now log in to access your Q-Agent dashboard.
+            Your account has been successfully verified. You can now log in to access your q-agent dashboard.
           </p>
 
           <Link 

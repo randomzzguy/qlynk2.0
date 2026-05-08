@@ -96,11 +96,17 @@ export default function DashboardLayout({ children }) {
 
       {/* Mobile Header */}
       <header className="lg:hidden h-16 bg-[#12121a]/80 backdrop-blur-xl border-b border-gray-800/50 flex items-center justify-between px-6 sticky top-0 z-40">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#f46530] to-[#c14f22] flex items-center justify-center">
-            <Sparkles size={18} className="text-white" />
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="w-8 h-8 flex-shrink-0">
+            <Image 
+              src="/assets/iconWhite.svg" 
+              alt="qlynk icon" 
+              width={32} 
+              height={32} 
+              priority
+            />
           </div>
-          <span className="text-xl font-black text-white">Qlynk</span>
+          <span className="text-xl font-black text-white leading-none">qlynk</span>
         </Link>
         
         <button 

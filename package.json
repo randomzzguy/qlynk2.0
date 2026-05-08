@@ -10,14 +10,14 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@ai-sdk/groq": "^3.0.38",
-    "@ai-sdk/react": "^3.0.177",
+    "@ai-sdk/groq": "^3.0.39",
+    "@ai-sdk/react": "^3.0.178",
     "@hcaptcha/react-hcaptcha": "^1.17.1",
     "@stripe/stripe-js": "^9.4.0",
     "@supabase/auth-helpers-nextjs": "^0.15.0",
     "@supabase/ssr": "0.5.1",
     "@supabase/supabase-js": "2.45.0",
-    "ai": "^6.0.175",
+    "ai": "^6.0.176",
     "autoprefixer": "^10.4.21",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -39,6 +39,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "baseline-browser-mapping": "^2.10.27",
     "eslint": "^9",
     "eslint-config-next": "^16.1.0",
     "typescript": "^5"

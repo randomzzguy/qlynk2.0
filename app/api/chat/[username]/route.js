@@ -14,12 +14,35 @@ const getGroqClient = () => {
   });
 };
 
-export async function POST(req) {
+export async function POST(req, { params }) {
   try {
-    const { messages, username, conversationId, visitorId } = await req.json();
+    const { username: paramUsername } = await params;
+    const url = new URL(req.url);
+    const headerUsername = req.headers.get('x-username');
+    const searchUsername = url.searchParams.get('username');
+    
+    let body;
+    try {
+      body = await req.json();
+    } catch (e) {
+      body = {};
+    }
+    
+    const bodyUsername = body.username;
+    const messages = body.messages || [];
+
+    console.log('[v0] API Request Diagnostics:', {
+      headerUsername,
+      searchUsername,
+      bodyUsername,
+      url: req.url,
+      hasMessages: messages.length > 0
+    });
+
+    const username = paramUsername || headerUsername || bodyUsername || searchUsername;
     
     if (!username) {
-      return new Response(JSON.stringify({ error: 'Username is required' }), {
+      return new Response(JSON.stringify({ error: 'Username is required', diagnostics: { headerUsername, searchUsername, bodyUsername } }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
@@ -156,7 +179,10 @@ export async function POST(req) {
     });
   } catch (error) {
     console.error('[v0] Chat API error:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+    return new Response(JSON.stringify({ 
+      error: 'Chat engine error', 
+      details: error.message || 'Unknown error'
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });

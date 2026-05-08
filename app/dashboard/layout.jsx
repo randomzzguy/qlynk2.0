@@ -5,12 +5,15 @@ import { useRouter, usePathname } from 'next/navigation';
 import { getCurrentProfile, signOut, getCurrentUser } from '@/lib/supabase';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import QlynkBackground from '@/components/QlynkBackground';
+import { Menu, Sparkles } from 'lucide-react';
+import Link from 'next/link';
 
 export default function DashboardLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -39,6 +42,11 @@ export default function DashboardLayout({ children }) {
     checkAuth();
   }, [router]);
 
+  // Close sidebar when pathname changes
+  useEffect(() => {
+    setIsSidebarOpen(false);
+  }, [pathname]);
+
   const handleSignOut = async () => {
     await signOut();
     router.push('/');
@@ -60,7 +68,7 @@ export default function DashboardLayout({ children }) {
   }
 
   return (
-    <div className="min-h-screen flex bg-[#0f0f14]">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-[#0f0f14]">
       {/* Background - neon lines, particles and gradient orbs matching homepage */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <QlynkBackground />
@@ -85,9 +93,31 @@ export default function DashboardLayout({ children }) {
           }}
         />
       </div>
+
+      {/* Mobile Header */}
+      <header className="lg:hidden h-16 bg-[#12121a]/80 backdrop-blur-xl border-b border-gray-800/50 flex items-center justify-between px-6 sticky top-0 z-40">
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#f46530] to-[#c14f22] flex items-center justify-center">
+            <Sparkles size={18} className="text-white" />
+          </div>
+          <span className="text-xl font-black text-white">Qlynk</span>
+        </Link>
+        
+        <button 
+          onClick={() => setIsSidebarOpen(true)}
+          className="p-2 text-gray-400 hover:text-white"
+        >
+          <Menu size={24} />
+        </button>
+      </header>
       
-      <DashboardSidebar onSignOut={handleSignOut} />
-      <main className="flex-1 overflow-y-auto relative z-10">
+      <DashboardSidebar 
+        onSignOut={handleSignOut} 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+      />
+      
+      <main className="flex-1 overflow-y-auto relative z-10 w-full">
         {children}
       </main>
     </div>

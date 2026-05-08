@@ -187,7 +187,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
       <UpgradePrompt />
 
       {/* Header */}
@@ -199,25 +199,25 @@ export default function DashboardPage() {
           <p className="text-lg text-gray-400">Here&apos;s how your Q-Agent is performing</p>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           <Link 
             href={`/${profile?.username}`}
             target="_blank"
-            className="flex items-center gap-2 px-4 py-2.5 bg-gray-800/60 border border-gray-700 rounded-xl text-gray-300 hover:text-white hover:border-[#f46530]/50 hover:bg-gray-800 transition-all"
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-800/60 border border-gray-700 rounded-xl text-gray-300 hover:text-white hover:border-[#f46530]/50 hover:bg-gray-800 transition-all text-sm font-medium"
           >
             <ExternalLink size={18} />
-            View Live Page
+            <span className="whitespace-nowrap">View Live Page</span>
           </Link>
           <button 
             onClick={handlePortal}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gray-800/60 border border-gray-700 rounded-xl text-gray-300 hover:text-white hover:border-purple-500/50 hover:bg-gray-800 transition-all"
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-800/60 border border-gray-700 rounded-xl text-gray-300 hover:text-white hover:border-purple-500/50 hover:bg-gray-800 transition-all text-sm font-medium"
           >
             <CreditCard size={18} />
-            Manage Billing
+            <span className="whitespace-nowrap">Manage Billing</span>
           </button>
           <Link 
             href="/dashboard/agent"
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#f46530] text-white rounded-xl font-semibold hover:bg-[#f46530]/90 shadow-lg shadow-[#f46530]/20 transition-all"
+            className="w-full md:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-[#f46530] text-white rounded-xl font-semibold hover:bg-[#f46530]/90 shadow-lg shadow-[#f46530]/20 transition-all text-sm"
           >
             <Settings size={18} />
             Configure Agent
@@ -226,8 +226,8 @@ export default function DashboardPage() {
       </div>
 
       {/* Agent Status Card */}
-      <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8">
-        <div className="flex items-center justify-between">
+      <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-5 sm:p-6 mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
               agentConfig?.is_enabled 
@@ -249,8 +249,8 @@ export default function DashboardPage() {
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold ${
+          <div className="flex items-center justify-between w-full sm:w-auto gap-4">
+            <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold ${
               agentConfig?.is_enabled 
                 ? 'bg-green-500/10 text-green-400 border border-green-500/30' 
                 : 'bg-gray-700/50 text-gray-400 border border-gray-600/50'

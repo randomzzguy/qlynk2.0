@@ -101,7 +101,7 @@ export default function ConversationsPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
@@ -126,20 +126,20 @@ export default function ConversationsPage() {
       </div>
 
       {/* Stats Summary */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
         <div className="bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50 p-4">
-          <div className="text-2xl font-black text-white">{conversations.length}</div>
-          <div className="text-sm text-gray-400">Total Conversations</div>
+          <div className="text-xl sm:text-2xl font-black text-white">{conversations.length}</div>
+          <div className="text-xs sm:text-sm text-gray-400">Total Conversations</div>
         </div>
         <div className="bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50 p-4">
-          <div className="text-2xl font-black text-white">
+          <div className="text-xl sm:text-2xl font-black text-white">
             {conversations.reduce((sum, c) => sum + (c.message_count || 0), 0)}
           </div>
-          <div className="text-sm text-gray-400">Total Messages</div>
+          <div className="text-xs sm:text-sm text-gray-400">Total Messages</div>
         </div>
-        <div className="bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50 p-4">
-          <div className="text-2xl font-black text-white">{filteredConversations.length}</div>
-          <div className="text-sm text-gray-400">Showing</div>
+        <div className="col-span-2 sm:col-span-1 bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50 p-4">
+          <div className="text-xl sm:text-2xl font-black text-white">{filteredConversations.length}</div>
+          <div className="text-xs sm:text-sm text-gray-400">Showing</div>
         </div>
       </div>
 
@@ -157,21 +157,21 @@ export default function ConversationsPage() {
                   <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
                     <Users size={20} className="text-gray-400" />
                   </div>
-                  <div className="text-left">
-                    <p className="text-white font-semibold">
+                  <div className="text-left flex-1 min-w-0">
+                    <p className="text-white font-semibold truncate">
                       Visitor {convo.visitor_id ? `#${convo.visitor_id.slice(0, 8)}` : ''}
                     </p>
-                    <div className="flex items-center gap-4 text-sm text-gray-400">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm text-gray-400">
                       <span className="flex items-center gap-1">
                         <MessageSquare size={14} />
-                        {convo.message_count || 0} messages
+                        {convo.message_count || 0}
                       </span>
                       <span className="flex items-center gap-1">
                         <Calendar size={14} />
                         {new Date(convo.started_at).toLocaleDateString()}
                       </span>
                       {convo.visitor_location && (
-                        <span>{convo.visitor_location}</span>
+                        <span className="truncate max-w-[100px]">{convo.visitor_location}</span>
                       )}
                     </div>
                   </div>

@@ -7,6 +7,7 @@ import DashboardSidebar from '@/components/DashboardSidebar';
 import QlynkBackground from '@/components/QlynkBackground';
 import { Menu, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function DashboardLayout({ children }) {
   const router = useRouter();

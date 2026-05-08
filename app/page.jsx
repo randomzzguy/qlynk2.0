@@ -322,7 +322,7 @@ const AgentDemoHero = () => {
             className="p-6 rounded-2xl border border-gray-700 bg-gray-800/50 hover:border-[#f46530] transition-all duration-300"
             whileHover={{ y: -5 }}
           >
-            <div className="text-3xl mb-3"><Image src="/assets/iconWhite.svg" alt="qlynk" width={32} height={32} /></div>
+            <div className="text-3xl mb-3 text-[#f46530]"><Bot /></div>
             <div className="font-bold mb-2 text-white">Freelancers</div>
             <div className="text-sm text-gray-400">Let clients learn about your services 24/7</div>
           </motion.div>
@@ -331,7 +331,7 @@ const AgentDemoHero = () => {
             className="p-6 rounded-2xl border border-gray-700 bg-gray-800/50 hover:border-[#f46530] transition-all duration-300"
             whileHover={{ y: -5 }}
           >
-            <div className="text-3xl mb-3"><Users /></div>
+            <div className="text-3xl mb-3 text-[#f46530]"><Users /></div>
             <div className="font-bold mb-2 text-white">Founders</div>
             <div className="text-sm text-gray-400">Answer investor and customer questions automatically</div>
           </motion.div>
@@ -340,7 +340,7 @@ const AgentDemoHero = () => {
             className="p-6 rounded-2xl border border-gray-700 bg-gray-800/50 hover:border-[#f46530] transition-all duration-300"
             whileHover={{ y: -5 }}
           >
-            <div className="text-3xl mb-3"><Image src="/assets/iconWhite.svg" alt="qlynk" width={32} height={32} /></div>
+            <div className="text-3xl mb-3 text-[#f46530]"><Sparkles /></div>
             <div className="font-bold mb-2 text-white">Creators</div>
             <div className="text-sm text-gray-400">Engage your audience with personalized AI interactions</div>
           </motion.div>

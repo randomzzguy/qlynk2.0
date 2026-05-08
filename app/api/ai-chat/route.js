@@ -1,12 +1,12 @@
 import { createClient } from '@/utils/supabase/server';
-import { buildAgentSystemPrompt, getAgentDocuments } from '@/lib/agent';
+import { buildAgentSystemPrompt, getAgentKnowledge } from '@/lib/agent';
 import { cookies } from 'next/headers';
 
 export const maxDuration = 30;
 
 export async function POST(req) {
   try {
-    const { messages, username } = await req.json();
+    const { messages, username, visitorId, conversationId } = await req.json();
 
     if (!username) {
       return new Response(JSON.stringify({ error: 'Username is required' }), { status: 400 });
@@ -42,7 +42,6 @@ export async function POST(req) {
     const systemPrompt = buildAgentSystemPrompt(config, documents);
 
     // 1. CONVERSATION TRACKING
-    const { visitorId, conversationId } = body;
     let activeConversationId = conversationId;
 
     if (!activeConversationId && visitorId) {

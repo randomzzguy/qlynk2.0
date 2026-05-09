@@ -463,6 +463,8 @@ const ScrollToTop = () => {
 // ====== Main App ======
 export default function App() {
   const [text, setText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [loopNum, setLoopNum] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const containerRef = useRef(null);

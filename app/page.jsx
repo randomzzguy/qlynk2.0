@@ -646,7 +646,7 @@ export default function App() {
 
           <div className="relative">
             {/* Connecting line */}
-            <div className="hidden md:block absolute top-1/2 left-1/4 right-1/4 h-1 bg-gray-700 -translate-y-1/2 z-0"></div>
+            <div className="hidden md:block absolute top-8 left-[15%] right-[15%] h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent z-0"></div>
 
             <div className="grid md:grid-cols-3 gap-12 relative z-10">
               {steps.map((step, i) => (

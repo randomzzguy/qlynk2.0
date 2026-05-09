@@ -309,20 +309,42 @@ export default function OnboardingPage() {
             const isActive = index === currentStep;
             const isComplete = index < currentStep;
             return (
-              <div key={step.id} className="flex items-center">
-                <div className={`flex items-center justify-center w-10 h-10 rounded-full transition-all ${
-                  isComplete ? 'bg-green-500' : isActive ? 'bg-orange-500' : 'bg-gray-700'
-                }`}>
-                  {isComplete ? (
-                    <Check className="w-5 h-5 text-white" />
-                  ) : (
-                    <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-400'}`} />
-                  )}
+              <div key={step.id} className="flex items-center flex-1 last:flex-none">
+                <div className="relative group">
+                  <motion.div 
+                    className={`flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-500 border ${
+                      isComplete 
+                        ? 'bg-green-500/20 border-green-500 text-green-500' 
+                        : isActive 
+                          ? 'bg-orange/20 border-orange text-orange shadow-[0_0_20px_rgba(244,101,48,0.3)]' 
+                          : 'bg-gray-800/50 border-white/5 text-gray-500'
+                    }`}
+                    animate={isActive ? { scale: [1, 1.1, 1] } : {}}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    {isComplete ? (
+                      <Check className="w-5 h-5" />
+                    ) : (
+                      <Icon className="w-5 h-5" />
+                    )}
+                  </motion.div>
+                  {/* Tooltip-like label for mobile/tablet */}
+                  <span className={`absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] whitespace-nowrap uppercase tracking-widest font-black transition-colors ${
+                    isActive ? 'text-orange' : 'text-gray-600'
+                  }`}>
+                    {step.label}
+                  </span>
                 </div>
                 {index < STEPS.length - 1 && (
-                  <div className={`w-12 md:w-20 h-1 mx-1 rounded ${
-                    isComplete ? 'bg-green-500' : 'bg-gray-700'
-                  }`} />
+                  <div className="flex-1 mx-4 h-[2px] bg-gray-800 relative overflow-hidden rounded-full">
+                    <motion.div 
+                      className="absolute inset-0 bg-gradient-to-r from-orange to-green-500"
+                      initial={{ scaleX: 0 }}
+                      animate={{ scaleX: isComplete ? 1 : 0 }}
+                      style={{ originX: 0 }}
+                      transition={{ duration: 0.5 }}
+                    />
+                  </div>
                 )}
               </div>
             );
@@ -359,26 +381,29 @@ export default function OnboardingPage() {
                 <p className="text-xl text-gray-300 mb-8 max-w-md mx-auto">
                   Let&apos;s set up your q-agent in just a few steps. Your AI ambassador will be ready to chat with visitors 24/7.
                 </p>
-                <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6 text-left max-w-md mx-auto">
-                  <h3 className="font-bold text-white mb-4">What we&apos;ll cover:</h3>
-                  <ul className="space-y-3">
-                    <li className="flex items-center gap-3 text-gray-300">
-                      <User className="w-5 h-5 text-orange-500" />
-                      Your profile and bio
-                    </li>
-                    <li className="flex items-center gap-3 text-gray-300">
-                      <Brain className="w-5 h-5 text-orange-500" />
-                      Skills and projects for your agent
-                    </li>
-                    <li className="flex items-center gap-3 text-gray-300">
-                      <Palette className="w-5 h-5 text-orange-500" />
-                      Branding and appearance
-                    </li>
-                    <li className="flex items-center gap-3 text-gray-300">
-                      <Rocket className="w-5 h-5 text-orange-500" />
-                      Go live!
-                    </li>
-                  </ul>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left max-w-xl mx-auto">
+                  {[
+                    { icon: User, title: "Identity", desc: "Your profile & bio" },
+                    { icon: Brain, title: "Intelligence", desc: "Skills & projects" },
+                    { icon: Palette, title: "Branding", desc: "Style & appearance" },
+                    { icon: Rocket, title: "Deployment", desc: "Instant go-live" }
+                  ].map((item, i) => (
+                    <motion.div 
+                      key={i}
+                      className="p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center gap-4 group hover:border-orange/30 transition-all"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 + (i * 0.1) }}
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-orange/10 flex items-center justify-center text-orange group-hover:scale-110 transition-transform">
+                        <item.icon size={20} />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-white text-sm">{item.title}</h4>
+                        <p className="text-xs text-gray-500">{item.desc}</p>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
               </div>
             )}
@@ -558,18 +583,28 @@ export default function OnboardingPage() {
                     </div>
                   </div>
 
-                  {/* Preview */}
-                  <div className="mt-8 p-6 bg-gray-800/50 border border-gray-700 rounded-xl">
-                    <p className="text-gray-400 text-sm mb-4">Preview</p>
-                    <div className="flex items-start gap-3">
-                      <div 
-                        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
-                        style={{ backgroundColor: formData.primary_color }}
-                      >
-                        {formData.agent_name.charAt(0)}
-                      </div>
-                      <div className="flex-1 p-3 bg-gray-700 rounded-xl rounded-tl-none">
-                        <p className="text-white text-sm">{formData.welcome_message}</p>
+                  {/* Enhanced Preview */}
+                  <div className="mt-8">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-4 ml-1">Live Preview</p>
+                    <div className="p-8 bg-black/40 backdrop-blur-xl border border-white/5 rounded-[2rem] overflow-hidden relative">
+                      <div className="absolute inset-0 bg-gradient-to-br from-orange/5 to-transparent pointer-events-none" />
+                      
+                      <div className="flex items-start gap-4 relative z-10">
+                        <div 
+                          className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg transition-colors duration-500"
+                          style={{ backgroundColor: formData.primary_color }}
+                        >
+                          {formData.agent_name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Image src="/assets/iconWhite.svg" alt="qlynk" width={12} height={12} />
+                            <span className="text-[10px] font-black text-orange uppercase tracking-widest">{formData.agent_name}</span>
+                          </div>
+                          <div className="bg-white/5 border border-white/10 p-4 rounded-2xl rounded-tl-none shadow-2xl">
+                            <p className="text-white text-sm leading-relaxed">{formData.welcome_message}</p>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -579,34 +614,44 @@ export default function OnboardingPage() {
 
             {/* Step 4: Complete */}
             {currentStep === 4 && (
-              <div className="text-center">
-                <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-8">
-                  <Rocket className="w-12 h-12 text-green-500" />
+              <div className="text-center py-8">
+                <div className="relative inline-block mb-10">
+                  <motion.div 
+                    className="absolute inset-0 bg-green-500/30 blur-3xl rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.3, 0.6, 0.3] }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                  />
+                  <div className="relative w-24 h-24 bg-green-500 rounded-[2rem] flex items-center justify-center mx-auto shadow-[0_20px_50px_rgba(34,197,94,0.3)]">
+                    <Rocket className="w-12 h-12 text-white" />
+                  </div>
                 </div>
-                <h1 className="text-4xl font-black text-white mb-4">
-                  You&apos;re All Set!
+                <h1 className="text-4xl font-black text-white mb-4 tracking-tight">
+                  Success! You&apos;re Live.
                 </h1>
-                <p className="text-xl text-gray-300 mb-8 max-w-md mx-auto">
-                  Your q-agent is ready to go live. Visitors can now chat with your AI ambassador at:
+                <p className="text-xl text-gray-400 mb-10 max-w-md mx-auto leading-relaxed">
+                  Your q-agent has been deployed to your personal corner of the internet.
                 </p>
-                <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-4 mb-8 inline-block">
-                  <p className="text-orange-500 font-mono text-lg">qlynk.site/{username}</p>
+                
+                <div className="relative group mb-10 inline-block">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-orange to-[#c14f22] rounded-2xl blur opacity-25" />
+                  <div className="relative bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl px-8 py-4 flex items-center gap-4">
+                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                    <span className="text-orange font-mono text-lg font-bold tracking-tight">qlynk.site/{username}</span>
+                  </div>
                 </div>
-                <div className="space-y-4">
+
+                <div className="space-y-4 max-w-sm mx-auto">
                   <button
                     onClick={completeOnboarding}
                     disabled={saving}
-                    className="w-full max-w-md mx-auto flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-3 bg-orange text-white px-8 py-5 rounded-2xl font-black text-lg shadow-2xl shadow-orange/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
                   >
                     {saving ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Launching...
-                      </>
+                      <Loader2 className="w-6 h-6 animate-spin" />
                     ) : (
                       <>
                         Go to Dashboard
-                        <ArrowRight className="w-5 h-5" />
+                        <ArrowRight className="w-6 h-6" />
                       </>
                     )}
                   </button>

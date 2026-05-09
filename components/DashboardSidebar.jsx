@@ -35,17 +35,15 @@ export default function DashboardSidebar({ onSignOut, isOpen, onClose }) {
       `}>
         {/* Logo */}
         <div className="p-6 border-b border-gray-800/50 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group" onClick={onClose}>
-            <div className="w-8 h-8 flex-shrink-0">
-              <Image 
-                src="/assets/iconWhite.svg" 
-                alt="qlynk icon" 
-                width={32} 
-                height={32} 
-                priority
-              />
-            </div>
-            <span className="text-xl font-black text-white leading-none">qlynk</span>
+          <Link href="/" className="group py-2" onClick={onClose}>
+            <Image 
+              src="/logoWhite.svg" 
+              alt="qlynk logo" 
+              width={120} 
+              height={35} 
+              priority
+              className="group-hover:scale-105 transition-transform h-auto"
+            />
           </Link>
           
           <button 

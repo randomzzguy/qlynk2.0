@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { getCurrentProfile, getCurrentUser } from '@/lib/supabase';
 import { createClient } from '@/utils/supabase/client';
 import { 
@@ -27,6 +28,7 @@ import {
 import UpgradePrompt from '@/components/UpgradePrompt';
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [profile, setProfile] = useState(null);
   const [agentConfig, setAgentConfig] = useState(null);
   const [stats, setStats] = useState({
@@ -208,13 +210,13 @@ export default function DashboardPage() {
             <ExternalLink size={18} />
             <span className="whitespace-nowrap">View Live Page</span>
           </Link>
-          <button 
-            onClick={handlePortal}
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-800/60 border border-gray-700 rounded-xl text-gray-300 hover:text-white hover:border-purple-500/50 hover:bg-gray-800 transition-all text-sm font-medium"
+          <Link 
+            href="/dashboard/billing"
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-800/60 border border-gray-700 rounded-xl text-gray-300 hover:text-white hover:border-[#f46530]/50 hover:bg-gray-800 transition-all text-sm font-medium"
           >
             <CreditCard size={18} />
             <span className="whitespace-nowrap">Manage Billing</span>
-          </button>
+          </Link>
           <Link 
             href="/dashboard/agent"
             className="w-full md:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-[#f46530] text-white rounded-xl font-semibold hover:bg-[#f46530]/90 shadow-lg shadow-[#f46530]/20 transition-all text-sm"

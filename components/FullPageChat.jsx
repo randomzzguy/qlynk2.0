@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Send, 
@@ -31,7 +32,7 @@ export default function FullPageChat({
     {
       id: 'welcome',
       role: 'assistant',
-      content: agentConfig.welcome_message || `Hi! I'm ${agentConfig.agent_name || 'Q-Agent'}. How can I help you today?`
+      content: agentConfig.welcome_message || `Hi! I'm ${agentConfig.agent_name || 'q-agent'}. How can I help you today?`
     }
   ]);
   const [input, setInput] = useState('');
@@ -240,6 +241,12 @@ export default function FullPageChat({
           ))}
         </div>
       )}
+
+      {/* Powered by Branding */}
+      <div className="mt-12 flex items-center gap-2 opacity-30 hover:opacity-100 transition-opacity duration-500">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Powered by</span>
+        <Image src="/logoWhite.svg" alt="qlynk logo" width={60} height={18} className="h-auto" />
+      </div>
     </motion.div>
   );
 

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { ArrowRight, Bot, Sparkles, Brain, MessageSquare, Zap, Shield, BarChart3, ChevronUp, Users, Heart, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import QlynkBackground from '@/components/QlynkBackground';
+import Footer from '@/components/Footer';
 import { getCurrentUser, signOut } from '@/lib/supabase';
 
 // ====== Animated Components ======
@@ -769,25 +770,7 @@ export default function App() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 bg-gray-900 text-gray-400 relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center">
-              <Link href="/" className="flex items-center justify-center mb-8 group">
-                <Image
-                  src="/logoWhite.svg"
-                  alt="qlynk logo"
-                  width={125}
-                  height={50}
-                  priority
-                  className="group-hover:scale-105 transition-transform"
-                />
-              </Link>
-            </div>
-            <p className="mt-4 md:mt-0">&copy; {new Date().getFullYear()} qlynk. Your AI clone, in a blink.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
       <ScrollToTop />
     </div>

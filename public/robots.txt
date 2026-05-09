@@ -1,0 +1,16 @@
+# robots.txt for qlynk.site
+# Place this at the root of your domain so it's served at https://www.qlynk.site/robots.txt
+
+User-agent: *
+Allow: /
+Disallow: /auth/
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /admin/
+
+# Sitemap location
+Sitemap: https://www.qlynk.site/sitemap.xml
+
+# Crawl-delay (optional, helps with server load)
+User-agent: *
+Crawl-delay: 1

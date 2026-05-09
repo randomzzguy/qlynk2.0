@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, BarChart3, MessageSquare, Settings, LogOut, Bot, FileText, Sparkles, X } from 'lucide-react';
+import { LayoutDashboard, BarChart3, MessageSquare, Settings, LogOut, Bot, FileText, Sparkles, X, Home } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Overview' },
@@ -12,6 +12,7 @@ const navItems = [
   { href: '/dashboard/analytics', icon: BarChart3, label: 'Analytics' },
   { href: '/dashboard/agent/documents', icon: FileText, label: 'Knowledge Base' },
   { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
+  { href: '/', icon: Home, label: 'Visit Homepage' },
 ];
 
 export default function DashboardSidebar({ onSignOut, isOpen, onClose }) {

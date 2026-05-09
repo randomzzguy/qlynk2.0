@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { ArrowRight, Bot, Sparkles, Brain, MessageSquare, Zap, Shield, BarChart3, ChevronUp, Users, Heart, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import QlynkBackground from '@/components/QlynkBackground';
+import { getCurrentUser, signOut } from '@/lib/supabase';
 
 // ====== Animated Components ======
 
@@ -462,10 +463,22 @@ const ScrollToTop = () => {
 // ====== Main App ======
 export default function App() {
   const [text, setText] = useState('');
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [loopNum, setLoopNum] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
   const containerRef = useRef(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+    };
+    fetchUser();
+  }, []);
+
+  const handleLogout = async () => {
+    await signOut();
+    setUser(null);
+  };
 
   // Typing effect
   useEffect(() => {
@@ -550,16 +563,37 @@ export default function App() {
             </div>
 
             <div className="hidden md:flex items-center space-x-6">
-              <Link href="/pricing" className="text-gray-300 hover:text-[#f46530] font-medium transition-colors">Pricing</Link>
-              <Link href="/auth/login" className="text-gray-300 hover:text-[#f46530] font-medium transition-colors">Log in</Link>
-              <motion.a
-                href="/auth/signup"
-                className="bg-[#f46530] hover:bg-[#c14f22] text-white px-6 py-2.5 rounded-lg font-bold shadow-sm hover:shadow-md transition-all"
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                Get Started
-              </motion.a>
+              <Link href="/pricing" className="text-gray-300 hover:text-orange font-medium transition-colors">Pricing</Link>
+              {user ? (
+                <>
+                  <button 
+                    onClick={handleLogout}
+                    className="text-gray-300 hover:text-red-400 font-medium transition-colors"
+                  >
+                    Logout
+                  </button>
+                  <motion.a
+                    href="/dashboard"
+                    className="bg-orange hover:bg-orange/80 text-white px-6 py-2.5 rounded-xl font-black shadow-lg shadow-orange/20 transition-all"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Dashboard
+                  </motion.a>
+                </>
+              ) : (
+                <>
+                  <Link href="/auth/login" className="text-gray-300 hover:text-orange font-medium transition-colors">Log in</Link>
+                  <motion.a
+                    href="/auth/signup"
+                    className="bg-orange hover:bg-orange/80 text-white px-6 py-2.5 rounded-xl font-black shadow-lg shadow-orange/20 transition-all"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Get Started
+                  </motion.a>
+                </>
+              )}
             </div>
 
             <button
@@ -582,15 +616,31 @@ export default function App() {
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="px-4 py-3 space-y-2">
-                <Link href="/pricing" className="block px-3 py-2 text-gray-300">Pricing</Link>
-                <Link href="/auth/login" className="block px-3 py-2 text-gray-300">Log in</Link>
-                <Link
-                  href="/auth/signup"
-                  className="block bg-[#f46530] text-white text-center px-4 py-2.5 rounded-lg font-medium mt-1"
-                >
-                  Get Started
-                </Link>
+              <div className="px-4 py-4 space-y-3">
+                <Link href="/pricing" className="block px-3 py-2 text-gray-300 font-medium">Pricing</Link>
+                {user ? (
+                  <>
+                    <Link href="/dashboard" className="block bg-orange text-white text-center px-4 py-3 rounded-xl font-black">
+                      Dashboard
+                    </Link>
+                    <button 
+                      onClick={handleLogout}
+                      className="w-full text-center px-3 py-2 text-red-400 font-medium"
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/auth/login" className="block px-3 py-2 text-gray-300 font-medium">Log in</Link>
+                    <Link
+                      href="/auth/signup"
+                      className="block bg-orange text-white text-center px-4 py-3 rounded-xl font-black"
+                    >
+                      Get Started
+                    </Link>
+                  </>
+                )}
               </div>
             </motion.div>
           )}

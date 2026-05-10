@@ -7,7 +7,7 @@ import { ArrowRight, Bot, Sparkles, Brain, MessageSquare, Zap, Shield, BarChart3
 import { motion, AnimatePresence } from 'framer-motion';
 import QlynkBackground from '@/components/QlynkBackground';
 import Footer from '@/components/Footer';
-import { getCurrentUser, signOut } from '@/lib/supabase';
+import { getCurrentUser, getCurrentProfile, signOut } from '@/lib/supabase';
 
 // ====== Animated Components ======
 
@@ -468,12 +468,17 @@ export default function App() {
   const [loopNum, setLoopNum] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
   const containerRef = useRef(null);
 
   useEffect(() => {
     const fetchUser = async () => {
       const currentUser = await getCurrentUser();
       setUser(currentUser);
+      if (currentUser) {
+        const userProfile = await getCurrentProfile();
+        setProfile(userProfile);
+      }
     };
     fetchUser();
   }, []);
@@ -481,6 +486,7 @@ export default function App() {
   const handleLogout = async () => {
     await signOut();
     setUser(null);
+    setProfile(null);
   };
 
   // Typing effect
@@ -569,6 +575,7 @@ export default function App() {
               <Link href="/pricing" className="text-gray-300 hover:text-orange font-medium transition-colors">Pricing</Link>
               {user ? (
                 <>
+                  <span className="text-gray-400 text-sm font-medium mr-2">Welcome back, <span className="text-white">{profile?.username || 'there'}</span></span>
                   <button 
                     onClick={handleLogout}
                     className="text-gray-300 hover:text-red-400 font-medium transition-colors"
@@ -623,6 +630,7 @@ export default function App() {
                 <Link href="/pricing" className="block px-3 py-2 text-gray-300 font-medium">Pricing</Link>
                 {user ? (
                   <>
+                    <div className="px-3 py-2 text-gray-400 text-sm">Welcome back, <span className="text-white font-medium">{profile?.username || 'there'}</span></div>
                     <Link href="/dashboard" className="block bg-orange text-white text-center px-4 py-3 rounded-xl font-black">
                       Dashboard
                     </Link>

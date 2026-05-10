@@ -19,6 +19,7 @@ import {
   Globe
 } from 'lucide-react';
 import QlynkBackground from '@/components/QlynkBackground';
+import ReactMarkdown from 'react-markdown';
 import { createClient } from '@/utils/supabase/client';
 
 export default function FullPageChat({ 
@@ -318,9 +319,29 @@ export default function FullPageChat({
                         <div className={`inline-block px-5 py-3 rounded-2xl text-sm md:text-base leading-relaxed ${
                           m.role === 'user'
                             ? 'bg-gradient-to-br from-white/10 to-white/5 border border-white/10 text-gray-200'
-                            : 'bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/20 text-gray-100 shadow-[0_0_20px_rgba(59,130,246,0.1)]'
+                            : 'bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/20 text-gray-100 shadow-[0_0_20px_rgba(59,130,246,0.1)] w-full'
                         }`}>
-                          {m.content || (m.role === 'assistant' && isLoading ? '...' : '')}
+                          {m.role === 'user' ? (
+                            m.content
+                          ) : (
+                            <div className="markdown-content">
+                              <ReactMarkdown
+                                components={{
+                                  h1: ({node, ...props}) => <h1 className="text-xl font-bold mt-4 mb-2 first:mt-0 text-white" {...props} />,
+                                  h2: ({node, ...props}) => <h2 className="text-lg font-bold mt-4 mb-2 first:mt-0 text-blue-200" {...props} />,
+                                  h3: ({node, ...props}) => <h3 className="text-md font-bold mt-3 mb-2 first:mt-0 text-blue-300" {...props} />,
+                                  p: ({node, ...props}) => <p className="leading-relaxed mb-3 last:mb-0" {...props} />,
+                                  ul: ({node, ...props}) => <ul className="list-disc list-inside space-y-1 mb-3 last:mb-0" {...props} />,
+                                  ol: ({node, ...props}) => <ol className="list-decimal list-inside space-y-1 mb-3 last:mb-0" {...props} />,
+                                  li: ({node, ...props}) => <li className="pl-1" {...props} />,
+                                  strong: ({node, ...props}) => <strong className="font-bold text-white" {...props} />,
+                                  em: ({node, ...props}) => <em className="italic text-gray-300" {...props} />,
+                                }}
+                              >
+                                {m.content || (isLoading && m.id === messages[messages.length-1].id ? '...' : '')}
+                              </ReactMarkdown>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

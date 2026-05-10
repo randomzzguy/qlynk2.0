@@ -6,7 +6,7 @@ export const maxDuration = 30;
 
 export async function POST(req) {
   try {
-    const { messages, username, visitorId, conversationId } = await req.json();
+    const { messages, username, visitorId, conversationId, visitorName, visitorEmail } = await req.json();
 
     if (!username) {
       return new Response(JSON.stringify({ error: 'Username is required' }), { status: 400 });
@@ -50,6 +50,8 @@ export async function POST(req) {
         .insert({
           agent_owner_id: profile.id,
           visitor_id: visitorId,
+          visitor_name: visitorName || null,
+          visitor_email: visitorEmail || null,
         })
         .select('id')
         .single();

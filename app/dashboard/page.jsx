@@ -112,9 +112,9 @@ export default function DashboardPage() {
         // Load conversation stats
         const { data: conversations } = await supabase
           .from('agent_conversations')
-          .select('id, message_count, started_at')
+          .select('id, message_count, created_at, visitor_name')
           .eq('agent_owner_id', user.id)
-          .order('started_at', { ascending: false });
+          .order('created_at', { ascending: false });
 
         if (conversations) {
           const totalConvos = conversations.length;
@@ -122,7 +122,7 @@ export default function DashboardPage() {
           
           const weekAgo = new Date();
           weekAgo.setDate(weekAgo.getDate() - 7);
-          const recentConvos = conversations.filter(c => new Date(c.started_at) > weekAgo);
+          const recentConvos = conversations.filter(c => new Date(c.created_at) > weekAgo);
           const msgsThisWeek = recentConvos.reduce((sum, c) => sum + (c.message_count || 0), 0);
 
           setStats({
@@ -395,7 +395,12 @@ export default function DashboardPage() {
                       <Users size={18} className="text-gray-400 group-hover:text-[#f46530]" />
                     </div>
                     <div>
-                      <p className="text-white font-medium">Visitor</p>
+                      <p className="text-white font-medium">
+                        {convo.visitor_name
+                          ? `${convo.visitor_name} — ${new Date(convo.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${new Date(convo.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`
+                          : 'Visitor'
+                        }
+                      </p>
                       <p className="text-sm text-gray-400">
                         {convo.message_count || 0} messages
                       </p>
@@ -403,7 +408,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <Clock size={14} />
-                    {new Date(convo.started_at).toLocaleDateString()}
+                    {new Date(convo.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </div>
                 </div>
               ))}

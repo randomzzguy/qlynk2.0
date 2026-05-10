@@ -29,6 +29,12 @@ export default function FullPageChat({
 }) {
   const supabase = createClient();
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [showGatekeeper, setShowGatekeeper] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [gatekeeperForm, setGatekeeperForm] = useState({ name: '', email: '', password: '' });
+  const [gatekeeperError, setGatekeeperError] = useState('');
+  const [gatekeeperStep, setGatekeeperStep] = useState('form');
+
   const [messages, setMessages] = useState([
     {
       id: 'welcome',
@@ -50,7 +56,62 @@ export default function FullPageChat({
       localStorage.setItem('qlynk_visitor_id', vid);
     }
     setVisitorId(vid);
-  }, []);
+
+    // Check auth status
+    if (agentConfig?.id) {
+      const auth = localStorage.getItem(`qlynk_authorized_${agentConfig.id}`);
+      const savedName = localStorage.getItem(`qlynk_visitor_name_${agentConfig.id}`);
+      if (auth === 'true' && savedName) {
+        setIsAuthorized(true);
+        setGatekeeperForm(prev => ({ ...prev, name: savedName }));
+      }
+    }
+  }, [agentConfig?.id]);
+
+  const authorizeVisitor = () => {
+    if (agentConfig?.id) {
+      localStorage.setItem(`qlynk_visitor_name_${agentConfig.id}`, gatekeeperForm.name);
+      if (agentConfig.access_level === 'email') {
+        localStorage.setItem(`qlynk_visitor_email_${agentConfig.id}`, gatekeeperForm.email);
+      }
+      localStorage.setItem(`qlynk_authorized_${agentConfig.id}`, 'true');
+    }
+    setIsAuthorized(true);
+    setShowGatekeeper(false);
+    setIsChatOpen(true);
+  };
+
+  const handleGatekeeperSubmit = (e) => {
+    e.preventDefault();
+    setGatekeeperError('');
+
+    if (!gatekeeperForm.name.trim()) {
+      setGatekeeperError('Please enter your name.');
+      return;
+    }
+
+    const accessLevel = agentConfig?.access_level || 'public';
+
+    if (accessLevel === 'password') {
+      if (gatekeeperForm.password !== agentConfig?.access_password) {
+        setGatekeeperError('Incorrect password.');
+        return;
+      }
+    }
+
+    if (accessLevel === 'email') {
+      if (!gatekeeperForm.email.trim() || !gatekeeperForm.email.includes('@')) {
+        setGatekeeperError('Please enter a valid email.');
+        return;
+      }
+      // For now, simulate email verification by just authorizing them
+      // In a full implementation, we would send a magic link here
+      authorizeVisitor();
+      return;
+    }
+
+    authorizeVisitor();
+  };
 
   useEffect(() => {
     if (scrollRef.current && isChatOpen) {
@@ -81,7 +142,9 @@ export default function FullPageChat({
           messages: updatedMessages,
           username: username,
           visitorId: visitorId,
-          conversationId: conversationId
+          conversationId: conversationId,
+          visitorName: gatekeeperForm.name,
+          visitorEmail: gatekeeperForm.email
         })
       });
 
@@ -154,6 +217,89 @@ export default function FullPageChat({
     }
   };
 
+  const GatekeeperMode = () => (
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 1.05 }}
+      className="relative z-10 w-full max-w-2xl mx-auto px-6 py-20 flex flex-col items-center"
+    >
+      <div className="w-full bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#f46530]/10 rounded-full blur-[80px] -mr-32 -mt-32" />
+        
+        <div className="relative z-10 flex flex-col items-center text-center">
+          <div className="w-20 h-20 bg-gray-800/50 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-gray-700/50 shadow-xl">
+            <User className="text-[#f46530] w-10 h-10" />
+          </div>
+          
+          <h2 className="text-3xl font-black text-white tracking-tight mb-2">Welcome</h2>
+          <p className="text-gray-400 mb-8 max-w-md">
+            Please introduce yourself before chatting with {agentConfig.agent_name}.
+          </p>
+
+          <form onSubmit={handleGatekeeperSubmit} className="w-full space-y-4 max-w-sm mx-auto text-left">
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">Your Name</label>
+              <input
+                type="text"
+                value={gatekeeperForm.name}
+                onChange={(e) => setGatekeeperForm(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="What should I call you?"
+                className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all"
+              />
+            </div>
+
+            {agentConfig.access_level === 'email' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2">Your Email</label>
+                <input
+                  type="email"
+                  value={gatekeeperForm.email}
+                  onChange={(e) => setGatekeeperForm(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="hello@example.com"
+                  className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all"
+                />
+              </div>
+            )}
+
+            {agentConfig.access_level === 'password' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2">Access Password</label>
+                <input
+                  type="password"
+                  value={gatekeeperForm.password}
+                  onChange={(e) => setGatekeeperForm(prev => ({ ...prev, password: e.target.value }))}
+                  placeholder="Enter the secret password"
+                  className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all"
+                />
+              </div>
+            )}
+
+            {gatekeeperError && (
+              <div className="text-red-400 text-sm bg-red-400/10 p-3 rounded-lg border border-red-400/20 text-center">
+                {gatekeeperError}
+              </div>
+            )}
+
+            <button 
+              type="submit"
+              className="w-full bg-[#f46530] text-white py-4 rounded-xl font-bold mt-4 hover:bg-[#f46530]/90 transition-all shadow-lg flex justify-center items-center gap-2"
+            >
+              Continue to Chat <ChevronRight size={18} />
+            </button>
+            <button 
+              type="button"
+              onClick={() => setShowGatekeeper(false)}
+              className="w-full py-3 text-gray-400 hover:text-white transition-colors text-sm font-medium mt-2"
+            >
+              Cancel
+            </button>
+          </form>
+        </div>
+      </div>
+    </motion.div>
+  );
+
   const LandingMode = () => (
     <motion.div 
       initial={{ opacity: 0, scale: 0.95 }}
@@ -209,7 +355,13 @@ export default function FullPageChat({
 
           {/* Primary CTA */}
           <button 
-            onClick={() => setIsChatOpen(true)}
+            onClick={() => {
+              if (isAuthorized) {
+                setIsChatOpen(true);
+              } else {
+                setShowGatekeeper(true);
+              }
+            }}
             className="w-full bg-[#f46530] text-white py-5 rounded-[1.5rem] font-black text-xl flex items-center justify-center gap-3 shadow-2xl shadow-[#f46530]/20 hover:scale-[1.02] active:scale-95 transition-all group/btn overflow-hidden relative"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
@@ -259,8 +411,10 @@ export default function FullPageChat({
       </div>
 
       <AnimatePresence mode="wait">
-        {!isChatOpen ? (
+        {!isChatOpen && !showGatekeeper ? (
           <LandingMode key="landing" />
+        ) : showGatekeeper ? (
+          <GatekeeperMode key="gatekeeper" />
         ) : (
           <motion.main 
             key="chat"

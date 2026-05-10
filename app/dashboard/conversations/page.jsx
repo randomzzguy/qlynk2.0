@@ -34,7 +34,7 @@ export default function ConversationsPage() {
           .from('agent_conversations')
           .select('*')
           .eq('agent_owner_id', user.id)
-          .order('started_at', { ascending: false });
+          .order('created_at', { ascending: false });
 
         setConversations(data || []);
       } catch (error) {
@@ -87,7 +87,7 @@ export default function ConversationsPage() {
       filterDate.setMonth(now.getMonth() - 1);
     }
 
-    return conversations.filter(c => new Date(c.started_at) >= filterDate);
+    return conversations.filter(c => new Date(c.created_at) >= filterDate);
   };
 
   const filteredConversations = getFilteredConversations();
@@ -159,8 +159,14 @@ export default function ConversationsPage() {
                   </div>
                   <div className="text-left flex-1 min-w-0">
                     <p className="text-white font-semibold truncate">
-                      Visitor {convo.visitor_id ? `#${convo.visitor_id.slice(0, 8)}` : ''}
+                      {convo.visitor_name
+                        ? `${convo.visitor_name} — ${new Date(convo.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}, ${new Date(convo.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`
+                        : `Visitor ${convo.visitor_id ? `#${convo.visitor_id.slice(0, 8)}` : ''}`
+                      }
                     </p>
+                    {convo.visitor_email && (
+                      <p className="text-xs text-gray-500 truncate">{convo.visitor_email}</p>
+                    )}
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm text-gray-400">
                       <span className="flex items-center gap-1">
                         <MessageSquare size={14} />
@@ -168,7 +174,7 @@ export default function ConversationsPage() {
                       </span>
                       <span className="flex items-center gap-1">
                         <Calendar size={14} />
-                        {new Date(convo.started_at).toLocaleDateString()}
+                        {new Date(convo.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </span>
                       {convo.visitor_location && (
                         <span className="truncate max-w-[100px]">{convo.visitor_location}</span>

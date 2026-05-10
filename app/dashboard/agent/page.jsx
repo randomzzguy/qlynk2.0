@@ -58,7 +58,9 @@ export default function AgentConfigPage() {
     primary_color: '#f46530',
     position: 'bottom-right',
     is_enabled: true,
-    tone: 'professional'
+    tone: 'professional',
+    access_level: 'public',
+    access_password: ''
   });
 
   // Form input states for arrays
@@ -323,6 +325,87 @@ export default function AgentConfigPage() {
                     config.is_enabled ? 'translate-x-8' : 'translate-x-1'
                   }`} />
                 </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Access Control */}
+          <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8 hover:border-[#f46530]/20 transition-all">
+            <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+              <div className="w-8 h-8 bg-purple-500/10 rounded flex items-center justify-center">
+                <AlertCircle size={18} className="text-purple-400" />
+              </div>
+              Security & Access Control
+            </h2>
+            <p className="text-sm text-gray-400 mb-6">
+              Control who can chat with your agent. Note: Visitors will always be asked for their name before chatting so you can easily identify them in your chat logs.
+            </p>
+            
+            <div className="space-y-4">
+              <label className="flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all bg-gray-900/50 hover:bg-gray-900/80 border-gray-700/50 hover:border-purple-500/30">
+                <div className="flex items-center h-5">
+                  <input
+                    type="radio"
+                    name="access_level"
+                    value="public"
+                    checked={config.access_level === 'public' || !config.access_level}
+                    onChange={(e) => updateConfig('access_level', e.target.value)}
+                    className="w-4 h-4 text-purple-600 bg-gray-800 border-gray-600 focus:ring-purple-600"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-white font-medium">Public Access (Open Door)</span>
+                  <span className="text-sm text-gray-400">Anyone with the link can chat with your agent.</span>
+                </div>
+              </label>
+
+              <label className="flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all bg-gray-900/50 hover:bg-gray-900/80 border-gray-700/50 hover:border-purple-500/30">
+                <div className="flex items-center h-5">
+                  <input
+                    type="radio"
+                    name="access_level"
+                    value="email"
+                    checked={config.access_level === 'email'}
+                    onChange={(e) => updateConfig('access_level', e.target.value)}
+                    className="w-4 h-4 text-purple-600 bg-gray-800 border-gray-600 focus:ring-purple-600"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-white font-medium">Email Verification</span>
+                  <span className="text-sm text-gray-400">Visitors must verify their email address before they can chat.</span>
+                </div>
+              </label>
+
+              <div className="flex flex-col gap-3">
+                <label className="flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all bg-gray-900/50 hover:bg-gray-900/80 border-gray-700/50 hover:border-purple-500/30">
+                  <div className="flex items-center h-5">
+                    <input
+                      type="radio"
+                      name="access_level"
+                      value="password"
+                      checked={config.access_level === 'password'}
+                      onChange={(e) => updateConfig('access_level', e.target.value)}
+                      className="w-4 h-4 text-purple-600 bg-gray-800 border-gray-600 focus:ring-purple-600"
+                    />
+                  </div>
+                  <div className="flex flex-col w-full">
+                    <span className="text-white font-medium">Password Protected</span>
+                    <span className="text-sm text-gray-400">Set a custom password that visitors must enter to unlock the chat.</span>
+                  </div>
+                </label>
+                
+                {config.access_level === 'password' && (
+                  <div className="ml-12 mr-4">
+                    <label className="block text-sm font-medium text-gray-400 mb-2">Access Password</label>
+                    <input
+                      type="text"
+                      value={config.access_password || ''}
+                      onChange={(e) => updateConfig('access_password', e.target.value)}
+                      placeholder="Enter a secret password..."
+                      className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:bg-gray-900 transition-all"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>

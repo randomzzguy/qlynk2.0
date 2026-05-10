@@ -6,7 +6,7 @@ import { cookies } from 'next/headers';
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { email, password, username, hcaptchaToken } = body;
+    const { email, password, username, hcaptchaToken, profession = 'Creative Professional' } = body;
 
     // Verify hCaptcha token
     const secret = process.env.HCAPTCHA_SECRET;

@@ -26,9 +26,56 @@ import {
   Sparkles,
   ExternalLink,
   Copy,
-  Code
+  Code,
+  Palette,
+  Type,
+  MessageSquare
 } from 'lucide-react';
 import UpgradePrompt from '@/components/UpgradePrompt';
+
+const GOOGLE_FONTS = [
+  'Inter',
+  'Roboto',
+  'Outfit',
+  'Poppins',
+  'Sora',
+  'DM Sans',
+  'Space Grotesk',
+  'Plus Jakarta Sans',
+  'Nunito',
+  'Raleway',
+  'Lato',
+  'Montserrat',
+  'Open Sans',
+  'Source Code Pro',
+  'Fira Code',
+];
+
+function ColorField({ label, value, onChange, hint }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-400 mb-2">{label}</label>
+      {hint && <p className="text-xs text-gray-500 mb-2">{hint}</p>}
+      <div className="flex gap-3 items-center">
+        <div className="relative">
+          <input
+            type="color"
+            value={value || '#000000'}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-11 h-11 rounded-xl border border-gray-700/50 bg-gray-900/50 cursor-pointer overflow-hidden p-0.5"
+          />
+        </div>
+        <input
+          type="text"
+          value={value || ''}
+          onChange={(e) => onChange(e.target.value)}
+          className="flex-1 px-4 py-2.5 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all font-mono text-sm"
+          placeholder="#rrggbb or rgba(...)"
+        />
+      </div>
+    </div>
+  );
+}
 
 export default function AgentConfigPage() {
   const router = useRouter();
@@ -60,7 +107,16 @@ export default function AgentConfigPage() {
     is_enabled: true,
     tone: 'professional',
     access_level: 'public',
-    access_password: ''
+    access_password: '',
+    // Visual customization
+    chat_bg_color: '#0a0a0f',
+    user_bubble_color: '#ffffff1a',
+    ai_bubble_color: '#3b82f620',
+    cta_button_color: '#f46530',
+    cta_text_color: '#ffffff',
+    pre_chat_text_color: '#9ca3af',
+    gatekeeper_text_color: '#9ca3af',
+    font_family: 'Inter',
   });
 
   // Form input states for arrays
@@ -500,6 +556,136 @@ export default function AgentConfigPage() {
                   rows={2}
                   className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all resize-none"
                 />
+              </div>
+            </div>
+          </div>
+
+          {/* Visual Style Customization */}
+          <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8 hover:border-pink-500/20 transition-all">
+            <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+              <div className="w-8 h-8 bg-pink-500/10 rounded flex items-center justify-center">
+                <Palette size={18} className="text-pink-400" />
+              </div>
+              Visual Style
+            </h2>
+            <p className="text-sm text-gray-400 mb-6">Customize every color and font on your public chat page.</p>
+
+            <div className="grid lg:grid-cols-2 gap-8">
+              {/* Controls column */}
+              <div className="space-y-6">
+                {/* Font */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
+                    <Type size={14} className="text-pink-400" />
+                    Font Family
+                  </label>
+                  <select
+                    value={config.font_family || 'Inter'}
+                    onChange={(e) => updateConfig('font_family', e.target.value)}
+                    className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white focus:outline-none focus:border-pink-500/50 focus:bg-gray-900 transition-all appearance-none cursor-pointer"
+                    style={{ fontFamily: config.font_family || 'Inter' }}
+                  >
+                    {GOOGLE_FONTS.map(f => (
+                      <option key={f} value={f} style={{ fontFamily: f }}>{f}</option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">Applied across the entire chat page</p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <ColorField
+                    label="Page Background"
+                    value={config.chat_bg_color}
+                    onChange={(v) => updateConfig('chat_bg_color', v)}
+                    hint="Background of the whole page"
+                  />
+                  <ColorField
+                    label="CTA Button Color"
+                    value={config.cta_button_color}
+                    onChange={(v) => updateConfig('cta_button_color', v)}
+                    hint="'Chat with AI Clone' button"
+                  />
+                  <ColorField
+                    label="CTA Button Text"
+                    value={config.cta_text_color}
+                    onChange={(v) => updateConfig('cta_text_color', v)}
+                    hint="Text on the CTA button"
+                  />
+                  <ColorField
+                    label="Bio / Pre-Chat Text"
+                    value={config.pre_chat_text_color}
+                    onChange={(v) => updateConfig('pre_chat_text_color', v)}
+                    hint="Bio text & tagline color"
+                  />
+                  <ColorField
+                    label="Welcome Page Text"
+                    value={config.gatekeeper_text_color}
+                    onChange={(v) => updateConfig('gatekeeper_text_color', v)}
+                    hint="'Please introduce yourself' page"
+                  />
+                  <ColorField
+                    label="User Bubble Color"
+                    value={config.user_bubble_color}
+                    onChange={(v) => updateConfig('user_bubble_color', v)}
+                    hint="Your visitor's chat bubbles"
+                  />
+                  <ColorField
+                    label="AI Bubble Color"
+                    value={config.ai_bubble_color}
+                    onChange={(v) => updateConfig('ai_bubble_color', v)}
+                    hint="Your AI agent's chat bubbles"
+                  />
+                </div>
+              </div>
+
+              {/* Live Preview column */}
+              <div className="sticky top-6">
+                <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">Live Preview</p>
+                <div
+                  className="rounded-2xl overflow-hidden border border-white/10 shadow-2xl"
+                  style={{ background: config.chat_bg_color || '#0a0a0f', fontFamily: `'${config.font_family || 'Inter'}', sans-serif` }}
+                >
+                  {/* Mini landing preview */}
+                  <div className="p-6 border-b border-white/10">
+                    <p className="text-white font-black text-lg mb-1">{config.agent_name || 'q-agent'}</p>
+                    <p className="text-xs mb-4" style={{ color: config.pre_chat_text_color || '#9ca3af' }}>
+                      {config.bio || 'Ask me anything about my work or background.'}
+                    </p>
+                    <button
+                      className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 pointer-events-none"
+                      style={{ background: config.cta_button_color || '#f46530', color: config.cta_text_color || '#ffffff' }}
+                    >
+                      <MessageSquare size={16} />
+                      Chat with AI Clone
+                    </button>
+                  </div>
+                  {/* Mini chat preview */}
+                  <div className="p-4 space-y-3">
+                    <div className="flex justify-start">
+                      <div className="px-4 py-2 rounded-2xl text-sm text-white max-w-[80%]" style={{ background: config.ai_bubble_color || '#3b82f620', border: '1px solid rgba(59,130,246,0.3)' }}>
+                        {config.welcome_message || "Hi! How can I help you?"}
+                      </div>
+                    </div>
+                    <div className="flex justify-end">
+                      <div className="px-4 py-2 rounded-2xl text-sm text-white max-w-[80%]" style={{ background: config.user_bubble_color || '#ffffff1a', border: '1px solid rgba(255,255,255,0.2)' }}>
+                        Tell me about your projects
+                      </div>
+                    </div>
+                    <div className="flex justify-start">
+                      <div className="px-4 py-2 rounded-2xl text-sm text-white max-w-[80%]" style={{ background: config.ai_bubble_color || '#3b82f620', border: '1px solid rgba(59,130,246,0.3)' }}>
+                        Sure! Here are some highlights...
+                      </div>
+                    </div>
+                  </div>
+                  {/* Mini gatekeeper preview */}
+                  <div className="p-4 border-t border-white/10">
+                    <p className="text-xs font-bold text-white mb-1">Welcome Page</p>
+                    <p className="text-xs" style={{ color: config.gatekeeper_text_color || '#9ca3af' }}>
+                      Please introduce yourself before chatting with {config.agent_name || 'q-agent'}.
+                    </p>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-600 mt-2 text-center">Preview updates live as you change settings</p>
               </div>
             </div>
           </div>

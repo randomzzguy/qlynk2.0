@@ -47,6 +47,31 @@ export default function FullPageChat({
   const [conversationId, setConversationId] = useState(null);
   const scrollRef = useRef(null);
 
+  // ─── Visual customization helpers ──────────────────────────────────────────
+  const fontFamily = agentConfig.font_family || 'Inter';
+  const chatBg = agentConfig.chat_bg_color || '#0a0a0f';
+  const userBubbleBg = agentConfig.user_bubble_color || 'rgba(255,255,255,0.1)';
+  const aiBubbleBg = agentConfig.ai_bubble_color || 'rgba(59,130,246,0.12)';
+  const ctaBtnColor = agentConfig.cta_button_color || '#f46530';
+  const ctaTextColor = agentConfig.cta_text_color || '#ffffff';
+  const preChatTextColor = agentConfig.pre_chat_text_color || '#9ca3af';
+  const gatekeeperTextColor = agentConfig.gatekeeper_text_color || '#9ca3af';
+
+  // Load Google Font dynamically
+  useEffect(() => {
+    if (!fontFamily || fontFamily === 'Inter') return;
+    const fontSlug = fontFamily.replace(/ /g, '+');
+    const linkId = `gfont-${fontSlug}`;
+    if (!document.getElementById(linkId)) {
+      const link = document.createElement('link');
+      link.id = linkId;
+      link.rel = 'stylesheet';
+      link.href = `https://fonts.googleapis.com/css2?family=${fontSlug}:wght@400;500;600;700;800;900&display=swap`;
+      document.head.appendChild(link);
+    }
+  }, [fontFamily]);
+  // ───────────────────────────────────────────────────────────────────────────
+
   // Visitor ID Tracking
   const [visitorId, setVisitorId] = useState(null);
   useEffect(() => {
@@ -225,15 +250,15 @@ export default function FullPageChat({
       className="relative z-10 w-full max-w-2xl mx-auto px-6 py-20 flex flex-col items-center"
     >
       <div className="w-full bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[#f46530]/10 rounded-full blur-[80px] -mr-32 -mt-32" />
+        <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-[80px] -mr-32 -mt-32" style={{ background: `${ctaBtnColor}1a` }} />
         
         <div className="relative z-10 flex flex-col items-center text-center">
           <div className="w-20 h-20 bg-gray-800/50 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-gray-700/50 shadow-xl">
-            <User className="text-[#f46530] w-10 h-10" />
+            <User className="w-10 h-10" style={{ color: ctaBtnColor }} />
           </div>
           
           <h2 className="text-3xl font-black text-white tracking-tight mb-2">Welcome</h2>
-          <p className="text-gray-400 mb-8 max-w-md">
+          <p className="mb-8 max-w-md" style={{ color: gatekeeperTextColor }}>
             Please introduce yourself before chatting with {agentConfig.agent_name}.
           </p>
 
@@ -283,7 +308,8 @@ export default function FullPageChat({
 
             <button 
               type="submit"
-              className="w-full bg-[#f46530] text-white py-4 rounded-xl font-bold mt-4 hover:bg-[#f46530]/90 transition-all shadow-lg flex justify-center items-center gap-2"
+              className="w-full py-4 rounded-xl font-bold mt-4 transition-all shadow-lg flex justify-center items-center gap-2"
+              style={{ background: ctaBtnColor, color: ctaTextColor }}
             >
               Continue to Chat <ChevronRight size={18} />
             </button>
@@ -327,11 +353,12 @@ export default function FullPageChat({
           <h1 className="text-4xl font-black text-white tracking-tight mb-2">
             {profile?.name || agentConfig.agent_name}
           </h1>
-          <p className="text-[#f46530] font-bold uppercase tracking-widest text-xs mb-6 bg-[#f46530]/10 px-4 py-1.5 rounded-full border border-[#f46530]/20">
+          <p className="font-bold uppercase tracking-widest text-xs mb-6 px-4 py-1.5 rounded-full border"
+             style={{ color: ctaBtnColor, background: `${ctaBtnColor}1a`, borderColor: `${ctaBtnColor}33` }}>
             {profile?.profession || 'Digital Creator'}
           </p>
           
-          <p className="text-gray-400 text-lg leading-relaxed mb-10 max-w-md mx-auto font-medium">
+          <p className="text-lg leading-relaxed mb-10 max-w-md mx-auto font-medium" style={{ color: preChatTextColor }}>
             {profile?.bio || `I'm ${agentConfig.agent_name}, the official digital twin of ${username}. Ask me anything about my work or background.`}
           </p>
 
@@ -362,7 +389,8 @@ export default function FullPageChat({
                 setShowGatekeeper(true);
               }
             }}
-            className="w-full bg-[#f46530] text-white py-5 rounded-[1.5rem] font-black text-xl flex items-center justify-center gap-3 shadow-2xl shadow-[#f46530]/20 hover:scale-[1.02] active:scale-95 transition-all group/btn overflow-hidden relative"
+            className="w-full py-5 rounded-[1.5rem] font-black text-xl flex items-center justify-center gap-3 shadow-2xl hover:scale-[1.02] active:scale-95 transition-all group/btn overflow-hidden relative"
+            style={{ background: ctaBtnColor, color: ctaTextColor, boxShadow: `0 25px 50px -12px ${ctaBtnColor}33` }}
           >
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
             <MessageSquare className="w-6 h-6" />
@@ -404,7 +432,7 @@ export default function FullPageChat({
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col relative overflow-hidden font-sans">
+    <div className="min-h-screen text-white flex flex-col relative overflow-hidden" style={{ background: chatBg, fontFamily: `'${fontFamily}', sans-serif` }}>
       <div className="fixed inset-0 z-0 pointer-events-none">
         <QlynkBackground />
         <div className="grid-overlay" />
@@ -470,11 +498,12 @@ export default function FullPageChat({
                         )}
                       </div>
                       <div className={`space-y-2 ${m.role === 'user' ? 'text-right' : 'text-left'}`}>
-                        <div className={`inline-block px-5 py-3 rounded-2xl text-sm md:text-base leading-relaxed ${
-                          m.role === 'user'
-                            ? 'bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-xl border border-white/20 text-white'
-                            : 'bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-xl border border-blue-500/30 text-white shadow-[0_0_20px_rgba(59,130,246,0.15)] w-full'
-                        }`}>
+                        <div
+                          className={`inline-block px-5 py-3 rounded-2xl text-sm md:text-base leading-relaxed backdrop-blur-xl text-white ${m.role === 'assistant' ? 'w-full' : ''}`}
+                          style={m.role === 'user'
+                            ? { background: userBubbleBg, border: '1px solid rgba(255,255,255,0.2)' }
+                            : { background: aiBubbleBg, border: '1px solid rgba(59,130,246,0.3)', boxShadow: '0 0 20px rgba(59,130,246,0.1)' }
+                          }>
                           {m.role === 'user' ? (
                             m.content
                           ) : (

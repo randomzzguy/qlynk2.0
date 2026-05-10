@@ -72,7 +72,7 @@ export default function FullPageChat({
   }, [fontFamily]);
   // ───────────────────────────────────────────────────────────────────────────
 
-  // Visitor ID Tracking
+  // Visitor ID Tracking + Page View
   const [visitorId, setVisitorId] = useState(null);
   useEffect(() => {
     let vid = localStorage.getItem('qlynk_visitor_id');
@@ -81,6 +81,22 @@ export default function FullPageChat({
       localStorage.setItem('qlynk_visitor_id', vid);
     }
     setVisitorId(vid);
+
+    // ── Fire a page view once per session per username ──────────────────
+    const sessionKey = `qlynk_viewed_${username}`;
+    if (!sessionStorage.getItem(sessionKey)) {
+      sessionStorage.setItem(sessionKey, '1');
+      fetch('/api/track-view', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username,
+          visitor_id: vid,
+          referrer: document.referrer || null,
+        }),
+      }).catch(() => {}); // fire-and-forget, never block the UI
+    }
+    // ────────────────────────────────────────────────────────────────────
 
     // Check auth status
     if (agentConfig?.id) {

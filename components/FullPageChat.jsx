@@ -233,7 +233,7 @@ export default function FullPageChat({
     }
   };
 
-  const SocialIcon = ({ platform }) => {
+  const getSocialIcon = (platform) => {
     switch (platform?.toLowerCase()) {
       case 'github': return <Github className="w-5 h-5" />;
       case 'twitter': case 'x': return <Twitter className="w-5 h-5" />;
@@ -241,195 +241,6 @@ export default function FullPageChat({
       default: return <Globe className="w-5 h-5" />;
     }
   };
-
-  const GatekeeperMode = () => (
-    <motion.div 
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 1.05 }}
-      className="relative z-10 w-full max-w-2xl mx-auto px-6 py-20 flex flex-col items-center"
-    >
-      <div className="w-full bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-[80px] -mr-32 -mt-32" style={{ background: `${ctaBtnColor}1a` }} />
-        
-        <div className="relative z-10 flex flex-col items-center text-center">
-          <div className="w-20 h-20 bg-gray-800/50 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-gray-700/50 shadow-xl">
-            <User className="w-10 h-10" style={{ color: ctaBtnColor }} />
-          </div>
-          
-          <h2 className="text-3xl font-black text-white tracking-tight mb-2">Welcome</h2>
-          <p className="mb-8 max-w-md" style={{ color: gatekeeperTextColor }}>
-            Please introduce yourself before chatting with {agentConfig.agent_name}.
-          </p>
-
-          <form onSubmit={handleGatekeeperSubmit} className="w-full space-y-4 max-w-sm mx-auto text-left">
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">Your Name</label>
-              <input
-                type="text"
-                value={gatekeeperForm.name}
-                onChange={(e) => setGatekeeperForm(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="What should I call you?"
-                className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all"
-              />
-            </div>
-
-            {agentConfig.access_level === 'email' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Your Email</label>
-                <input
-                  type="email"
-                  value={gatekeeperForm.email}
-                  onChange={(e) => setGatekeeperForm(prev => ({ ...prev, email: e.target.value }))}
-                  placeholder="hello@example.com"
-                  className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all"
-                />
-              </div>
-            )}
-
-            {agentConfig.access_level === 'password' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Access Password</label>
-                <input
-                  type="password"
-                  value={gatekeeperForm.password}
-                  onChange={(e) => setGatekeeperForm(prev => ({ ...prev, password: e.target.value }))}
-                  placeholder="Enter the secret password"
-                  className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all"
-                />
-              </div>
-            )}
-
-            {gatekeeperError && (
-              <div className="text-red-400 text-sm bg-red-400/10 p-3 rounded-lg border border-red-400/20 text-center">
-                {gatekeeperError}
-              </div>
-            )}
-
-            <button 
-              type="submit"
-              className="w-full py-4 rounded-xl font-bold mt-4 transition-all shadow-lg flex justify-center items-center gap-2"
-              style={{ background: ctaBtnColor, color: ctaTextColor }}
-            >
-              Continue to Chat <ChevronRight size={18} />
-            </button>
-            <button 
-              type="button"
-              onClick={() => setShowGatekeeper(false)}
-              className="w-full py-3 text-gray-400 hover:text-white transition-colors text-sm font-medium mt-2"
-            >
-              Cancel
-            </button>
-          </form>
-        </div>
-      </div>
-    </motion.div>
-  );
-
-  const LandingMode = () => (
-    <motion.div 
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 1.05 }}
-      className="relative z-10 w-full max-w-2xl mx-auto px-6 py-20 flex flex-col items-center"
-    >
-      {/* Profile Card */}
-      <div className="w-full bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden group">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] -mr-32 -mt-32 transition-all group-hover:bg-blue-500/20" />
-        
-        <div className="relative z-10 flex flex-col items-center text-center">
-          {/* Avatar */}
-          <div className="relative mb-8">
-            <div className="w-32 h-32 rounded-3xl overflow-hidden border-2 border-white/20 shadow-2xl transform -rotate-3 group-hover:rotate-0 transition-transform duration-500">
-              <img 
-                src={agentConfig.agent_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`} 
-                alt={profile?.name} 
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="absolute -bottom-2 -right-2 bg-green-500 w-6 h-6 rounded-full border-4 border-[#0a0a0f] shadow-lg" />
-          </div>
-
-          <h1 className="text-4xl font-black text-white tracking-tight mb-2">
-            {profile?.name || agentConfig.agent_name}
-          </h1>
-          <p className="font-bold uppercase tracking-widest text-xs mb-6 px-4 py-1.5 rounded-full border"
-             style={{ color: ctaBtnColor, background: `${ctaBtnColor}1a`, borderColor: `${ctaBtnColor}33` }}>
-            {profile?.profession || 'Digital Creator'}
-          </p>
-          
-          <p className="text-lg leading-relaxed mb-10 max-w-md mx-auto font-medium" style={{ color: preChatTextColor }}>
-            {profile?.bio || `I'm ${agentConfig.agent_name}, the official digital twin of ${username}. Ask me anything about my work or background.`}
-          </p>
-
-          {/* Social Links */}
-          <div className="flex gap-4 mb-12">
-            {profile?.social_links?.map((link, i) => (
-              <a 
-                key={i} 
-                href={link.url} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white hover:-translate-y-1 transition-all"
-              >
-                <SocialIcon platform={link.platform} />
-              </a>
-            ))}
-            <button className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white transition-all">
-              <Share2 className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Primary CTA */}
-          <button 
-            onClick={() => {
-              if (isAuthorized) {
-                setIsChatOpen(true);
-              } else {
-                setShowGatekeeper(true);
-              }
-            }}
-            className="w-full py-5 rounded-[1.5rem] font-black text-xl flex items-center justify-center gap-3 shadow-2xl hover:scale-[1.02] active:scale-95 transition-all group/btn overflow-hidden relative"
-            style={{ background: ctaBtnColor, color: ctaTextColor, boxShadow: `0 25px 50px -12px ${ctaBtnColor}33` }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
-            <MessageSquare className="w-6 h-6" />
-            Chat with AI Clone
-            <ChevronRight className="w-6 h-6 group-hover/btn:translate-x-1 transition-transform" />
-          </button>
-        </div>
-      </div>
-
-      {/* Featured Projects / Custom Links */}
-      {profile?.custom_links?.length > 0 && (
-        <div className="w-full mt-12 grid grid-cols-1 md:grid-cols-2 gap-4">
-          {profile.custom_links.map((link, i) => (
-            <a 
-              key={i} 
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-white/5 backdrop-blur-md border border-white/10 p-5 rounded-2xl flex items-center justify-between group hover:bg-white/10 transition-all"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center">
-                  <Globe className="w-5 h-5 text-gray-500 group-hover:text-[#f46530] transition-colors" />
-                </div>
-                <span className="font-bold text-white text-sm">{link.title}</span>
-              </div>
-              <ExternalLink className="w-4 h-4 text-gray-700 group-hover:text-white transition-colors" />
-            </a>
-          ))}
-        </div>
-      )}
-
-      {/* Powered by Branding */}
-      <div className="mt-12 flex items-center gap-2 opacity-30 hover:opacity-100 transition-opacity duration-500">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Powered by</span>
-        <Image src="/logoWhite.svg" alt="qlynk logo" width={60} height={18} className="h-auto" />
-      </div>
-    </motion.div>
-  );
 
   return (
     <div className="min-h-screen text-white flex flex-col relative overflow-hidden" style={{ background: chatBg, fontFamily: `'${fontFamily}', sans-serif` }}>
@@ -439,10 +250,198 @@ export default function FullPageChat({
       </div>
 
       <AnimatePresence mode="wait">
+        {/* ── LANDING ─────────────────────────────────────────────────────── */}
         {!isChatOpen && !showGatekeeper ? (
-          <LandingMode key="landing" />
+          <motion.div
+            key="landing"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            className="relative z-10 w-full max-w-2xl mx-auto px-6 py-20 flex flex-col items-center"
+          >
+            {/* Profile Card */}
+            <div className="w-full bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] -mr-32 -mt-32 transition-all group-hover:bg-blue-500/20" />
+              
+              <div className="relative z-10 flex flex-col items-center text-center">
+                {/* Avatar */}
+                <div className="relative mb-8">
+                  <div className="w-32 h-32 rounded-3xl overflow-hidden border-2 border-white/20 shadow-2xl transform -rotate-3 group-hover:rotate-0 transition-transform duration-500">
+                    <img 
+                      src={agentConfig.agent_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`} 
+                      alt={profile?.name} 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="absolute -bottom-2 -right-2 bg-green-500 w-6 h-6 rounded-full border-4 border-[#0a0a0f] shadow-lg" />
+                </div>
+
+                <h1 className="text-4xl font-black text-white tracking-tight mb-2">
+                  {profile?.name || agentConfig.agent_name}
+                </h1>
+                <p className="font-bold uppercase tracking-widest text-xs mb-6 px-4 py-1.5 rounded-full border"
+                   style={{ color: ctaBtnColor, background: `${ctaBtnColor}1a`, borderColor: `${ctaBtnColor}33` }}>
+                  {profile?.profession || 'Digital Creator'}
+                </p>
+                
+                <p className="text-lg leading-relaxed mb-10 max-w-md mx-auto font-medium" style={{ color: preChatTextColor }}>
+                  {profile?.bio || `I'm ${agentConfig.agent_name}, the official digital twin of ${username}. Ask me anything about my work or background.`}
+                </p>
+
+                {/* Social Links */}
+                <div className="flex gap-4 mb-12">
+                  {profile?.social_links?.map((link, i) => (
+                    <a 
+                      key={i} 
+                      href={link.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white hover:-translate-y-1 transition-all"
+                    >
+                      {getSocialIcon(link.platform)}
+                    </a>
+                  ))}
+                  <button className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white transition-all">
+                    <Share2 className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Primary CTA */}
+                <button 
+                  onClick={() => {
+                    if (isAuthorized) {
+                      setIsChatOpen(true);
+                    } else {
+                      setShowGatekeeper(true);
+                    }
+                  }}
+                  className="w-full py-5 rounded-[1.5rem] font-black text-xl flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all group/btn overflow-hidden relative"
+                  style={{ background: ctaBtnColor, color: ctaTextColor, boxShadow: `0 25px 50px -12px ${ctaBtnColor}33` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
+                  <MessageSquare className="w-6 h-6" />
+                  Chat with AI Clone
+                  <ChevronRight className="w-6 h-6 group-hover/btn:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            </div>
+
+            {/* Featured Projects / Custom Links */}
+            {profile?.custom_links?.length > 0 && (
+              <div className="w-full mt-12 grid grid-cols-1 md:grid-cols-2 gap-4">
+                {profile.custom_links.map((link, i) => (
+                  <a 
+                    key={i} 
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-white/5 backdrop-blur-md border border-white/10 p-5 rounded-2xl flex items-center justify-between group hover:bg-white/10 transition-all"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center">
+                        <Globe className="w-5 h-5 text-gray-500 group-hover:text-[#f46530] transition-colors" />
+                      </div>
+                      <span className="font-bold text-white text-sm">{link.title}</span>
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-gray-700 group-hover:text-white transition-colors" />
+                  </a>
+                ))}
+              </div>
+            )}
+
+            {/* Powered by Branding */}
+            <div className="mt-12 flex items-center gap-2 opacity-30 hover:opacity-100 transition-opacity duration-500">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Powered by</span>
+              <Image src="/logoWhite.svg" alt="qlynk logo" width={60} height={18} className="h-auto" />
+            </div>
+          </motion.div>
+
+        /* ── GATEKEEPER ───────────────────────────────────────────────────── */
         ) : showGatekeeper ? (
-          <GatekeeperMode key="gatekeeper" />
+          <motion.div
+            key="gatekeeper"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            className="relative z-10 w-full max-w-2xl mx-auto px-6 py-20 flex flex-col items-center"
+          >
+            <div className="w-full bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-[80px] -mr-32 -mt-32" style={{ background: `${ctaBtnColor}1a` }} />
+              
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <div className="w-20 h-20 bg-gray-800/50 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-gray-700/50 shadow-xl">
+                  <User className="w-10 h-10" style={{ color: ctaBtnColor }} />
+                </div>
+                
+                <h2 className="text-3xl font-black text-white tracking-tight mb-2">Welcome</h2>
+                <p className="mb-8 max-w-md" style={{ color: gatekeeperTextColor }}>
+                  Please introduce yourself before chatting with {agentConfig.agent_name}.
+                </p>
+
+                <form onSubmit={handleGatekeeperSubmit} className="w-full space-y-4 max-w-sm mx-auto text-left">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-2">Your Name</label>
+                    <input
+                      type="text"
+                      value={gatekeeperForm.name}
+                      onChange={(e) => setGatekeeperForm(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="What should I call you?"
+                      className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all"
+                    />
+                  </div>
+
+                  {agentConfig.access_level === 'email' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Your Email</label>
+                      <input
+                        type="email"
+                        value={gatekeeperForm.email}
+                        onChange={(e) => setGatekeeperForm(prev => ({ ...prev, email: e.target.value }))}
+                        placeholder="hello@example.com"
+                        className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all"
+                      />
+                    </div>
+                  )}
+
+                  {agentConfig.access_level === 'password' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Access Password</label>
+                      <input
+                        type="password"
+                        value={gatekeeperForm.password}
+                        onChange={(e) => setGatekeeperForm(prev => ({ ...prev, password: e.target.value }))}
+                        placeholder="Enter the secret password"
+                        className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all"
+                      />
+                    </div>
+                  )}
+
+                  {gatekeeperError && (
+                    <div className="text-red-400 text-sm bg-red-400/10 p-3 rounded-lg border border-red-400/20 text-center">
+                      {gatekeeperError}
+                    </div>
+                  )}
+
+                  <button 
+                    type="submit"
+                    className="w-full py-4 rounded-xl font-bold mt-4 transition-all shadow-lg flex justify-center items-center gap-2"
+                    style={{ background: ctaBtnColor, color: ctaTextColor }}
+                  >
+                    Continue to Chat <ChevronRight size={18} />
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => setShowGatekeeper(false)}
+                    className="w-full py-3 text-gray-400 hover:text-white transition-colors text-sm font-medium mt-2"
+                  >
+                    Cancel
+                  </button>
+                </form>
+              </div>
+            </div>
+          </motion.div>
+
+        /* ── CHAT ─────────────────────────────────────────────────────────── */
         ) : (
           <motion.main 
             key="chat"

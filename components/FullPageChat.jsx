@@ -318,8 +318,8 @@ export default function FullPageChat({
                       <div className={`space-y-2 ${m.role === 'user' ? 'text-right' : 'text-left'}`}>
                         <div className={`inline-block px-5 py-3 rounded-2xl text-sm md:text-base leading-relaxed ${
                           m.role === 'user'
-                            ? 'bg-gradient-to-br from-white/10 to-white/5 border border-white/10 text-gray-200'
-                            : 'bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/20 text-gray-100 shadow-[0_0_20px_rgba(59,130,246,0.1)] w-full'
+                            ? 'bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-xl border border-white/20 text-white'
+                            : 'bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-xl border border-blue-500/30 text-white shadow-[0_0_20px_rgba(59,130,246,0.15)] w-full'
                         }`}>
                           {m.role === 'user' ? (
                             m.content

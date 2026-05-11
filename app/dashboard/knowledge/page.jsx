@@ -136,16 +136,17 @@ export default function KnowledgeDashboard() {
       if (uploadError) throw uploadError;
 
       // 2. Save record to Database
-      const { error: dbError } = await supabase
+      const { data: dbData, error: dbError } = await supabase
         .from('agent_documents')
         .insert({
           user_id: user.id,
           filename: file.name,
           file_type: file.type,
           file_size: file.size,
-          storage_path: uploadData.path,
+          storage_path: fileName,
           is_processed: false // Will be updated by neural processor
-        });
+        })
+        .select();
 
       if (dbError) throw dbError;
       

@@ -8,6 +8,14 @@ export async function POST(req) {
   try {
     const { documentId } = await req.json();
 
+    // Polyfill for pdf-parse browser-dep issues
+    if (typeof global.DOMMatrix === 'undefined') {
+      global.DOMMatrix = class DOMMatrix {};
+    }
+    if (typeof global.Path2D === 'undefined') {
+      global.Path2D = class Path2D {};
+    }
+
     const require = createRequire(import.meta.url);
     const pdf = require('pdf-parse');
 

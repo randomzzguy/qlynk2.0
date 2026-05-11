@@ -26,6 +26,7 @@ import {
   PLAN_LIMITS 
 } from '@/lib/subscriptionHelpers';
 import UpgradePrompt from '@/components/UpgradePrompt';
+import TrialChoiceManager from '@/components/TrialChoiceManager';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -41,6 +42,7 @@ export default function DashboardPage() {
     tier: 'Trial'
   });
   const [recentConversations, setRecentConversations] = useState([]);
+  const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -103,11 +105,13 @@ export default function DashboardPage() {
         }
 
         // Load subscription for usage limits
-        const { data: subscription } = await supabase
+        const { data: subData } = await supabase
           .from('subscriptions')
           .select('*')
           .eq('user_id', user.id)
           .single();
+        
+        setSubscription(subData);
 
         // Load conversation stats
         const { data: conversations } = await supabase
@@ -130,13 +134,35 @@ export default function DashboardPage() {
             totalMessages: totalMsgs,
             messagesThisWeek: msgsThisWeek,
             avgMessagesPerConvo: totalConvos > 0 ? Math.round(totalMsgs / totalConvos) : 0,
-            messagesUsed: subscription?.messages_used || 0,
-            messagesLimit: PLAN_LIMITS[subscription?.tier?.toLowerCase()] || 1000,
-            tier: subscription?.tier || 'Trial'
+            messagesUsed: subData?.messages_used || 0,
+            messagesLimit: PLAN_LIMITS[subData?.tier?.toLowerCase()] || 1000,
+            tier: subData?.tier || 'Trial'
           });
 
           setRecentConversations(conversations.slice(0, 5));
         }
+        // Check for trial expiration and handle choice
+        if (subData?.tier === 'trial' && isTrialExpired(subData.trial_ends_at)) {
+          const choice = subData.post_trial_choice || 'pause';
+          
+          if (choice === 'pause') {
+            // Update status to paused if not already
+            if (subData.status !== 'paused') {
+              await supabase
+                .from('subscriptions')
+                .update({ 
+                  status: 'paused',
+                  pause_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+                })
+                .eq('user_id', user.id);
+            }
+          } else {
+            // Redirect to checkout for the chosen plan
+            // router.push(`/pricing?plan=${choice}`); 
+            // Better to show a modal or a clear message, but for now let's just mark it as "needs payment"
+          }
+        }
+
       } catch (error) {
         console.error('Error loading dashboard:', error);
       } finally {
@@ -191,6 +217,7 @@ export default function DashboardPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
       <UpgradePrompt />
+      <TrialChoiceManager subscription={subscription} userId={profile?.id} />
 
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">

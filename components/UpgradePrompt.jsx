@@ -75,17 +75,22 @@ export default function UpgradePrompt() {
     }
   }
 
-  // Show trial expired
-  if (subscription.tier === 'trial' && isTrialExpired(subscription.trial_ends_at)) {
+  // Show trial expired or paused
+  if ((subscription.tier === 'trial' && isTrialExpired(subscription.trial_ends_at)) || subscription.status === 'paused') {
+    const isPaused = subscription.status === 'paused';
+    const choice = subscription.post_trial_choice || 'pause';
+    
     return (
       <div className="bg-red-500/10 backdrop-blur-sm border border-red-500/30 rounded-2xl p-5 flex items-start gap-5 mb-8 relative group">
         <div className="w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center shrink-0 border border-red-500/20">
           <AlertCircle className="text-red-500" size={22} />
         </div>
         <div className="flex-1">
-          <h3 className="font-bold text-white mb-1">Trial Expired</h3>
+          <h3 className="font-bold text-white mb-1">{isPaused ? 'Account Paused' : 'Trial Expired'}</h3>
           <p className="text-red-200/70 text-sm mb-4 leading-relaxed">
-            Your Q-Agent is currently offline. Upgrade to a paid plan to restore your digital clone instantly.
+            {isPaused 
+              ? 'Your account is currently on hold. Your agent is offline, but your data is safe for 14 days. Upgrade now to go back live.' 
+              : `Your trial has ended. You chose the ${choice} plan. Please complete your upgrade to bring your agent back online.`}
           </p>
           <Link
             href="/pricing"

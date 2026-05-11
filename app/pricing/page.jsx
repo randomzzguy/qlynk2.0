@@ -71,11 +71,11 @@ const faqs = [
     items: [
       {
         q: 'Do I need a credit card for the free trial?',
-        a: "Yes, a valid credit card is required to start the trial. We won't charge you anything during the 14-day period. After the trial ends your card is charged for the Creator plan unless you cancel first.",
+        a: "No. You can start your 14-day trial without entering any credit card information. You'll have full access to all features to see if qlynk is right for you.",
       },
       {
         q: 'What happens when my trial expires?',
-        a: 'Your agent goes offline and visitors see a "temporarily unavailable" message. Your dashboard stays fully accessible so you can keep editing. Upgrade at any time to bring your agent back online instantly.',
+        a: 'At the end of 14 days, your agent will go offline unless you choose a paid plan. You can also choose to "Pause" your account for an additional 14 days to keep your data while you decide.',
       },
       {
         q: 'Can I cancel anytime?',
@@ -179,6 +179,11 @@ export default function PricingPage() {
   };
 
   const handleCheckout = async (plan) => {
+    if (plan.name === 'Trial') {
+      router.push('/auth/signup');
+      return;
+    }
+
     if (!user) {
       router.push(`/auth/signup?plan=${plan.name.toLowerCase()}&cycle=${billingCycle}`);
       return;
@@ -226,9 +231,9 @@ export default function PricingPage() {
       color: 'from-[#f46530] to-[#c14f22]',
       features: [
         { name: 'Full Pro features', included: true },
-        { name: 'Agent live for trial period', included: true },
-        { name: 'Credit card required', included: true },
-        { name: 'Auto-upgrade after trial', included: true },
+        { name: 'Agent live for 14 days', included: true },
+        { name: 'No credit card required', included: true },
+        { name: 'Full dashboard access', included: true },
       ],
       highlight: true,
     },
@@ -236,8 +241,8 @@ export default function PricingPage() {
       name: 'Creator',
       description: 'For content creators & professionals',
       price: billingCycle === 'monthly' ? '$9' : '$84',
-      period: billingCycle === 'monthly' ? '/month' : '/year (Save 22%)',
-      cta: 'Upgrade Now',
+      period: billingCycle === 'monthly' ? '/month' : '/year',
+      cta: 'Choose Plan',
       icon: Crown,
       color: 'from-emerald-500 to-emerald-600',
       features: [
@@ -365,7 +370,7 @@ export default function PricingPage() {
             Simple, <span className="text-[#f46530]">Transparent</span> Pricing
           </h1>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-            Start with a free 14-day trial. Credit card required. Upgrade anytime to go live.
+            Start with a 14-day free trial. No credit card required.
           </p>
         </motion.div>
 

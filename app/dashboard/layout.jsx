@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { getCurrentProfile, signOut, getCurrentUser } from '@/lib/supabase';
+import { getCurrentProfile, signOut, getCurrentUser, createClientBrowser } from '@/lib/supabase';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import QlynkBackground from '@/components/QlynkBackground';
 import { Menu, Sparkles } from 'lucide-react';
@@ -34,7 +34,7 @@ export default function DashboardLayout({ children }) {
         }
 
         // Fetch subscription
-        const supabase = createClient();
+        const supabase = createClientBrowser();
         const { data: sub } = await supabase
           .from('subscriptions')
           .select('tier')
@@ -146,6 +146,7 @@ export default function DashboardLayout({ children }) {
           onSignOut={handleSignOut} 
           isOpen={isSidebarOpen} 
           onClose={() => setIsSidebarOpen(false)} 
+          isCollapsed={isCollapsed}
           onCollapseToggle={handleCollapseToggle}
           username={profile?.username}
           tier={profile?.tier}

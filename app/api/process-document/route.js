@@ -1,13 +1,15 @@
 import { createAdminClient } from '@/utils/supabase/server';
 import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const pdf = require('pdf-parse');
 
+export const dynamic = 'force-dynamic';
 export const maxDuration = 60; // Allow 60 seconds for large PDFs
 
 export async function POST(req) {
   try {
     const { documentId } = await req.json();
+
+    const require = createRequire(import.meta.url);
+    const pdf = require('pdf-parse');
 
     if (!documentId) {
       return new Response(JSON.stringify({ error: 'documentId is required' }), { status: 400 });

@@ -220,7 +220,7 @@ export default function AnalyticsPage() {
         {viewStatCards.map((stat, i) => (
           <div
             key={i}
-            className={`bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50 p-5 transition-all group ${stat.border}`}
+            className={`bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-5 transition-all group ${stat.border}`}
           >
             <div className="flex items-center gap-3 mb-4">
               <div className={`w-10 h-10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform ${stat.bg}`}>
@@ -236,7 +236,7 @@ export default function AnalyticsPage() {
 
       {/* ── Conversations list + Transcript ─────────────────────────────── */}
       <div className="grid lg:grid-cols-2 gap-6 mb-10">
-        <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 flex flex-col h-[600px]">
+        <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 flex flex-col h-[600px]">
           <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
             <Activity size={18} className="text-[#f46530]" />
             Recent Conversations
@@ -244,8 +244,8 @@ export default function AnalyticsPage() {
           </h3>
           {conversations.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center">
-              <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mb-4 border border-gray-700">
-                <MessageCircle className="text-gray-600" size={28} />
+              <div className="w-16 h-16 bg-white/5 rounded-3xl flex items-center justify-center mb-4 text-gray-500">
+                <MessageCircle className="text-gray-500" size={28} />
               </div>
               <p className="text-gray-400">No conversations yet</p>
               <p className="text-gray-500 text-sm mt-1 max-w-[240px]">
@@ -268,12 +268,12 @@ export default function AnalyticsPage() {
                     className={`w-full flex items-center justify-between p-4 rounded-xl transition-all group ${
                       isSelected
                         ? 'bg-[#f46530]/10 border border-[#f46530]/30 shadow-[0_0_15px_rgba(244,101,48,0.1)]'
-                        : 'bg-gray-900/50 border border-gray-700/50 hover:border-[#f46530]/30'
+                        : 'bg-white/5 border border-transparent hover:border-white/10'
                     }`}
                   >
                     <div className="flex items-center gap-4">
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                        isSelected ? 'bg-[#f46530]/20' : 'bg-gray-800 group-hover:bg-gray-700'
+                        isSelected ? 'bg-[#f46530]/20' : 'bg-white/5 group-hover:bg-white/10'
                       }`}>
                         <User size={18} className={isSelected ? 'text-[#f46530]' : 'text-gray-400'} />
                       </div>
@@ -295,15 +295,15 @@ export default function AnalyticsPage() {
           )}
         </div>
 
-        <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 flex flex-col h-[600px]">
+        <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 flex flex-col h-[600px]">
           <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
             <Bot size={18} className="text-[#f46530]" />
             Conversation Transcript
           </h3>
           {!selectedConversation ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center">
-              <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mb-4 border border-gray-700">
-                <MessageCircle className="text-gray-600" size={28} />
+              <div className="w-16 h-16 bg-white/5 rounded-3xl flex items-center justify-center mb-4 text-gray-500">
+                <MessageCircle className="text-gray-500" size={28} />
               </div>
               <p className="text-gray-400">Select a conversation</p>
               <p className="text-gray-500 text-sm mt-1">Click any conversation to read the full transcript</p>
@@ -321,14 +321,14 @@ export default function AnalyticsPage() {
               {conversationMessages.map((msg) => (
                 <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border ${
-                    msg.role === 'user' ? 'bg-gray-800 border-gray-700' : 'bg-[#f46530]/10 border-[#f46530]/20'
+                    msg.role === 'user' ? 'bg-white/5 border-white/10' : 'bg-[#f46530]/10 border-[#f46530]/20'
                   }`}>
                     {msg.role === 'user' ? <User size={14} className="text-gray-400" /> : <Bot size={14} className="text-[#f46530]" />}
                   </div>
                   <div className={`max-w-[85%] p-4 rounded-2xl ${
                     msg.role === 'user'
-                      ? 'bg-gray-800 border border-gray-700 text-white rounded-tr-none'
-                      : 'bg-gray-900/80 border border-gray-700/50 text-gray-200 rounded-tl-none'
+                      ? 'bg-white/5 border border-white/10 text-white rounded-tr-none'
+                      : 'bg-white/10 border border-white/10 text-gray-200 rounded-tl-none'
                   }`}>
                     <div className="text-sm leading-relaxed text-gray-200">
                       <ReactMarkdown
@@ -359,7 +359,7 @@ export default function AnalyticsPage() {
       <div className="grid lg:grid-cols-2 gap-6 mb-6">
 
         {/* 7-day dual bar chart: views + conversations */}
-        <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-8 hover:border-cyan-500/20 transition-all">
+        <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-8 hover:bg-white/10 hover:border-cyan-500/30 transition-all">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-lg font-bold text-white">Last 7 Days</h3>
             <span className="text-xs text-gray-500 font-mono">{stats.weekViews} views · {stats.weekConvos} chats</span>
@@ -402,7 +402,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Active Hours */}
-        <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-8 hover:border-purple-500/20 transition-all">
+        <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-8 hover:bg-white/10 hover:border-purple-500/30 transition-all">
           <div className="flex items-center justify-between mb-8">
             <h3 className="text-lg font-bold text-white">Peak View Hours</h3>
             <span className="text-xs text-gray-500 font-mono">all-time · {stats.totalViews} views</span>
@@ -438,7 +438,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* ── Referrer Breakdown ──────────────────────────────────────────── */}
-      <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-8 mb-20 hover:border-blue-500/20 transition-all">
+      <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-8 mb-20 hover:bg-white/10 hover:border-blue-500/30 transition-all">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
             <Eye size={18} className="text-blue-400" />
@@ -455,7 +455,7 @@ export default function AnalyticsPage() {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {stats.topReferrers.map((ref, i) => (
-              <div key={i} className="bg-gray-900/50 rounded-xl border border-gray-700/50 p-4 hover:border-blue-500/30 transition-all">
+              <div key={i} className="bg-white/5 rounded-2xl border border-white/10 p-4 hover:border-blue-500/30 hover:bg-white/10 transition-all">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-sm font-bold text-white truncate max-w-[140px]" title={ref.source}>{ref.source}</span>
                   <span className="text-xs font-mono text-blue-400 ml-2 shrink-0">{ref.pct}%</span>

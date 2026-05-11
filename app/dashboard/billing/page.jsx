@@ -82,7 +82,7 @@ export default function BillingPage() {
 
       <div className="grid md:grid-cols-3 gap-6 mb-8">
         {/* Current Plan Card */}
-        <div className="md:col-span-2 p-8 rounded-3xl bg-gray-800/40 backdrop-blur-xl border border-white/5 relative overflow-hidden group">
+        <div className="md:col-span-2 p-8 rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-8 opacity-5">
             <CreditCard size={120} />
           </div>
@@ -125,7 +125,7 @@ export default function BillingPage() {
         </div>
 
         {/* Usage Card */}
-        <div className="p-8 rounded-3xl bg-gray-800/40 backdrop-blur-xl border border-white/5 flex flex-col justify-between">
+        <div className="p-8 rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 flex flex-col justify-between">
           <div>
             <p className="text-sm text-gray-500 font-bold uppercase tracking-widest mb-6">Usage This Month</p>
             <div className="mb-6">
@@ -133,7 +133,7 @@ export default function BillingPage() {
                 <span className="text-3xl font-black text-white">{messagesUsed}</span>
                 <span className="text-gray-500 font-bold">/ {messagesLimit >= 1000000 ? 'Unlimited' : messagesLimit}</span>
               </div>
-              <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+              <div className="h-2 bg-white/10 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-orange transition-all duration-1000" 
                   style={{ width: `${usagePercent}%` }}

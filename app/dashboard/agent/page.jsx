@@ -76,7 +76,7 @@ function ColorField({ label, value, onChange, hint }) {
           type="text"
           value={value || ''}
           onChange={(e) => onChange(e.target.value)}
-          className="flex-1 px-4 py-2.5 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all font-mono text-sm"
+          className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all font-mono text-sm"
           placeholder="#rrggbb or rgba(...)"
         />
       </div>
@@ -373,7 +373,7 @@ export default function AgentConfigPage() {
           </div>
 
           {/* Enable/Disable Toggle */}
-          <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8">
+          <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mb-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
@@ -430,7 +430,7 @@ export default function AgentConfigPage() {
           </div>
 
           {/* Access Control */}
-          <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8 hover:border-[#f46530]/20 transition-all">
+          <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mb-8 hover:border-[#f46530]/20 transition-all">
             <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
               <div className="w-8 h-8 bg-purple-500/10 rounded flex items-center justify-center">
                 <AlertCircle size={18} className="text-purple-400" />
@@ -511,7 +511,7 @@ export default function AgentConfigPage() {
           </div>
 
           {/* Agent Branding */}
-          <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8 hover:border-[#f46530]/20 transition-all">
+          <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mb-8 hover:border-[#f46530]/20 transition-all">
             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
               <div className="w-8 h-8 bg-[#f46530]/10 rounded flex items-center justify-center">
                 <Bot size={18} className="text-[#f46530]" />
@@ -527,7 +527,7 @@ export default function AgentConfigPage() {
                   value={config.agent_name}
                   onChange={(e) => updateConfig('agent_name', e.target.value)}
                   placeholder="q-agent"
-                  className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all"
                 />
               </div>
 
@@ -538,7 +538,7 @@ export default function AgentConfigPage() {
                   value={config.profession || ''}
                   onChange={(e) => updateConfig('profession', e.target.value)}
                   placeholder="e.g. Digital Creator, Software Engineer"
-                  className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all"
                 />
               </div>
               
@@ -556,7 +556,7 @@ export default function AgentConfigPage() {
                     type="text"
                     value={config.primary_color}
                     onChange={(e) => updateConfig('primary_color', e.target.value)}
-                    className="flex-1 px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all font-mono"
+                    className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all font-mono"
                   />
                 </div>
               </div>
@@ -564,7 +564,7 @@ export default function AgentConfigPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-2">Agent Avatar</label>
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-2xl bg-gray-900/50 border border-gray-700/50 overflow-hidden flex items-center justify-center relative group">
+                  <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 overflow-hidden flex items-center justify-center relative group">
                     {config.agent_avatar ? (
                       <img src={config.agent_avatar} alt="Avatar" className="w-full h-full object-cover" />
                     ) : (
@@ -598,7 +598,7 @@ export default function AgentConfigPage() {
                 <select
                   value={config.position}
                   onChange={(e) => updateConfig('position', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all appearance-none cursor-pointer"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all appearance-none cursor-pointer"
                 >
                   <option value="bottom-right">Bottom Right</option>
                   <option value="bottom-left">Bottom Left</option>
@@ -615,7 +615,7 @@ export default function AgentConfigPage() {
                 <select
                   value={config.tone || 'professional'}
                   onChange={(e) => updateConfig('tone', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all appearance-none cursor-pointer"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all appearance-none cursor-pointer"
                 >
                   <option value="professional">Professional (Polished & Formal)</option>
                   <option value="friendly">Friendly (Approachable & Warm)</option>
@@ -631,14 +631,14 @@ export default function AgentConfigPage() {
                   onChange={(e) => updateConfig('welcome_message', e.target.value)}
                   placeholder="Hi! I'm the AI assistant for this page. How can I help you?"
                   rows={2}
-                  className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all resize-none"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all resize-none"
                 />
               </div>
             </div>
           </div>
 
           {/* Visual Style Customization */}
-          <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8 hover:border-pink-500/20 transition-all">
+          <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mb-8 hover:border-pink-500/20 transition-all">
             <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
               <div className="w-8 h-8 bg-pink-500/10 rounded flex items-center justify-center">
                 <Palette size={18} className="text-pink-400" />
@@ -659,7 +659,7 @@ export default function AgentConfigPage() {
                   <select
                     value={config.font_family || 'Inter'}
                     onChange={(e) => updateConfig('font_family', e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white focus:outline-none focus:border-pink-500/50 focus:bg-gray-900 transition-all appearance-none cursor-pointer"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-pink-500/50 focus:bg-gray-900 transition-all appearance-none cursor-pointer"
                     style={{ fontFamily: config.font_family || 'Inter' }}
                   >
                     {GOOGLE_FONTS.map(f => (
@@ -768,7 +768,7 @@ export default function AgentConfigPage() {
           </div>
 
           {/* Bio & About */}
-          <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8 hover:border-cyan-500/20 transition-all">
+          <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mb-8 hover:border-cyan-500/20 transition-all">
             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
               <div className="w-8 h-8 bg-cyan-500/10 rounded flex items-center justify-center">
                 <User size={18} className="text-cyan-400" />
@@ -783,13 +783,13 @@ export default function AgentConfigPage() {
                 onChange={(e) => updateConfig('bio', e.target.value)}
                 placeholder="Tell visitors about yourself, your background, and what you do..."
                 rows={4}
-                className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all resize-none"
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all resize-none"
               />
             </div>
           </div>
 
           {/* Skills */}
-          <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8 hover:border-green-500/20 transition-all">
+          <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mb-8 hover:border-green-500/20 transition-all">
             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
               <div className="w-8 h-8 bg-green-500/10 rounded flex items-center justify-center">
                 <Briefcase size={18} className="text-green-400" />
@@ -822,14 +822,14 @@ export default function AgentConfigPage() {
                 value={newSkill.name}
                 onChange={(e) => setNewSkill(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="Skill name (e.g., React, Python)"
-                className="flex-1 px-4 py-2.5 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50 focus:bg-gray-900 transition-all text-sm"
+                className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50 focus:bg-gray-900 transition-all text-sm"
               />
               <input
                 type="text"
                 value={newSkill.level}
                 onChange={(e) => setNewSkill(prev => ({ ...prev, level: e.target.value }))}
                 placeholder="Level (optional)"
-                className="w-32 px-4 py-2.5 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50 focus:bg-gray-900 transition-all text-sm"
+                className="w-32 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50 focus:bg-gray-900 transition-all text-sm"
               />
               <button
                 onClick={addSkill}
@@ -841,7 +841,7 @@ export default function AgentConfigPage() {
           </div>
 
           {/* Projects */}
-          <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8 hover:border-purple-500/20 transition-all">
+          <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mb-8 hover:border-purple-500/20 transition-all">
             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
               <div className="w-8 h-8 bg-purple-500/10 rounded flex items-center justify-center">
                 <FileText size={18} className="text-purple-400" />
@@ -885,14 +885,14 @@ export default function AgentConfigPage() {
                 value={newProject.name}
                 onChange={(e) => setNewProject(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="Project name"
-                className="w-full px-4 py-2.5 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:bg-gray-900 transition-all text-sm"
+                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:bg-gray-900 transition-all text-sm"
               />
               <input
                 type="text"
                 value={newProject.description}
                 onChange={(e) => setNewProject(prev => ({ ...prev, description: e.target.value }))}
                 placeholder="Short description"
-                className="w-full px-4 py-2.5 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:bg-gray-900 transition-all text-sm"
+                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:bg-gray-900 transition-all text-sm"
               />
               <div className="flex gap-3">
                 <input
@@ -900,7 +900,7 @@ export default function AgentConfigPage() {
                   value={newProject.url}
                   onChange={(e) => setNewProject(prev => ({ ...prev, url: e.target.value }))}
                   placeholder="Project URL (optional)"
-                  className="flex-1 px-4 py-2.5 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:bg-gray-900 transition-all text-sm"
+                  className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:bg-gray-900 transition-all text-sm"
                 />
                 <button
                   onClick={addProject}
@@ -914,7 +914,7 @@ export default function AgentConfigPage() {
           </div>
 
           {/* Contact Info */}
-          <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8 hover:border-amber-500/20 transition-all">
+          <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mb-8 hover:border-amber-500/20 transition-all">
             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
               <div className="w-8 h-8 bg-amber-500/10 rounded flex items-center justify-center">
                 <Mail size={18} className="text-amber-500" />
@@ -933,7 +933,7 @@ export default function AgentConfigPage() {
                   value={config.contact_info.email || ''}
                   onChange={(e) => updateContactInfo('email', e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50 focus:bg-gray-900 transition-all"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50 focus:bg-gray-900 transition-all"
                 />
               </div>
               
@@ -947,7 +947,7 @@ export default function AgentConfigPage() {
                   value={config.contact_info.phone || ''}
                   onChange={(e) => updateContactInfo('phone', e.target.value)}
                   placeholder="+1 (555) 123-4567"
-                  className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50 focus:bg-gray-900 transition-all"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50 focus:bg-gray-900 transition-all"
                 />
               </div>
 
@@ -961,7 +961,7 @@ export default function AgentConfigPage() {
                   value={config.contact_info.location || ''}
                   onChange={(e) => updateContactInfo('location', e.target.value)}
                   placeholder="San Francisco, CA"
-                  className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50 focus:bg-gray-900 transition-all"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50 focus:bg-gray-900 transition-all"
                 />
               </div>
 
@@ -975,7 +975,7 @@ export default function AgentConfigPage() {
                   value={config.contact_info.website || ''}
                   onChange={(e) => updateContactInfo('website', e.target.value)}
                   placeholder="https://yourwebsite.com"
-                  className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50 focus:bg-gray-900 transition-all"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50 focus:bg-gray-900 transition-all"
                 />
               </div>
 
@@ -989,14 +989,14 @@ export default function AgentConfigPage() {
                   value={config.contact_info.calendly || ''}
                   onChange={(e) => updateContactInfo('calendly', e.target.value)}
                   placeholder="https://calendly.com/yourname"
-                  className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50 focus:bg-gray-900 transition-all"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50 focus:bg-gray-900 transition-all"
                 />
               </div>
             </div>
           </div>
 
           {/* Social Links */}
-          <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8 hover:border-[#f46530]/20 transition-all">
+          <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mb-8 hover:border-[#f46530]/20 transition-all">
             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
               <div className="w-8 h-8 bg-[#f46530]/10 rounded flex items-center justify-center">
                 <Globe size={18} className="text-[#f46530]" />
@@ -1030,7 +1030,7 @@ export default function AgentConfigPage() {
               <select
                 value={newSocialLink.platform}
                 onChange={(e) => setNewSocialLink(prev => ({ ...prev, platform: e.target.value }))}
-                className="w-40 px-4 py-2.5 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all text-sm appearance-none cursor-pointer"
+                className="w-40 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all text-sm appearance-none cursor-pointer"
               >
                 <option value="">Platform</option>
                 <option value="twitter">Twitter/X</option>
@@ -1048,7 +1048,7 @@ export default function AgentConfigPage() {
                 value={newSocialLink.url}
                 onChange={(e) => setNewSocialLink(prev => ({ ...prev, url: e.target.value }))}
                 placeholder="Profile URL"
-                className="flex-1 px-4 py-2.5 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all text-sm"
+                className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all text-sm"
               />
               <button
                 onClick={addSocialLink}
@@ -1060,7 +1060,7 @@ export default function AgentConfigPage() {
           </div>
 
           {/* Custom Knowledge */}
-          <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8 hover:border-blue-500/20 transition-all">
+          <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mb-8 hover:border-blue-500/20 transition-all">
             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
               <div className="w-8 h-8 bg-blue-500/10 rounded flex items-center justify-center">
                 <FileText size={18} className="text-blue-400" />
@@ -1076,12 +1076,12 @@ export default function AgentConfigPage() {
               onChange={(e) => updateConfig('custom_knowledge', e.target.value)}
               placeholder="Enter any additional information for your agent..."
               rows={6}
-              className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:bg-gray-900 transition-all resize-none"
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:bg-gray-900 transition-all resize-none"
             />
           </div>
 
           {/* Document Upload Section - Link to dedicated page */}
-          <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-12 hover:border-[#f46530]/20 transition-all">
+          <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mb-12 hover:border-[#f46530]/20 transition-all">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 bg-[#f46530]/10 rounded-xl flex items-center justify-center">
@@ -1094,7 +1094,7 @@ export default function AgentConfigPage() {
               </div>
               <a
                 href="/dashboard/agent/documents"
-                className="flex items-center gap-2 px-6 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white hover:border-[#f46530]/50 hover:bg-gray-900 transition-all font-semibold group"
+                className="flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-white hover:border-[#f46530]/50 hover:bg-gray-900 transition-all font-semibold group"
               >
                 <Upload size={18} className="group-hover:translate-y-[-2px] transition-transform" />
                 Manage Documents
@@ -1102,7 +1102,7 @@ export default function AgentConfigPage() {
             </div>
           </div>
           {/* Share & Embed Section */}
-          <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-8 mb-20 hover:border-[#f46530]/20 transition-all">
+          <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-8 mb-20 hover:border-[#f46530]/20 transition-all">
             <div className="flex flex-col md:flex-row justify-between items-start gap-8">
               <div className="flex-1">
                 <h2 className="text-2xl font-bold text-white mb-3 flex items-center gap-3">

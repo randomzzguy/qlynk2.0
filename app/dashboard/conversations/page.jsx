@@ -116,7 +116,7 @@ export default function ConversationsPage() {
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="px-4 py-2 bg-gray-800/60 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-[#f46530] transition-colors"
+            className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#f46530] transition-colors"
           >
             <option value="all">All Time</option>
             <option value="today">Today</option>
@@ -128,17 +128,17 @@ export default function ConversationsPage() {
 
       {/* Stats Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
-        <div className="bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50 p-4">
+        <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-4">
           <div className="text-xl sm:text-2xl font-black text-white">{conversations.length}</div>
           <div className="text-xs sm:text-sm text-gray-400">Total Conversations</div>
         </div>
-        <div className="bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50 p-4">
+        <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-4">
           <div className="text-xl sm:text-2xl font-black text-white">
             {conversations.reduce((sum, c) => sum + (c.message_count || 0), 0)}
           </div>
           <div className="text-xs sm:text-sm text-gray-400">Total Messages</div>
         </div>
-        <div className="col-span-2 sm:col-span-1 bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50 p-4">
+        <div className="col-span-2 sm:col-span-1 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-4">
           <div className="text-xl sm:text-2xl font-black text-white">{filteredConversations.length}</div>
           <div className="text-xs sm:text-sm text-gray-400">Showing</div>
         </div>
@@ -148,14 +148,14 @@ export default function ConversationsPage() {
       {filteredConversations.length > 0 ? (
         <div className="space-y-3">
           {filteredConversations.map((convo) => (
-            <div key={convo.id} className="bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50 overflow-hidden">
+            <div key={convo.id} className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 overflow-hidden">
               {/* Conversation Header */}
               <button
                 onClick={() => loadMessages(convo.id)}
-                className="w-full flex items-center justify-between p-5 hover:bg-gray-800/60 transition-colors"
+                className="w-full flex items-center justify-between p-5 hover:bg-white/10 transition-colors"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-full flex items-center justify-center">
                     <Users size={20} className="text-gray-400" />
                   </div>
                   <div className="text-left flex-1 min-w-0">
@@ -204,7 +204,7 @@ export default function ConversationsPage() {
 
               {/* Messages Panel */}
               {selectedConvo === convo.id && (
-                <div className="border-t border-gray-700/50 bg-gray-900/50 p-5">
+                <div className="border-t border-white/10 bg-white/5 p-5">
                   {loadingMessages ? (
                     <div className="text-center py-8">
                       <div className="w-8 h-8 border-3 border-[#f46530] border-t-transparent rounded-full animate-spin mx-auto"></div>
@@ -221,7 +221,7 @@ export default function ConversationsPage() {
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                             msg.role === 'assistant' 
                               ? 'bg-[#f46530]/20 border border-[#f46530]/30' 
-                              : 'bg-gray-700 border border-gray-600'
+                              : 'bg-white/10 border border-white/10'
                           }`}>
                             {msg.role === 'assistant' ? (
                               <Bot size={16} className="text-[#f46530]" />
@@ -229,9 +229,9 @@ export default function ConversationsPage() {
                               <User size={16} className="text-gray-400" />
                             )}
                           </div>
-                          <div className={`max-w-[80%] p-3 rounded-xl ${
+                          <div className={`max-w-[80%] p-3 rounded-2xl ${
                             msg.role === 'assistant'
-                              ? 'bg-gray-800/60 border border-gray-700/50'
+                              ? 'bg-white/10 border border-white/10'
                               : 'bg-[#f46530]/10 border border-[#f46530]/20'
                           }`}>
                             <div className="text-white text-sm">
@@ -264,8 +264,8 @@ export default function ConversationsPage() {
           ))}
         </div>
       ) : (
-        <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-12 text-center">
-          <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-700">
+        <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-12 text-center">
+          <div className="w-16 h-16 bg-white/10 rounded-3xl flex items-center justify-center mx-auto mb-4 border border-white/10">
             <MessageSquare className="text-gray-500" size={28} />
           </div>
           <h3 className="text-xl font-bold text-white mb-2">No Conversations Yet</h3>

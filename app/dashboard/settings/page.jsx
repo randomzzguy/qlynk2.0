@@ -185,11 +185,11 @@ export default function SettingsPage() {
 
       <div className="space-y-6">
         {/* Profile Settings */}
-        <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-8 mb-8 hover:border-blue-500/20 transition-all group">
+        <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-8 mb-8 hover:border-blue-500/20 hover:bg-white/10 transition-all group">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-8 mb-10">
             {/* Avatar Section */}
             <div className="relative group">
-              <div className="w-32 h-32 rounded-3xl bg-gray-900/50 border-2 border-gray-700/50 overflow-hidden flex items-center justify-center relative shadow-2xl group-hover:border-[#f46530]/50 transition-all">
+              <div className="w-32 h-32 rounded-3xl bg-white/5 border-2 border-white/10 overflow-hidden flex items-center justify-center relative shadow-2xl group-hover:border-[#f46530]/50 transition-all">
                 {avatarUrl ? (
                   <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
@@ -219,7 +219,7 @@ export default function SettingsPage() {
               <div className="flex gap-3">
                 <button 
                   onClick={() => setAvatarUrl('')}
-                  className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-xs font-bold text-gray-400 hover:text-red-400 hover:border-red-400/50 transition-all flex items-center gap-2"
+                  className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-gray-400 hover:text-red-400 hover:border-red-400/50 hover:bg-white/10 transition-all flex items-center gap-2"
                 >
                   <Trash2 size={14} />
                   Remove Photo
@@ -235,7 +235,7 @@ export default function SettingsPage() {
                 type="text" 
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all" 
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-white/10 transition-all" 
                 placeholder="John Doe" 
               />
             </div>
@@ -247,7 +247,7 @@ export default function SettingsPage() {
               <textarea 
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all h-32 resize-none" 
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-white/10 transition-all h-32 resize-none" 
                 placeholder="Tell us about yourself... this is used to train your AI representative." 
               />
               <p className="text-xs text-gray-500 mt-2 italic">This bio is the primary source of truth for your AI clone.</p>
@@ -259,13 +259,13 @@ export default function SettingsPage() {
                   type="color" 
                   value={primaryColor}
                   onChange={(e) => setPrimaryColor(e.target.value)}
-                  className="w-12 h-12 rounded-xl border border-gray-700/50 bg-gray-900/50 cursor-pointer overflow-hidden p-0.5" 
+                  className="w-12 h-12 rounded-xl border border-white/10 bg-white/5 cursor-pointer overflow-hidden p-0.5" 
                 />
                 <input 
                   type="text" 
                   value={primaryColor}
                   onChange={(e) => setPrimaryColor(e.target.value)}
-                  className="flex-1 px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all font-mono" 
+                  className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-white/10 transition-all font-mono" 
                   placeholder="#f46530" 
                 />
               </div>
@@ -275,7 +275,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Account Settings */}
-        <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-8 mb-8 hover:border-purple-500/20 transition-all group">
+        <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-8 mb-8 hover:border-purple-500/20 hover:bg-white/10 transition-all group">
           <div className="flex items-center gap-4 mb-8">
             <div className="w-12 h-12 bg-purple-500/10 text-purple-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
               <Shield size={24} />
@@ -295,7 +295,7 @@ export default function SettingsPage() {
                   type="email" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all" 
+                  className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-white/10 transition-all" 
                   placeholder="john@example.com" 
                 />
               </div>
@@ -308,7 +308,7 @@ export default function SettingsPage() {
                   type={showPassword ? "text" : "password"} 
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all" 
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-white/10 transition-all" 
                   placeholder="Leave blank to keep current" 
                 />
                 <button 

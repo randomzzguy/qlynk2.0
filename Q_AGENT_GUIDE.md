@@ -93,7 +93,7 @@ Tracks visitor conversations
 - visitor_ip (TEXT)
 - visitor_location (TEXT)
 - visitor_device (TEXT)
-- started_at, ended_at (TIMESTAMPTZ)
+- created_at, updated_at (TIMESTAMPTZ)
 - message_count (INTEGER)
 - sentiment (TEXT)
 ```

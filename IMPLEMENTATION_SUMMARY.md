@@ -125,7 +125,7 @@ app/[username]/page.jsx      # Integrated ChatWidget
 |-------|---------|-----------|-----------|
 | `agent_configs` | Agent settings | 1 | bio, skills, projects, contact_info, social_links |
 | `agent_documents` | Knowledge base | Many | filename, extracted_text, is_processed |
-| `agent_conversations` | Chat sessions | Many | visitor_id, message_count, started_at |
+| `agent_conversations` | Chat sessions | Many | visitor_id, message_count, created_at |
 | `agent_messages` | Chat history | Many | conversation_id, role, content |
 | `user_trials` | Free trial | 1 | trial_started_at, trial_ends_at, is_active |
 
@@ -149,7 +149,7 @@ app/[username]/page.jsx      # Integrated ChatWidget
 ### 📈 Analytics Tracked
 
 For each conversation:
-- `started_at` - When conversation began
+- `created_at` - When conversation began
 - `ended_at` - When visitor left
 - `message_count` - Total messages exchanged
 - `visitor_id` - Unique visitor identifier

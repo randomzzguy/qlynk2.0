@@ -92,6 +92,7 @@ export default function DocumentsPage() {
   const handleFiles = async (files) => {
     if (!userId) return;
     
+    const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
     const allowedTypes = [
       'application/pdf',
       'text/plain',
@@ -108,6 +109,11 @@ export default function DocumentsPage() {
       
       if (!allowedTypes.includes(file.type) && !file.name.endsWith('.md') && !file.name.endsWith('.txt')) {
         console.warn(`Skipping unsupported file: ${file.name}`);
+        continue;
+      }
+
+      if (file.size > MAX_FILE_SIZE) {
+        alert(`File "${file.name}" is too large. Max size is 3MB.`);
         continue;
       }
 
@@ -266,7 +272,7 @@ export default function DocumentsPage() {
                   Drop files here or click to upload
                 </h3>
                 <p className="text-gray-400 mb-8 max-w-sm mx-auto">
-                  Enhance your agent with knowledge from PDF, TXT, Markdown, or Word documents
+                  Enhance your agent with knowledge from PDF, TXT, Markdown, or Word documents (Max 3MB per file)
                 </p>
                 <label className="inline-flex items-center gap-2 px-6 py-3 bg-[#f46530] text-white rounded-xl font-bold cursor-pointer hover:bg-[#f46530]/90 shadow-lg shadow-[#f46530]/20 transition-all">
                   <Upload size={18} />

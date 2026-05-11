@@ -27,6 +27,7 @@ export default function SettingsPage() {
   // Form states
   const [fullName, setFullName] = useState('');
   const [bio, setBio] = useState('');
+  const [primaryColor, setPrimaryColor] = useState('#f46530');
   const [email, setEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -49,12 +50,13 @@ export default function SettingsPage() {
         const supabase = createClient();
         const { data: agentConfig } = await supabase
           .from('agent_configs')
-          .select('bio')
+          .select('bio, primary_color')
           .eq('user_id', currentUser.id)
           .maybeSingle();
         
         if (agentConfig) {
           setBio(agentConfig.bio || '');
+          setPrimaryColor(agentConfig.primary_color || '#f46530');
         }
 
       } catch (error) {
@@ -89,6 +91,7 @@ export default function SettingsPage() {
         .upsert({ 
           user_id: user.id, 
           bio: bio,
+          primary_color: primaryColor,
           updated_at: new Date().toISOString()
         }, { onConflict: 'user_id' });
 
@@ -172,6 +175,25 @@ export default function SettingsPage() {
                 placeholder="Tell us about yourself... this is used to train your AI representative." 
               />
               <p className="text-xs text-gray-500 mt-2 italic">This bio is the primary source of truth for your AI clone.</p>
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-400 mb-2">Primary Brand Color</label>
+              <div className="flex gap-3">
+                <input 
+                  type="color" 
+                  value={primaryColor}
+                  onChange={(e) => setPrimaryColor(e.target.value)}
+                  className="w-12 h-12 rounded-xl border border-gray-700/50 bg-gray-900/50 cursor-pointer overflow-hidden p-0.5" 
+                />
+                <input 
+                  type="text" 
+                  value={primaryColor}
+                  onChange={(e) => setPrimaryColor(e.target.value)}
+                  className="flex-1 px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all font-mono" 
+                  placeholder="#f46530" 
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-2">This color is used for your agent's branding and buttons.</p>
             </div>
           </div>
         </div>

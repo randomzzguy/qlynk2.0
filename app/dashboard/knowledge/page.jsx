@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   Brain, 
   Plus, 
@@ -37,12 +37,7 @@ export default function KnowledgeDashboard() {
 
   const supabase = createClientBrowser();
 
-  useEffect(() => {
-    fetchAllData();
-  }, []);
-
-  const fetchAllData = async () => {
-    setLoading(true);
+  const fetchAllData = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -67,7 +62,23 @@ export default function KnowledgeDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [supabase]);
+
+  useEffect(() => {
+    setLoading(true);
+    fetchAllData();
+  }, [fetchAllData]);
+
+  // Neural Polling: Refresh data every 5s if any document is still processing
+  useEffect(() => {
+    const hasUnprocessed = documents.some(d => !d.is_processed);
+    if (hasUnprocessed) {
+      const timer = setTimeout(() => {
+        fetchAllData();
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [documents, fetchAllData]);
 
   const handleAddFact = async (e) => {
     e.preventDefault();
@@ -137,6 +148,18 @@ export default function KnowledgeDashboard() {
         });
 
       if (dbError) throw dbError;
+      
+      const newDocId = dbData?.[0]?.id;
+
+      // 3. TRIGGER NEURAL PROCESSING
+      if (newDocId) {
+        // We don't await this so the UI stays responsive, but it starts immediately
+        fetch('/api/process-document', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ documentId: newDocId })
+        }).catch(err => console.error('Processing trigger failed:', err));
+      }
 
       toast.success('File uploaded to Neural Engine');
       fetchAllData();

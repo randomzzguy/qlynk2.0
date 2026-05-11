@@ -77,7 +77,7 @@ export async function POST(req) {
 
     if (updateError) {
       console.error('Error updating doc:', updateError);
-      return new Response(JSON.stringify({ error: 'Failed to update document status' }), { status: 500 });
+      return new Response(JSON.stringify({ error: `Failed to update document status: ${updateError.message}` }), { status: 500 });
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 200 });

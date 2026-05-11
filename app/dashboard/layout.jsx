@@ -8,6 +8,7 @@ import QlynkBackground from '@/components/QlynkBackground';
 import { Menu, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Toaster } from 'react-hot-toast';
 
 export default function DashboardLayout({ children }) {
   const router = useRouter();
@@ -95,6 +96,7 @@ export default function DashboardLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
+      <Toaster position="top-right" />
       {/* Background Orbs */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         <QlynkBackground />

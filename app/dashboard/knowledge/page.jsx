@@ -141,8 +141,8 @@ export default function KnowledgeDashboard() {
       toast.success('File uploaded to Neural Engine');
       fetchAllData();
     } catch (error) {
-      console.error('Upload error:', error);
-      toast.error('Neural sync failed');
+      console.error('Upload error details:', error);
+      toast.error(`Upload failed: ${error.message || 'Unknown error'}`);
     } finally {
       setUploading(false);
     }

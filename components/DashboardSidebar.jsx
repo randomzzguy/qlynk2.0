@@ -54,7 +54,7 @@ const navGroups = [
   }
 ];
 
-export default function DashboardSidebar({ onSignOut, isOpen, onClose, username, isCollapsed, onCollapseToggle, tier }) {
+export default function DashboardSidebar({ onSignOut, isOpen, onClose, username, avatarUrl, isCollapsed, onCollapseToggle, tier }) {
   const pathname = usePathname();
 
   const NavItem = ({ item, collapsed }) => {
@@ -207,7 +207,9 @@ export default function DashboardSidebar({ onSignOut, isOpen, onClose, username,
           {!isCollapsed ? (
             <div className="flex items-center gap-3 px-3 py-4 bg-white/5 rounded-2xl border border-white/5 mb-2">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg overflow-hidden border border-white/10">
-                {username ? (
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt={username} className="w-full h-full object-cover" />
+                ) : username ? (
                   <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`} alt={username} className="w-full h-full object-cover" />
                 ) : (
                   '?'
@@ -221,7 +223,11 @@ export default function DashboardSidebar({ onSignOut, isOpen, onClose, username,
           ) : (
             <div className="flex justify-center py-4 relative group">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg overflow-hidden border border-white/10 group-hover:scale-110 transition-transform cursor-help">
-                 <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`} alt={username} className="w-full h-full object-cover" />
+                 {avatarUrl ? (
+                   <img src={avatarUrl} alt={username} className="w-full h-full object-cover" />
+                 ) : (
+                   <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`} alt={username} className="w-full h-full object-cover" />
+                 )}
               </div>
               <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap border border-gray-800 font-bold uppercase tracking-widest">
                 Account: @{username}

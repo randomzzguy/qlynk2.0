@@ -13,7 +13,9 @@ import {
   CheckCircle, 
   AlertCircle,
   Eye,
-  EyeOff
+  EyeOff,
+  Upload,
+  Trash2
 } from 'lucide-react';
 import UpgradePrompt from '@/components/UpgradePrompt';
 import { toast, Toaster } from 'react-hot-toast';
@@ -31,6 +33,8 @@ export default function SettingsPage() {
   const [email, setEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [avatarUploading, setAvatarUploading] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -44,6 +48,7 @@ export default function SettingsPage() {
         if (currentProfile) {
           setProfile(currentProfile);
           setFullName(currentProfile.full_name || '');
+          setAvatarUrl(currentProfile.avatar_url || '');
         }
 
         // Fetch bio from agent_configs as it's the primary source for the AI
@@ -77,10 +82,13 @@ export default function SettingsPage() {
     try {
       const supabase = createClient();
 
-      // 1. Update Profile (full_name)
+      // 1. Update Profile (full_name, avatar_url)
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({ full_name: fullName })
+        .update({ 
+          full_name: fullName,
+          avatar_url: avatarUrl 
+        })
         .eq('id', user.id);
 
       if (profileError) throw profileError;
@@ -121,6 +129,42 @@ export default function SettingsPage() {
     }
   };
 
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Image must be less than 2MB');
+      return;
+    }
+
+    setAvatarUploading(true);
+    try {
+      const supabase = createClient();
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      setAvatarUrl(publicUrl);
+      toast.success('Avatar uploaded! Click save to apply.');
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast.error('Error uploading image');
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -142,13 +186,45 @@ export default function SettingsPage() {
       <div className="space-y-6">
         {/* Profile Settings */}
         <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-8 mb-8 hover:border-blue-500/20 transition-all group">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-12 h-12 bg-blue-500/10 text-blue-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-              <User size={24} />
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-8 mb-10">
+            {/* Avatar Section */}
+            <div className="relative group">
+              <div className="w-32 h-32 rounded-3xl bg-gray-900/50 border-2 border-gray-700/50 overflow-hidden flex items-center justify-center relative shadow-2xl group-hover:border-[#f46530]/50 transition-all">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <User size={48} className="text-gray-700" />
+                )}
+                {avatarUploading && (
+                  <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center">
+                    <Loader2 className="text-white animate-spin" size={24} />
+                  </div>
+                )}
+              </div>
+              <label className="absolute -bottom-3 -right-3 w-10 h-10 bg-[#f46530] text-white rounded-xl flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all cursor-pointer border-4 border-[#0a0a0f]">
+                <Upload size={18} />
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleAvatarUpload} 
+                  className="hidden" 
+                  disabled={avatarUploading}
+                />
+              </label>
             </div>
+
             <div>
-              <h2 className="text-xl font-bold text-white">Profile Settings</h2>
-              <p className="text-gray-400 text-sm">Manage your personal information and AI bio</p>
+              <h2 className="text-xl font-bold text-white mb-1">Your Profile Photo</h2>
+              <p className="text-gray-400 text-sm mb-4">This photo will be used in your dashboard and communications.</p>
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setAvatarUrl('')}
+                  className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-xs font-bold text-gray-400 hover:text-red-400 hover:border-red-400/50 transition-all flex items-center gap-2"
+                >
+                  <Trash2 size={14} />
+                  Remove Photo
+                </button>
+              </div>
             </div>
           </div>
 

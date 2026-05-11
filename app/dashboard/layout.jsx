@@ -152,6 +152,7 @@ export default function DashboardLayout({ children }) {
           isCollapsed={isCollapsed}
           onCollapseToggle={handleCollapseToggle}
           username={profile?.username}
+          avatarUrl={profile?.avatar_url}
           tier={profile?.tier}
         />
         

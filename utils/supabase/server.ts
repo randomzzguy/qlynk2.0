@@ -26,3 +26,17 @@ export const createClient = (cookieStore: Awaited<ReturnType<typeof cookies>>) =
     },
   );
 };
+
+// Admin client that bypasses RLS - use only for server-side system checks
+export const createAdminClient = () => {
+  return createServerClient(
+    supabaseUrl!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      cookies: {
+        getAll() { return [] },
+        setAll() {},
+      },
+    }
+  );
+};

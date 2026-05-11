@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server';
+import { createClient, createAdminClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import ChatWidget from '@/components/ChatWidget';
 import { isAgentLive } from '@/lib/subscriptionHelpers';
@@ -34,7 +34,8 @@ export default async function EmbedPage({ params }) {
   }
 
   // Check if agent is live
-  const agentIsLive = await isAgentLive(profile.id);
+  const adminSupabase = createAdminClient();
+  const agentIsLive = await isAgentLive(profile.id, adminSupabase);
 
   if (!agentIsLive) {
     return null;

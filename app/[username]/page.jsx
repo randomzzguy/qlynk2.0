@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server';
+import { createClient, createAdminClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { Sparkles, ArrowRight, Lock } from 'lucide-react';
@@ -116,7 +116,8 @@ export default async function PublicPage({ params }) {
     .eq('user_id', profile.id)
     .single();
 
-  const agentIsLive = await isAgentLive(profile.id, supabase);
+  const adminSupabase = createAdminClient();
+  const agentIsLive = await isAgentLive(profile.id, adminSupabase);
 
   if (!agentIsLive || !agentConfig?.is_enabled) {
     // ... (keep the offline state logic) ...

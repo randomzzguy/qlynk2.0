@@ -35,7 +35,7 @@ const navGroups = [
     title: 'AI Clone',
     items: [
       { href: '/dashboard/agent', icon: Palette, label: 'Visual Style' },
-      { href: '/dashboard/agent/documents', icon: Database, label: 'Knowledge Base' },
+      { href: '/dashboard/knowledge', icon: Database, label: 'Knowledge Base' },
       { href: '/dashboard/conversations', icon: MessageSquare, label: 'Conversations' },
     ]
   },

@@ -159,6 +159,21 @@ html {
     to { box-shadow: 0 0 40px rgba(235, 94, 40, 0.6); }
   }
 
+  @keyframes breathe {
+    0%, 100% { 
+      opacity: 0.05;
+      transform: scale(1);
+    }
+    50% { 
+      opacity: 0.15;
+      transform: scale(1.05);
+    }
+  }
+
+  .animate-breathe {
+    animation: breathe 8s ease-in-out infinite;
+  }
+
   .custom-scrollbar::-webkit-scrollbar {
     width: 5px;
   }

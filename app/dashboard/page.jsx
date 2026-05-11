@@ -328,7 +328,7 @@ export default function DashboardPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50 p-5 hover:border-[#f46530]/30 transition-all group">
+        <div className="bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50 p-5 hover:border-[#f46530]/30 transition-all group card-3d glass-strong">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 bg-[#f46530]/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
               <MessageSquare className="text-[#f46530]" size={20} />
@@ -338,7 +338,7 @@ export default function DashboardPage() {
           <div className="text-sm text-gray-400">Total Messages</div>
         </div>
 
-        <div className="bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50 p-5 hover:border-cyan-500/30 transition-all group">
+        <div className="bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50 p-5 hover:border-cyan-500/30 transition-all group card-3d glass-strong">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 bg-cyan-500/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
               <Users className="text-cyan-400" size={20} />
@@ -348,7 +348,7 @@ export default function DashboardPage() {
           <div className="text-sm text-gray-400">Conversations</div>
         </div>
 
-        <div className="bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50 p-5 hover:border-green-500/30 transition-all group">
+        <div className="bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50 p-5 hover:border-green-500/30 transition-all group card-3d glass-strong">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
               <TrendingUp className="text-green-400" size={20} />
@@ -358,7 +358,7 @@ export default function DashboardPage() {
           <div className="text-sm text-gray-400">Messages This Week</div>
         </div>
 
-        <div className="bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50 p-5 hover:border-purple-500/30 transition-all group">
+        <div className="bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50 p-5 hover:border-purple-500/30 transition-all group card-3d glass-strong">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
               <Zap className="text-purple-400" size={20} />
@@ -445,7 +445,7 @@ export default function DashboardPage() {
             </Link>
 
             <Link
-              href="/dashboard/agent/documents"
+              href="/dashboard/knowledge"
               className="flex items-center gap-3 p-4 bg-gray-900/50 rounded-xl border border-gray-700/50 hover:border-cyan-500/50 hover:bg-gray-900/80 transition-all group"
             >
               <div className="w-10 h-10 bg-cyan-500/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -453,7 +453,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <p className="text-white font-medium">Knowledge Base</p>
-                <p className="text-xs text-gray-400">Upload documents</p>
+                <p className="text-xs text-gray-400">Neural data & files</p>
               </div>
             </Link>
 

@@ -99,7 +99,7 @@ export default function DashboardLayout({ children }) {
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         <QlynkBackground />
         <div 
-          className="absolute rounded-full opacity-10 blur-[120px] animate-pulse"
+          className="absolute rounded-full blur-[120px] animate-breathe"
           style={{
             top: '5%',
             right: '5%',
@@ -109,13 +109,14 @@ export default function DashboardLayout({ children }) {
           }}
         />
         <div 
-          className="absolute rounded-full opacity-10 blur-[120px] animate-pulse delay-700"
+          className="absolute rounded-full blur-[120px] animate-breathe"
           style={{
             bottom: '10%',
             left: '5%',
             width: 400,
             height: 400,
             background: 'radial-gradient(circle, #3b82f6, transparent 70%)',
+            animationDelay: '-4s'
           }}
         />
       </div>

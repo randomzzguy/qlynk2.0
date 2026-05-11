@@ -52,7 +52,7 @@ export default function FullPageChat({
   const chatBg = agentConfig.chat_bg_color || '#0a0a0f';
   const userBubbleBg = agentConfig.user_bubble_color || 'rgba(255,255,255,0.1)';
   const aiBubbleBg = agentConfig.ai_bubble_color || 'rgba(59,130,246,0.12)';
-  const ctaBtnColor = agentConfig.cta_button_color || '#f46530';
+  const ctaBtnColor = agentConfig.cta_button_color || agentConfig.primary_color || '#f46530';
   const ctaTextColor = agentConfig.cta_text_color || '#ffffff';
   const preChatTextColor = agentConfig.pre_chat_text_color || '#9ca3af';
   const gatekeeperTextColor = agentConfig.gatekeeper_text_color || '#9ca3af';
@@ -367,7 +367,7 @@ export default function FullPageChat({
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center">
-                        <Globe className="w-5 h-5 text-gray-500 group-hover:text-[#f46530] transition-colors" />
+                        <Globe className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" />
                       </div>
                       <span className="font-bold text-white text-sm">{link.title}</span>
                     </div>
@@ -414,7 +414,8 @@ export default function FullPageChat({
                       value={gatekeeperForm.name}
                       onChange={(e) => setGatekeeperForm(prev => ({ ...prev, name: e.target.value }))}
                       placeholder="What should I call you?"
-                      className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all"
+                       className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:bg-gray-900 transition-all"
+                      style={{ borderColor: `${ctaBtnColor}4d` }}
                     />
                   </div>
 
@@ -426,7 +427,8 @@ export default function FullPageChat({
                         value={gatekeeperForm.email}
                         onChange={(e) => setGatekeeperForm(prev => ({ ...prev, email: e.target.value }))}
                         placeholder="hello@example.com"
-                        className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all"
+                         className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:bg-gray-900 transition-all"
+                        style={{ borderColor: `${ctaBtnColor}4d` }}
                       />
                     </div>
                   )}
@@ -439,7 +441,8 @@ export default function FullPageChat({
                         value={gatekeeperForm.password}
                         onChange={(e) => setGatekeeperForm(prev => ({ ...prev, password: e.target.value }))}
                         placeholder="Enter the secret password"
-                        className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all"
+                         className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:bg-gray-900 transition-all"
+                        style={{ borderColor: `${ctaBtnColor}4d` }}
                       />
                     </div>
                   )}
@@ -565,7 +568,7 @@ export default function FullPageChat({
                     className="flex justify-start"
                   >
                     <div className="flex gap-4 items-center bg-white/5 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/10">
-                      <Loader2 className="w-5 h-5 animate-spin text-[#f46530]" />
+                      <Loader2 className="w-5 h-5 animate-spin" style={{ color: ctaBtnColor }} />
                       <span className="text-sm font-bold text-gray-400 uppercase tracking-widest">Thinking...</span>
                     </div>
                   </motion.div>
@@ -589,7 +592,8 @@ export default function FullPageChat({
                   <button
                     type="submit"
                     disabled={isLoading || !input.trim()}
-                    className="absolute right-3 p-3 bg-[#f46530] rounded-xl transition-all disabled:opacity-50 disabled:grayscale hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center z-20 cursor-pointer"
+                    className="absolute right-3 p-3 rounded-xl transition-all disabled:opacity-50 disabled:grayscale hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center z-20 cursor-pointer"
+                    style={{ backgroundColor: ctaBtnColor }}
                   >
                     <Send size={24} className="text-white" />
                   </button>

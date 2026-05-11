@@ -150,6 +150,7 @@ export default function OnboardingPage() {
         agent_name: formData.agent_name,
         welcome_message: formData.welcome_message,
         primary_color: formData.primary_color,
+        cta_button_color: formData.primary_color,
         is_enabled: true,
       }, { onConflict: 'user_id' });
 

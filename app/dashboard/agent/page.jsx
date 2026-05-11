@@ -544,6 +544,7 @@ export default function AgentConfigPage() {
               
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-2">Primary Color</label>
+                <p className="text-xs text-gray-500 mb-2">The main brand color for your avatar and fallback for buttons.</p>
                 <div className="flex gap-3">
                   <input
                     type="color"

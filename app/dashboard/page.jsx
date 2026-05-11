@@ -215,303 +215,244 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
       <UpgradePrompt />
       <TrialChoiceManager subscription={subscription} userId={profile?.id} />
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-black text-white mb-2">
-            Welcome back, {profile?.username || 'there'}
+          <h1 className="text-4xl font-black text-white tracking-tight mb-1">
+            Overview
           </h1>
-          <p className="text-lg text-gray-400">Here&apos;s how your q-agent is performing</p>
+          <p className="text-gray-400 font-medium">Welcome back, {profile?.username || 'there'}</p>
         </div>
         
-        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+        <div className="flex items-center gap-3 w-full md:w-auto">
           <Link 
             href={`/${profile?.username}`}
             target="_blank"
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-800/60 border border-gray-700 rounded-xl text-gray-300 hover:text-white hover:border-[#f46530]/50 hover:bg-gray-800 transition-all text-sm font-medium"
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl text-gray-300 hover:text-white hover:bg-white/10 transition-all text-sm font-semibold"
           >
-            <ExternalLink size={18} />
-            <span className="whitespace-nowrap">View Live Page</span>
-          </Link>
-          <Link 
-            href="/dashboard/billing"
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-800/60 border border-gray-700 rounded-xl text-gray-300 hover:text-white hover:border-[#f46530]/50 hover:bg-gray-800 transition-all text-sm font-medium"
-          >
-            <CreditCard size={18} />
-            <span className="whitespace-nowrap">Manage Billing</span>
+            <ExternalLink size={16} />
+            <span>Live Page</span>
           </Link>
           <Link 
             href="/dashboard/agent"
-            className="w-full md:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-[#f46530] text-white rounded-xl font-semibold hover:bg-[#f46530]/90 shadow-lg shadow-[#f46530]/20 transition-all text-sm"
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#f46530] to-[#f68356] text-white rounded-2xl font-bold hover:shadow-[0_0_20px_rgba(244,101,48,0.4)] transition-all text-sm"
           >
-            <Settings size={18} />
-            Configure Agent
+            <Settings size={16} />
+            Configure
           </Link>
         </div>
       </div>
 
-      {/* Agent Status Card */}
-      <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-5 sm:p-6 mb-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
-              agentConfig?.is_enabled 
-                ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/10 border border-green-500/30' 
-                : 'bg-gray-700/50 border border-gray-600/50'
-            }`}>
-              <Bot className={agentConfig?.is_enabled ? 'text-green-400' : 'text-gray-500'} size={28} />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                {agentConfig?.agent_name || 'q-agent'}
-                {agentConfig?.is_enabled && <Sparkles size={16} className="text-[#f46530]" />}
-              </h2>
-              <p className="text-gray-400">
-                {agentConfig?.is_enabled 
-                  ? 'Your agent is live and ready to chat with visitors' 
-                  : 'Your agent is currently offline'}
-              </p>
-            </div>
-          </div>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        
+        {/* Main Content Area */}
+        <div className="xl:col-span-2 space-y-6">
           
-          <div className="flex items-center justify-between w-full sm:w-auto gap-4">
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold ${
-              agentConfig?.is_enabled 
-                ? 'bg-green-500/10 text-green-400 border border-green-500/30' 
-                : 'bg-gray-700/50 text-gray-400 border border-gray-600/50'
-            }`}>
-              {agentConfig?.is_enabled ? (
-                <>
-                  <Eye size={16} />
-                  Live
-                </>
-              ) : (
-                <>
-                  <EyeOff size={16} />
-                  Offline
-                </>
-              )}
+          {/* Agent Status Banner */}
+          <div className="relative overflow-hidden bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+            
+            <div className="flex items-center gap-5 w-full sm:w-auto">
+              <div className={`relative w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 ${
+                agentConfig?.is_enabled 
+                  ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/10 border border-green-500/30' 
+                  : 'bg-white/5 border border-white/10'
+              }`}>
+                {agentConfig?.is_enabled && (
+                  <div className="absolute inset-0 bg-green-500/20 blur-xl rounded-full"></div>
+                )}
+                <Bot className={agentConfig?.is_enabled ? 'text-green-400 relative z-10' : 'text-gray-500'} size={32} />
+              </div>
+              
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <h2 className="text-2xl font-bold text-white tracking-tight">
+                    {agentConfig?.agent_name || 'q-agent'}
+                  </h2>
+                  {agentConfig?.is_enabled && (
+                    <span className="px-2.5 py-0.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                      Online
+                    </span>
+                  )}
+                </div>
+                <p className="text-gray-400 text-sm font-medium">
+                  {agentConfig?.is_enabled 
+                    ? 'Your AI clone is active and receiving visitors.' 
+                    : 'Your AI clone is currently disabled.'}
+                </p>
+              </div>
             </div>
             
             <button
               onClick={toggleAgentStatus}
-              className={`relative w-14 h-7 rounded-full transition-all ${
+              className={`relative w-16 h-8 rounded-full transition-all duration-300 shrink-0 ${
                 agentConfig?.is_enabled 
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 shadow-lg shadow-green-500/30' 
-                  : 'bg-gray-600'
+                  ? 'bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.4)]' 
+                  : 'bg-white/10 hover:bg-white/20'
               }`}
             >
-              <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-transform shadow-md ${
-                agentConfig?.is_enabled ? 'translate-x-8' : 'translate-x-1'
+              <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-transform duration-300 shadow-sm ${
+                agentConfig?.is_enabled ? 'translate-x-9' : 'translate-x-1'
               }`} />
             </button>
           </div>
-        </div>
-      </div>
-    
-      {/* Usage & Plan Card */}
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
-        <div className="md:col-span-2 bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 flex flex-col md:flex-row items-center gap-8">
-          <div className="text-center md:text-left">
-            <p className="text-sm text-gray-400 mb-1 uppercase tracking-wider font-bold">Current Plan</p>
-            <h3 className="text-3xl font-black text-white capitalize mb-1">{stats.tier}</h3>
-            {stats.tier === 'trial' && !isTrialExpired(profile?.trial_ends_at) && (
-              <p className="text-[#f46530] text-sm font-bold">
-                {getTrialDaysRemaining(profile?.trial_ends_at)} days left
-              </p>
-            )}
-          </div>
-          
-          <div className="flex-1 w-full">
-            <div className="flex justify-between items-end mb-2">
-              <p className="text-sm text-gray-400 font-bold">Message Usage</p>
-              <p className="text-sm font-bold text-white">
-                {stats.messagesUsed} / {stats.messagesLimit}
-              </p>
-            </div>
-            <div className="w-full h-3 bg-gray-700 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-[#f46530] to-purple-500 transition-all duration-1000"
-                style={{ width: `${Math.min(100, (stats.messagesUsed / stats.messagesLimit) * 100)}%` }}
-              />
-            </div>
-          </div>
-        </div>
 
-        <div className="bg-gradient-to-br from-purple-600/20 to-blue-600/10 backdrop-blur-sm rounded-2xl border border-purple-500/30 p-6 flex flex-col justify-center text-center">
-          <p className="text-white font-bold mb-3">Need more power?</p>
-          <Link 
-            href="/pricing"
-            className="bg-white text-purple-600 py-2.5 rounded-xl font-bold hover:bg-gray-100 transition-all shadow-lg"
-          >
-            Upgrade Plan
-          </Link>
-        </div>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50 p-5 hover:border-[#f46530]/30 transition-all group card-3d glass-strong">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-[#f46530]/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-              <MessageSquare className="text-[#f46530]" size={20} />
-            </div>
-          </div>
-          <div className="text-3xl font-black text-white mb-1">{stats.totalMessages}</div>
-          <div className="text-sm text-gray-400">Total Messages</div>
-        </div>
-
-        <div className="bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50 p-5 hover:border-cyan-500/30 transition-all group card-3d glass-strong">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-cyan-500/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Users className="text-cyan-400" size={20} />
-            </div>
-          </div>
-          <div className="text-3xl font-black text-white mb-1">{stats.totalConversations}</div>
-          <div className="text-sm text-gray-400">Conversations</div>
-        </div>
-
-        <div className="bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50 p-5 hover:border-green-500/30 transition-all group card-3d glass-strong">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-              <TrendingUp className="text-green-400" size={20} />
-            </div>
-          </div>
-          <div className="text-3xl font-black text-white mb-1">{stats.messagesThisWeek}</div>
-          <div className="text-sm text-gray-400">Messages This Week</div>
-        </div>
-
-        <div className="bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50 p-5 hover:border-purple-500/30 transition-all group card-3d glass-strong">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Zap className="text-purple-400" size={20} />
-            </div>
-          </div>
-          <div className="text-3xl font-black text-white mb-1">{stats.avgMessagesPerConvo}</div>
-          <div className="text-sm text-gray-400">Avg per Conversation</div>
-        </div>
-      </div>
-
-      {/* Recent Conversations & Quick Actions */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Recent Conversations */}
-        <div className="lg:col-span-2 bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold text-white">Recent Conversations</h3>
-            <Link 
-              href="/dashboard/conversations"
-              className="text-sm text-[#f46530] hover:text-[#f46530]/80 font-medium"
-            >
-              View All
-            </Link>
-          </div>
-          
-          {recentConversations.length > 0 ? (
-            <div className="space-y-3">
-              {recentConversations.map((convo) => (
-                <div 
-                  key={convo.id}
-                  className="flex items-center justify-between p-4 bg-gray-900/50 rounded-xl border border-gray-700/50 hover:border-[#f46530]/30 transition-all cursor-pointer group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center group-hover:bg-[#f46530]/20 transition-colors">
-                      <Users size={18} className="text-gray-400 group-hover:text-[#f46530]" />
-                    </div>
-                    <div>
-                      <p className="text-white font-medium">
-                        {convo.visitor_name
-                          ? `${convo.visitor_name} — ${new Date(convo.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${new Date(convo.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`
-                          : 'Visitor'
-                        }
-                      </p>
-                      <p className="text-sm text-gray-400">
-                        {convo.message_count || 0} messages
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <Clock size={14} />
-                    {new Date(convo.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                  </div>
+          {/* Core Stats Bento */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[
+              { label: 'Total Convos', value: stats.totalConversations, icon: Users, color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
+              { label: 'Total Messages', value: stats.totalMessages, icon: MessageSquare, color: 'text-[#f46530]', bg: 'bg-[#f46530]/10' },
+              { label: '7-Day Activity', value: stats.messagesThisWeek, icon: TrendingUp, color: 'text-green-400', bg: 'bg-green-500/10' },
+              { label: 'Avg Length', value: stats.avgMessagesPerConvo, icon: Zap, color: 'text-purple-400', bg: 'bg-purple-500/10' }
+            ].map((stat, i) => (
+              <div key={i} className="bg-white/5 backdrop-blur-md rounded-3xl border border-white/5 p-5 flex flex-col justify-between hover:bg-white/10 transition-colors">
+                <div className={`w-10 h-10 rounded-2xl ${stat.bg} flex items-center justify-center mb-4`}>
+                  <stat.icon className={stat.color} size={20} />
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-700">
-                <MessageSquare className="text-gray-500" size={28} />
+                <div>
+                  <div className="text-2xl font-black text-white tracking-tight">{stat.value}</div>
+                  <div className="text-xs text-gray-400 font-semibold uppercase tracking-wider">{stat.label}</div>
+                </div>
               </div>
-              <p className="text-gray-400 mb-2">No conversations yet</p>
-              <p className="text-sm text-gray-500">
-                Share your page link to start getting visitors
-              </p>
+            ))}
+          </div>
+
+          {/* Recent Activity */}
+          <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 overflow-hidden flex flex-col h-[400px]">
+            <div className="p-6 border-b border-white/5 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-white">Recent Activity</h3>
+              <Link href="/dashboard/conversations" className="text-sm text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                View all <ExternalLink size={14} />
+              </Link>
             </div>
-          )}
+            
+            <div className="p-6 flex-1 overflow-y-auto custom-scrollbar">
+              {recentConversations.length > 0 ? (
+                <div className="space-y-4">
+                  {recentConversations.map((convo) => (
+                    <div key={convo.id} className="group flex items-center justify-between p-4 bg-white/5 rounded-2xl hover:bg-white/10 border border-transparent hover:border-white/10 transition-all cursor-pointer">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-gray-400 group-hover:text-white transition-colors">
+                          <Users size={20} />
+                        </div>
+                        <div>
+                          <p className="text-white font-semibold mb-0.5">
+                            {convo.visitor_name || 'Anonymous Visitor'}
+                          </p>
+                          <div className="flex items-center gap-3 text-xs text-gray-400 font-medium">
+                            <span className="flex items-center gap-1"><MessageSquare size={12}/> {convo.message_count || 0} msgs</span>
+                            <span className="w-1 h-1 bg-gray-600 rounded-full"></span>
+                            <span className="flex items-center gap-1"><Clock size={12}/> {new Date(convo.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-gray-500 group-hover:text-white transition-colors">
+                        <ExternalLink size={18} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center text-center">
+                  <div className="w-16 h-16 bg-white/5 rounded-3xl flex items-center justify-center mb-4 text-gray-500">
+                    <MessageSquare size={24} />
+                  </div>
+                  <h4 className="text-white font-bold mb-1">No conversations yet</h4>
+                  <p className="text-sm text-gray-400 max-w-xs mx-auto">Share your profile link to start engaging with your audience.</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
-          <h3 className="text-lg font-bold text-white mb-6">Quick Actions</h3>
+        {/* Sidebar / Secondary Content Area */}
+        <div className="space-y-6">
           
-          <div className="space-y-3">
-            <Link
-              href="/dashboard/agent"
-              className="flex items-center gap-3 p-4 bg-gray-900/50 rounded-xl border border-gray-700/50 hover:border-[#f46530]/50 hover:bg-gray-900/80 transition-all group"
-            >
-              <div className="w-10 h-10 bg-[#f46530]/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Bot className="text-[#f46530]" size={20} />
-              </div>
-              <div>
-                <p className="text-white font-medium">Edit Agent</p>
-                <p className="text-xs text-gray-400">Customize responses</p>
-              </div>
-            </Link>
+          {/* Usage & Plan */}
+          <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 relative overflow-hidden">
+            {/* Subtle glow */}
+            <div className="absolute -top-20 -right-20 w-40 h-40 bg-[#f46530]/20 blur-3xl rounded-full pointer-events-none"></div>
 
-            <Link
-              href="/dashboard/knowledge"
-              className="flex items-center gap-3 p-4 bg-gray-900/50 rounded-xl border border-gray-700/50 hover:border-cyan-500/50 hover:bg-gray-900/80 transition-all group"
-            >
-              <div className="w-10 h-10 bg-cyan-500/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                <FileText className="text-cyan-400" size={20} />
-              </div>
+            <div className="flex items-center justify-between mb-6">
               <div>
-                <p className="text-white font-medium">Knowledge Base</p>
-                <p className="text-xs text-gray-400">Neural data & files</p>
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Current Plan</p>
+                <div className="flex items-baseline gap-2">
+                  <h3 className="text-2xl font-black text-white capitalize">{stats.tier}</h3>
+                  {stats.tier === 'trial' && !isTrialExpired(profile?.trial_ends_at) && (
+                    <span className="text-[#f46530] text-sm font-bold bg-[#f46530]/10 px-2 py-0.5 rounded-lg">
+                      {getTrialDaysRemaining(profile?.trial_ends_at)}d left
+                    </span>
+                  )}
+                </div>
               </div>
-            </Link>
+              <Link href="/dashboard/billing" className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors">
+                <CreditCard size={18} />
+              </Link>
+            </div>
+            
+            <div className="mb-6">
+              <div className="flex justify-between items-end mb-2">
+                <p className="text-sm text-gray-400 font-medium">Message Quota</p>
+                <p className="text-sm font-bold text-white">
+                  {stats.messagesUsed} <span className="text-gray-500">/ {stats.messagesLimit}</span>
+                </p>
+              </div>
+              <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-[#f46530] to-[#f68356] rounded-full"
+                  style={{ width: `${Math.min(100, (stats.messagesUsed / stats.messagesLimit) * 100)}%` }}
+                />
+              </div>
+            </div>
 
-            <Link
-              href="/dashboard/analytics"
-              className="flex items-center gap-3 p-4 bg-gray-900/50 rounded-xl border border-gray-700/50 hover:border-green-500/50 hover:bg-gray-900/80 transition-all group"
+            <Link 
+              href="/pricing"
+              className="w-full py-3 px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors"
             >
-              <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                <TrendingUp className="text-green-400" size={20} />
-              </div>
-              <div>
-                <p className="text-white font-medium">View Analytics</p>
-                <p className="text-xs text-gray-400">Track performance</p>
-              </div>
+              <Sparkles size={16} className="text-[#f46530]" />
+              Upgrade Plan
             </Link>
-
-            <a
-              href={`/${profile?.username}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-3 p-4 bg-gray-900/50 rounded-xl border border-gray-700/50 hover:border-purple-500/50 hover:bg-gray-900/80 transition-all group"
-            >
-              <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                <ExternalLink className="text-purple-400" size={20} />
-              </div>
-              <div>
-                <p className="text-white font-medium">Preview Page</p>
-                <p className="text-xs text-gray-400">See live agent</p>
-              </div>
-            </a>
           </div>
+
+          {/* Quick Actions List */}
+          <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6">
+            <h3 className="text-lg font-bold text-white mb-4">Quick Links</h3>
+            <div className="space-y-2">
+              <Link href="/dashboard/knowledge" className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/5 transition-colors group">
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <FileText size={18} />
+                </div>
+                <div>
+                  <div className="text-white font-semibold text-sm">Knowledge Base</div>
+                  <div className="text-gray-400 text-xs font-medium">Manage AI training data</div>
+                </div>
+              </Link>
+              <Link href="/dashboard/analytics" className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/5 transition-colors group">
+                <div className="w-10 h-10 rounded-xl bg-green-500/10 text-green-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <TrendingUp size={18} />
+                </div>
+                <div>
+                  <div className="text-white font-semibold text-sm">Analytics</div>
+                  <div className="text-gray-400 text-xs font-medium">View engagement metrics</div>
+                </div>
+              </Link>
+              <Link href="/dashboard/agent" className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/5 transition-colors group">
+                <div className="w-10 h-10 rounded-xl bg-[#f46530]/10 text-[#f46530] flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Bot size={18} />
+                </div>
+                <div>
+                  <div className="text-white font-semibold text-sm">Agent Settings</div>
+                  <div className="text-gray-400 text-xs font-medium">Tweak persona & rules</div>
+                </div>
+              </Link>
+            </div>
+          </div>
+          
         </div>
       </div>
     </div>

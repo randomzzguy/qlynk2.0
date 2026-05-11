@@ -9,6 +9,52 @@ import { isAgentLive } from '@/lib/subscriptionHelpers';
 // This tells Next.js to generate pages dynamically
 export const dynamic = 'force-dynamic';
 
+export async function generateMetadata({ params }) {
+  const { username } = await params;
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id, full_name')
+    .ilike('username', username)
+    .single();
+
+  if (!profile) {
+    return {
+      title: `${username} | Qlynk`,
+      description: 'Create your own digital twin and AI representative.',
+    };
+  }
+
+  const { data: agentConfig } = await supabase
+    .from('agent_configs')
+    .select('agent_name, bio, agent_avatar')
+    .eq('user_id', profile.id)
+    .single();
+
+  const title = `${profile.full_name || username} | Qlynk AI`;
+  const description = agentConfig?.bio || `Chat with the digital twin of ${username}. Learn about their work, background, and expertise.`;
+  const image = agentConfig?.agent_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [{ url: image }],
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [image],
+    },
+  };
+}
+
 export default async function PublicPage({ params }) {
   const { username } = await params;
   const cookieStore = await cookies();

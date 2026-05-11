@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import confetti from 'canvas-confetti';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -221,7 +222,19 @@ export default function OnboardingPage() {
     if (currentStep < STEPS.length - 1) {
       await saveAgentConfig();
       await saveProgress(STEPS[currentStep + 1].id);
-      setCurrentStep(currentStep + 1);
+      
+      const newStep = currentStep + 1;
+      setCurrentStep(newStep);
+
+      // Trigger celebration on final step
+      if (STEPS[newStep].id === 'complete') {
+        confetti({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#f46530', '#ffffff', '#3b82f6']
+        });
+      }
     }
   };
 

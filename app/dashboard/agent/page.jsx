@@ -84,6 +84,7 @@ export default function AgentConfigPage() {
   const [saveStatus, setSaveStatus] = useState(null); // 'success' | 'error' | null
   const [userId, setUserId] = useState(null);
   const [username, setUsername] = useState(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
   
   // Agent config state
   const [config, setConfig] = useState({
@@ -210,6 +211,41 @@ export default function AgentConfigPage() {
       setTimeout(() => setSaveStatus(null), 3000);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !userId) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Avatar image must be less than 2MB');
+      return;
+    }
+
+    setAvatarUploading(true);
+    try {
+      const supabase = createClient();
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}/${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      updateConfig('agent_avatar', publicUrl);
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      alert('Error uploading avatar image');
+    } finally {
+      setAvatarUploading(false);
     }
   };
 
@@ -506,14 +542,35 @@ export default function AgentConfigPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Avatar URL (optional)</label>
-                <input
-                  type="url"
-                  value={config.agent_avatar}
-                  onChange={(e) => updateConfig('agent_avatar', e.target.value)}
-                  placeholder="https://example.com/avatar.png"
-                  className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all"
-                />
+                <label className="block text-sm font-medium text-gray-400 mb-2">Agent Avatar</label>
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-2xl bg-gray-900/50 border border-gray-700/50 overflow-hidden flex items-center justify-center relative group">
+                    {config.agent_avatar ? (
+                      <img src={config.agent_avatar} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <Bot className="text-gray-600" size={32} />
+                    )}
+                    {avatarUploading && (
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                        <Loader2 className="text-white animate-spin" size={20} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <label className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 border border-gray-700 rounded-xl text-sm font-semibold text-gray-300 hover:text-white hover:bg-gray-700 cursor-pointer transition-all">
+                      <Upload size={16} />
+                      {config.agent_avatar ? 'Change Image' : 'Upload Image'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        className="hidden"
+                        disabled={avatarUploading}
+                      />
+                    </label>
+                    <p className="text-[10px] text-gray-500 mt-2">Square images work best. Max 2MB.</p>
+                  </div>
+                </div>
               </div>
 
               <div>

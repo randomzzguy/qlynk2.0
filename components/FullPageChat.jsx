@@ -293,20 +293,20 @@ export default function FullPageChat({
                 </div>
 
                 <h1 className="text-4xl font-black text-white tracking-tight mb-2">
-                  {profile?.name || agentConfig.agent_name}
+                  {agentConfig.agent_name || username}
                 </h1>
                 <p className="font-bold uppercase tracking-widest text-xs mb-6 px-4 py-1.5 rounded-full border"
                    style={{ color: ctaBtnColor, background: `${ctaBtnColor}1a`, borderColor: `${ctaBtnColor}33` }}>
-                  {profile?.profession || 'Digital Creator'}
+                  {agentConfig.profession || 'Digital Creator'}
                 </p>
                 
                 <p className="text-lg leading-relaxed mb-10 max-w-md mx-auto font-medium" style={{ color: preChatTextColor }}>
-                  {profile?.bio || `I'm ${agentConfig.agent_name}, the official digital twin of ${username}. Ask me anything about my work or background.`}
+                  {agentConfig.bio || `I'm ${agentConfig.agent_name}, the official digital twin of ${username}. Ask me anything about my work or background.`}
                 </p>
 
-                {/* Social Links */}
+                {/* Social Links - Use agentConfig links first, fallback to profile table */}
                 <div className="flex gap-4 mb-12">
-                  {profile?.social_links?.map((link, i) => (
+                  {(agentConfig.social_links?.length > 0 ? agentConfig.social_links : profile?.social_links)?.map((link, i) => (
                     <a 
                       key={i} 
                       href={link.url} 
@@ -317,7 +317,19 @@ export default function FullPageChat({
                       {getSocialIcon(link.platform)}
                     </a>
                   ))}
-                  <button className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white transition-all">
+                  <button 
+                    onClick={() => {
+                      if (navigator.share) {
+                        navigator.share({
+                          title: `${agentConfig.agent_name} | Qlynk`,
+                          url: window.location.href
+                        });
+                      } else {
+                        navigator.clipboard.writeText(window.location.href);
+                      }
+                    }}
+                    className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white transition-all"
+                  >
                     <Share2 className="w-5 h-5" />
                   </button>
                 </div>

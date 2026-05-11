@@ -654,6 +654,28 @@ export default function OnboardingPage() {
                 </div>
 
                 <div className="space-y-4 max-w-sm mx-auto">
+                  <div className="text-left mb-6">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">Embed on your site</p>
+                    <div className="relative group">
+                      <div className="absolute -inset-1 bg-gradient-to-r from-orange/20 to-orange-600/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition duration-1000" />
+                      <div className="relative bg-black/60 border border-white/10 rounded-xl p-4 font-mono text-[10px] text-gray-400 overflow-x-auto">
+                        <pre>
+                          {`<script src="${typeof window !== 'undefined' ? window.location.origin : ''}/q-agent.js" data-username="${username}" defer><\/script>`}
+                        </pre>
+                        <button 
+                          onClick={() => {
+                            const code = `<script src="${window.location.origin}/q-agent.js" data-username="${username}" defer><\/script>`;
+                            navigator.clipboard.writeText(code);
+                            alert('Code copied!');
+                          }}
+                          className="absolute top-2 right-2 p-1.5 bg-gray-800 hover:bg-gray-700 rounded-lg text-gray-400 hover:text-white transition-all"
+                        >
+                          <Plus size={14} className="rotate-45" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
                   <button
                     onClick={completeOnboarding}
                     disabled={saving}

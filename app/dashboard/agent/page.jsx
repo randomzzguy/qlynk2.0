@@ -118,6 +118,7 @@ export default function AgentConfigPage() {
     pre_chat_text_color: '#9ca3af',
     gatekeeper_text_color: '#9ca3af',
     font_family: 'Inter',
+    profession: 'Digital Creator',
   });
 
   // Form input states for arrays
@@ -519,6 +520,17 @@ export default function AgentConfigPage() {
                   value={config.agent_name}
                   onChange={(e) => updateConfig('agent_name', e.target.value)}
                   placeholder="q-agent"
+                  className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2">Profession / Title</label>
+                <input
+                  type="text"
+                  value={config.profession || ''}
+                  onChange={(e) => updateConfig('profession', e.target.value)}
+                  placeholder="e.g. Digital Creator, Software Engineer"
                   className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all"
                 />
               </div>

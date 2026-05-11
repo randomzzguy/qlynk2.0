@@ -33,7 +33,15 @@ export default function DashboardLayout({ children }) {
           return;
         }
 
-        setProfile(userProfile);
+        // Fetch subscription
+        const supabase = createClient();
+        const { data: sub } = await supabase
+          .from('subscriptions')
+          .select('tier')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        setProfile({ ...userProfile, tier: sub?.tier || 'Trial' });
         setIsAuthenticated(true);
       } catch (error) {
         console.error('Auth check error:', error);
@@ -138,9 +146,9 @@ export default function DashboardLayout({ children }) {
           onSignOut={handleSignOut} 
           isOpen={isSidebarOpen} 
           onClose={() => setIsSidebarOpen(false)} 
-          isCollapsed={isCollapsed}
           onCollapseToggle={handleCollapseToggle}
           username={profile?.username}
+          tier={profile?.tier}
         />
         
         {/* Main Content Scrollable Area */}

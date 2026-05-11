@@ -60,8 +60,15 @@ function ColorField({ label, value, onChange, hint }) {
         <div className="relative">
           <input
             type="color"
-            value={value || '#000000'}
-            onChange={(e) => onChange(e.target.value)}
+            value={value?.length === 9 ? value.substring(0, 7) : (value || '#000000')}
+            onChange={(e) => {
+              // If the original value had alpha, try to preserve it
+              if (value?.length === 9) {
+                onChange(e.target.value + value.substring(7));
+              } else {
+                onChange(e.target.value);
+              }
+            }}
             className="w-11 h-11 rounded-xl border border-gray-700/50 bg-gray-900/50 cursor-pointer overflow-hidden p-0.5"
           />
         </div>

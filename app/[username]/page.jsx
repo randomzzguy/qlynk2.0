@@ -141,10 +141,13 @@ export default async function PublicPage({ params }) {
     );
   }
 
+  const safeAgentConfig = { ...agentConfig };
+  delete safeAgentConfig.access_password;
+
   return (
     <FullPageChat 
       username={username}
-      agentConfig={agentConfig}
+      agentConfig={safeAgentConfig}
       profile={pageData}
     />
   );

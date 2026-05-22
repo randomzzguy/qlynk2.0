@@ -24,50 +24,63 @@ export async function POST(req) {
     return new Response(`Webhook Error: ${err.message}`, { status: 400 });
   }
 
-  const session = event.data.object;
-
   try {
     switch (event.type) {
-      case 'checkout.session.completed':
+      case 'checkout.session.completed': {
+        const session = event.data.object;
         const subscription = await stripe.subscriptions.retrieve(session.subscription);
-        const userId = session.metadata.supabase_user_id;
-        const planName = session.metadata.plan_name;
+        const userId = session.metadata?.supabase_user_id || subscription.metadata?.supabase_user_id;
+        const planName = session.metadata?.plan_name || subscription.metadata?.plan_name || 'creator';
 
-        await supabaseAdmin
-          .from('subscriptions')
-          .update({
-            stripe_customer_id: session.customer,
-            stripe_subscription_id: session.subscription,
-            tier: planName || 'creator',
-            status: subscription.status,
-            trial_ends_at: subscription.trial_end 
-              ? new Date(subscription.trial_end * 1000).toISOString() 
-              : null,
-          })
-          .eq('user_id', userId);
-        
-        console.log(`[Stripe Webhook] Subscription completed for user ${userId}`);
-        break;
-
-      case 'customer.subscription.updated':
-      case 'customer.subscription.deleted':
-        const sub = event.data.object;
-        const { data: currentSub } = await supabaseAdmin
-          .from('subscriptions')
-          .select('user_id')
-          .eq('stripe_subscription_id', sub.id)
-          .single();
-
-        if (currentSub) {
+        if (userId) {
           await supabaseAdmin
             .from('subscriptions')
             .update({
-              status: sub.status,
-              tier: sub.status === 'active' || sub.status === 'trialing' ? undefined : 'free', // Downgrade if inactive
+              stripe_customer_id: session.customer,
+              stripe_subscription_id: session.subscription,
+              tier: planName.toLowerCase(),
+              status: subscription.status,
+              trial_ends_at: subscription.trial_end
+                ? new Date(subscription.trial_end * 1000).toISOString()
+                : null,
             })
-            .eq('stripe_subscription_id', sub.id);
+            .eq('user_id', userId);
         }
+        
+        console.log(`[Stripe Webhook] Subscription completed for user ${userId}`);
         break;
+      }
+
+      case 'customer.subscription.updated': {
+        const sub = event.data.object;
+        const updates = {
+          stripe_customer_id: sub.customer,
+          status: sub.status,
+          trial_ends_at: sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null,
+        };
+
+        if (sub.metadata?.plan_name) {
+          updates.tier = sub.metadata.plan_name.toLowerCase();
+        }
+
+        await supabaseAdmin
+          .from('subscriptions')
+          .update(updates)
+          .eq('stripe_subscription_id', sub.id);
+        break;
+      }
+
+      case 'customer.subscription.deleted': {
+        const sub = event.data.object;
+        await supabaseAdmin
+          .from('subscriptions')
+          .update({
+            status: 'canceled',
+            tier: 'free',
+          })
+          .eq('stripe_subscription_id', sub.id);
+        break;
+      }
     }
 
     return NextResponse.json({ received: true });

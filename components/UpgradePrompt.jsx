@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { AlertCircle, Clock, Zap, X } from 'lucide-react';
+import { AlertCircle, ArrowRight, Clock, Zap, X } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { getTrialDaysRemaining, isTrialExpired } from '@/lib/subscriptionHelpers';
 

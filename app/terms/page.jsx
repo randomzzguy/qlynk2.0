@@ -75,7 +75,7 @@ export default function TermsPage() {
               <section>
                 <h2 className="text-2xl font-bold text-white mb-4">5. Payment and Refunds</h2>
                 <p className="leading-relaxed">
-                  The Service offers a 14-day free trial. A valid credit card is required to start the trial. If you do not cancel before the trial ends, you will be automatically billed for the Creator plan. All fees are non-refundable except as required by law.
+                  The Service offers a 14-day free trial without requiring a credit card. Paid plans begin only after you choose a paid subscription through checkout. All fees are non-refundable except as required by law.
                 </p>
               </section>
 

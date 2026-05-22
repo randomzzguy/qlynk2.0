@@ -73,7 +73,7 @@ Q-Agent is a SaaS platform that allows users to create AI-powered clones of them
 - [ ] Connect Stripe for payments
 - [ ] Subscription checkout flow (Creator vs Agency)
 - [ ] Set up Stripe webhooks to update `subscriptions` table
-- [ ] Usage tracking for message limits (auto-disable agent when limit reached)
+- [x] Usage tracking for message limits (chat API blocks responses when limit is reached)
 - [ ] Billing history section
 
 #### 2. Advanced AI Features
@@ -96,7 +96,7 @@ Q-Agent is a SaaS platform that allows users to create AI-powered clones of them
 - **Database:** Supabase (PostgreSQL)
 - **Auth:** Supabase Auth
 - **Styling:** Tailwind CSS + Framer Motion
-- **AI:** Vercel AI SDK 6.0
+- **AI:** Groq chat completions API
 - **Payments:** Stripe (Next task)
 
 *Last updated: May 7, 2026 (Updated home page CTA for card-upfront trial)*

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { getCurrentUser } from '@/lib/supabase';
@@ -471,8 +472,8 @@ export default function AgentConfigPage() {
                   />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-white font-medium">Email Verification</span>
-                  <span className="text-sm text-gray-400">Visitors must verify their email address before they can chat.</span>
+                  <span className="text-white font-medium">Email Required</span>
+                  <span className="text-sm text-gray-400">Visitors must enter a valid email address before they can chat.</span>
                 </div>
               </label>
 
@@ -1092,13 +1093,13 @@ export default function AgentConfigPage() {
                   <p className="text-gray-400">Upload PDFs, text files, or documents to expand knowledge</p>
                 </div>
               </div>
-              <a
+              <Link
                 href="/dashboard/agent/documents"
                 className="flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-white hover:border-[#f46530]/50 hover:bg-gray-900 transition-all font-semibold group"
               >
                 <Upload size={18} className="group-hover:translate-y-[-2px] transition-transform" />
                 Manage Documents
-              </a>
+              </Link>
             </div>
           </div>
           {/* Share & Embed Section */}

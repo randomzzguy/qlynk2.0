@@ -51,6 +51,7 @@ export default async function EmbedPage({ params }) {
           welcomeMessage={agentConfig.welcome_message}
           primaryColor={agentConfig.primary_color}
           position={agentConfig.position}
+          accessLevel={agentConfig.access_level}
         />
       </div>
     </div>

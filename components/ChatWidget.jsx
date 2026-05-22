@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport } from 'ai';
 import { MessageCircle, X, Send, Bot, User, Loader2 } from 'lucide-react';
 
 export default function ChatWidget({ 
@@ -11,16 +9,23 @@ export default function ChatWidget({
   agentAvatar,
   welcomeMessage = 'Hi! How can I help you today?',
   primaryColor = '#f46530',
-  position = 'bottom-right'
+  position = 'bottom-right',
+  accessLevel = 'public'
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
+  const [gatekeeperForm, setGatekeeperForm] = useState({ name: '', email: '', password: '' });
+  const [gatekeeperError, setGatekeeperError] = useState('');
+  const [isAuthorized, setIsAuthorized] = useState(accessLevel === 'public');
+  const [accessPassword, setAccessPassword] = useState('');
   const [visitorId] = useState(() => 
     typeof window !== 'undefined' 
       ? localStorage.getItem('qlynk_visitor_id') || crypto.randomUUID()
       : crypto.randomUUID()
   );
   const [conversationId, setConversationId] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -39,22 +44,6 @@ export default function ChatWidget({
     }
   }, [isOpen]);
 
-  const { messages, sendMessage, status } = useChat({
-    transport: new DefaultChatTransport({
-      api: '/api/chat',
-      prepareSendMessagesRequest: ({ id, messages }) => ({
-        body: {
-          messages,
-          username,
-          conversationId,
-          visitorId,
-        },
-      }),
-    }),
-  });
-
-  const isLoading = status === 'streaming' || status === 'submitted';
-
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -67,11 +56,130 @@ export default function ChatWidget({
     }
   }, [isOpen]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
-    sendMessage({ text: input });
+    if (!isAuthorized) {
+      setGatekeeperError('Please complete access first.');
+      return;
+    }
+
+    const userMessage = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: input.trim(),
+    };
+    const updatedMessages = [...messages, userMessage];
+
+    setMessages(updatedMessages);
     setInput('');
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/ai-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: updatedMessages,
+          username,
+          conversationId,
+          visitorId,
+          visitorName: gatekeeperForm.name,
+          visitorEmail: gatekeeperForm.email,
+          accessPassword,
+        }),
+      });
+
+      const headerConvId = response.headers.get('x-conversation-id');
+      if (headerConvId && !conversationId) {
+        setConversationId(headerConvId);
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        const requestError = new Error(errorData.error || 'Failed to connect to AI');
+        requestError.status = response.status;
+        throw requestError;
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let assistantContent = '';
+      const assistantId = (Date.now() + 1).toString();
+
+      setMessages(prev => [...prev, { id: assistantId, role: 'assistant', content: '' }]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          const trimmedLine = line.trim();
+          if (!trimmedLine || trimmedLine === 'data: [DONE]') continue;
+
+          if (trimmedLine.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(trimmedLine.substring(6));
+              const content = data.choices[0]?.delta?.content || '';
+              if (content) {
+                assistantContent += content;
+                setMessages(prev => prev.map(message =>
+                  message.id === assistantId
+                    ? { ...message, content: assistantContent }
+                    : message
+                ));
+              }
+            } catch {
+              // Ignore partial stream frames and keep reading.
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[ChatWidget] Error:', error);
+      if (error.status === 403 && accessLevel !== 'public') {
+        setIsAuthorized(false);
+        setGatekeeperError(error.message);
+      }
+      setMessages(prev => [
+        ...prev,
+        {
+          id: (Date.now() + 2).toString(),
+          role: 'assistant',
+          content: error.message || "Sorry, I couldn't connect right now. Please try again in a moment.",
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGatekeeperSubmit = (e) => {
+    e.preventDefault();
+    setGatekeeperError('');
+
+    if (!gatekeeperForm.name.trim()) {
+      setGatekeeperError('Please enter your name.');
+      return;
+    }
+
+    if (accessLevel === 'email' && (!gatekeeperForm.email.trim() || !gatekeeperForm.email.includes('@'))) {
+      setGatekeeperError('Please enter a valid email.');
+      return;
+    }
+
+    if (accessLevel === 'password') {
+      if (!gatekeeperForm.password.trim()) {
+        setGatekeeperError('Please enter the access password.');
+        return;
+      }
+      setAccessPassword(gatekeeperForm.password);
+    }
+
+    setIsAuthorized(true);
   };
 
   const positionClasses = {
@@ -82,12 +190,6 @@ export default function ChatWidget({
   };
 
   const getMessageText = (message) => {
-    if (message.parts && Array.isArray(message.parts)) {
-      return message.parts
-        .filter(p => p.type === 'text')
-        .map(p => p.text)
-        .join('');
-    }
     return message.content || '';
   };
 
@@ -134,6 +236,57 @@ export default function ChatWidget({
 
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+            {!isAuthorized && accessLevel !== 'public' ? (
+              <form onSubmit={handleGatekeeperSubmit} className="space-y-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Your name</label>
+                  <input
+                    type="text"
+                    value={gatekeeperForm.name}
+                    onChange={(e) => setGatekeeperForm(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2"
+                    style={{ '--tw-ring-color': primaryColor }}
+                  />
+                </div>
+                {accessLevel === 'email' && (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">Email</label>
+                    <input
+                      type="email"
+                      value={gatekeeperForm.email}
+                      onChange={(e) => setGatekeeperForm(prev => ({ ...prev, email: e.target.value }))}
+                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2"
+                      style={{ '--tw-ring-color': primaryColor }}
+                    />
+                  </div>
+                )}
+                {accessLevel === 'password' && (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">Access password</label>
+                    <input
+                      type="password"
+                      value={gatekeeperForm.password}
+                      onChange={(e) => setGatekeeperForm(prev => ({ ...prev, password: e.target.value }))}
+                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2"
+                      style={{ '--tw-ring-color': primaryColor }}
+                    />
+                  </div>
+                )}
+                {gatekeeperError && (
+                  <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                    {gatekeeperError}
+                  </p>
+                )}
+                <button
+                  type="submit"
+                  className="w-full py-2.5 rounded-xl text-white text-sm font-semibold"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  Continue
+                </button>
+              </form>
+            ) : (
+              <>
             {/* Welcome Message */}
             {messages.length === 0 && (
               <div className="flex gap-3">
@@ -205,6 +358,8 @@ export default function ChatWidget({
             )}
 
             <div ref={messagesEndRef} />
+              </>
+            )}
           </div>
 
           {/* Input Area */}
@@ -216,13 +371,13 @@ export default function ChatWidget({
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Type a message..."
-                disabled={isLoading}
+                disabled={isLoading || !isAuthorized}
                 className="flex-1 px-4 py-2.5 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 disabled:opacity-50"
                 style={{ '--tw-ring-color': primaryColor }}
               />
               <button
                 type="submit"
-                disabled={!input.trim() || isLoading}
+                disabled={!input.trim() || isLoading || !isAuthorized}
                 className="p-2.5 rounded-full text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
                 style={{ backgroundColor: primaryColor }}
                 aria-label="Send message"

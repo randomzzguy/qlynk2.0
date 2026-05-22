@@ -120,17 +120,18 @@ Free trial tracking
 
 ### API Routes
 
-#### `POST /api/chat`
-Main chat endpoint using AI SDK 6 with Groq
-- Accepts messages in UIMessage format from `@ai-sdk/react`
-- Returns streaming responses via SSE
+#### `POST /api/ai-chat`
+Main chat endpoint using Groq's OpenAI-compatible chat completions API
+- Accepts message objects with `role` and `content`
+- Returns Groq's streaming SSE response
 - Handles conversation creation and message logging
 - Builds system prompt from agent config + documents
+- Enforces agent access mode, active subscription status, and plan message limits before calling Groq
 
 **Request Body:**
 ```json
 {
-  "messages": [...],        // UIMessage array from useChat
+  "messages": [...],        // Array of { role, content } messages
   "username": "string",     // Target user's username
   "conversationId": "uuid", // Optional, creates new if not provided
   "visitorId": "uuid"       // Unique visitor identifier
@@ -142,7 +143,7 @@ Main chat endpoint using AI SDK 6 with Groq
 #### `ChatWidget.jsx`
 Floating chat widget component
 - Props: `username`, `agentName`, `agentAvatar`, `welcomeMessage`, `primaryColor`, `position`
-- Manages chat state with `useChat` hook from `@ai-sdk/react`
+- Manages chat state locally
 - Handles message sending and streaming responses
 - Stores visitor ID in localStorage
 
@@ -163,10 +164,9 @@ Document management (`/dashboard/agent/documents`)
 
 ### Libraries
 
-- **AI SDK 6**: `/ai`, `@ai-sdk/react` for LLM interactions
-- **Groq**: `@ai-sdk/groq` for fast LLM inference
+- **Groq API**: OpenAI-compatible chat completions for LLM interactions
 - **Supabase**: `@supabase/supabase-js` for database and auth
-- **React**: `useChat` hook from `@ai-sdk/react` for chat UI
+- **React**: Local state and streaming fetch handling for chat UI
 - **Icons**: `lucide-react` for UI icons
 
 ## Usage Flow
@@ -213,6 +213,7 @@ Document management (`/dashboard/agent/documents`)
    - Agent responds based on configured knowledge
    - Conversation is tracked and logged
    - Messages are streamed in real-time
+   - The chat API blocks inactive plans, exhausted message limits, and invalid access credentials
 
 ## System Prompt Generation
 

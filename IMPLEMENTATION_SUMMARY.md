@@ -12,12 +12,13 @@
 - [x] Automatic user_trials creation on signup
 
 #### 2. Chat Infrastructure
-- [x] Chat API at `/api/chat` using AI SDK 6
+- [x] Chat API at `/api/ai-chat` using Groq's chat completions API
 - [x] Groq LLM integration for fast inference
 - [x] Message streaming via SSE
 - [x] Conversation creation and logging
 - [x] System prompt generation from config + documents
-- [x] UIMessage format support for `@ai-sdk/react`
+- [x] Streaming SSE support for chat messages
+- [x] Server-side access checks and plan/message-limit enforcement
 
 #### 3. Frontend Components
 - [x] ChatWidget component (floating chat bubble)
@@ -71,7 +72,7 @@
 ```
 app/
   api/
-    chat/
+    ai-chat/
       route.js                 # Main chat endpoint
   dashboard/
     agent/
@@ -96,7 +97,7 @@ Docs:
 
 **Modified Files:**
 ```
-package.json                 # Added @ai-sdk/react, ai, @ai-sdk/groq
+package.json                 # App dependencies
 components/DashboardSidebar.jsx  # Added Q-Agent navigation item
 app/[username]/page.jsx      # Integrated ChatWidget
 ```
@@ -104,9 +105,7 @@ app/[username]/page.jsx      # Integrated ChatWidget
 ### 🔧 Technology Stack
 
 **AI & LLM:**
-- AI SDK 6 (`ai@^6.0.175`)
-- AI SDK React (`@ai-sdk/react@^3.0.0`)
-- Groq integration (`@ai-sdk/groq@^3.0.38`)
+- Groq chat completions API
 
 **Database:**
 - Supabase with PostgreSQL
@@ -189,9 +188,9 @@ Visitor Input
     ↓
 ChatWidget component
     ↓
-POST /api/chat (streaming)
+POST /api/ai-chat (streaming)
     ↓
-AI SDK 6 + Groq LLM
+Groq LLM
     ↓
 System Prompt (built from config + documents)
     ↓

@@ -7,12 +7,17 @@ export default async function Page() {
 
   const { data: todos } = await supabase.from('todos').select()
 
+  type Todo = {
+    id: string | number
+    name: string
+  }
+
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-4">Supabase Test: Todos</h1>
       {todos && todos.length > 0 ? (
         <ul className="list-disc pl-5">
-          {todos.map((todo: any) => (
+          {(todos as Todo[]).map((todo) => (
             <li key={todo.id}>{todo.name}</li>
           ))}
         </ul>

@@ -20,20 +20,17 @@ import {
 } from 'lucide-react';
 import QlynkBackground from '@/components/QlynkBackground';
 import ReactMarkdown from 'react-markdown';
-import { createClient } from '@/utils/supabase/client';
 
 export default function FullPageChat({ 
   username, 
   agentConfig,
   profile
 }) {
-  const supabase = createClient();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showGatekeeper, setShowGatekeeper] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [gatekeeperForm, setGatekeeperForm] = useState({ name: '', email: '', password: '' });
   const [gatekeeperError, setGatekeeperError] = useState('');
-  const [gatekeeperStep, setGatekeeperStep] = useState('form');
 
   const [messages, setMessages] = useState([
     {
@@ -45,6 +42,7 @@ export default function FullPageChat({
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState(null);
+  const [accessPassword, setAccessPassword] = useState('');
   const scrollRef = useRef(null);
 
   // ─── Visual customization helpers ──────────────────────────────────────────
@@ -102,20 +100,25 @@ export default function FullPageChat({
     if (agentConfig?.id) {
       const auth = localStorage.getItem(`qlynk_authorized_${agentConfig.id}`);
       const savedName = localStorage.getItem(`qlynk_visitor_name_${agentConfig.id}`);
-      if (auth === 'true' && savedName) {
+      const accessLevel = agentConfig.access_level || 'public';
+      if (accessLevel !== 'password' && auth === 'true' && savedName) {
         setIsAuthorized(true);
         setGatekeeperForm(prev => ({ ...prev, name: savedName }));
       }
     }
-  }, [agentConfig?.id]);
+  }, [agentConfig?.id, agentConfig?.access_level, username]);
 
   const authorizeVisitor = () => {
+    setAccessPassword(gatekeeperForm.password);
+
     if (agentConfig?.id) {
       localStorage.setItem(`qlynk_visitor_name_${agentConfig.id}`, gatekeeperForm.name);
       if (agentConfig.access_level === 'email') {
         localStorage.setItem(`qlynk_visitor_email_${agentConfig.id}`, gatekeeperForm.email);
       }
-      localStorage.setItem(`qlynk_authorized_${agentConfig.id}`, 'true');
+      if (agentConfig.access_level !== 'password') {
+        localStorage.setItem(`qlynk_authorized_${agentConfig.id}`, 'true');
+      }
     }
     setIsAuthorized(true);
     setShowGatekeeper(false);
@@ -134,8 +137,8 @@ export default function FullPageChat({
     const accessLevel = agentConfig?.access_level || 'public';
 
     if (accessLevel === 'password') {
-      if (gatekeeperForm.password !== agentConfig?.access_password) {
-        setGatekeeperError('Incorrect password.');
+      if (!gatekeeperForm.password.trim()) {
+        setGatekeeperError('Please enter the access password.');
         return;
       }
     }
@@ -145,8 +148,6 @@ export default function FullPageChat({
         setGatekeeperError('Please enter a valid email.');
         return;
       }
-      // For now, simulate email verification by just authorizing them
-      // In a full implementation, we would send a magic link here
       authorizeVisitor();
       return;
     }
@@ -185,7 +186,8 @@ export default function FullPageChat({
           visitorId: visitorId,
           conversationId: conversationId,
           visitorName: gatekeeperForm.name,
-          visitorEmail: gatekeeperForm.email
+          visitorEmail: gatekeeperForm.email,
+          accessPassword
         })
       });
 
@@ -196,7 +198,9 @@ export default function FullPageChat({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to connect to AI');
+        const requestError = new Error(errorData.error || 'Failed to connect to AI');
+        requestError.status = response.status;
+        throw requestError;
       }
 
       const reader = response.body.getReader();
@@ -227,23 +231,27 @@ export default function FullPageChat({
                   msg.id === assistantId ? { ...msg, content: assistantContent } : msg
                 ));
               }
-            } catch (e) { }
+            } catch { }
           }
         }
       }
 
-      if (assistantContent) {
-        const finalConvId = conversationId || headerConvId;
-        if (finalConvId) {
-          await supabase.from('agent_messages').insert({
-            conversation_id: finalConvId,
-            role: 'assistant',
-            content: assistantContent
-          });
-        }
-      }
     } catch (error) {
       console.error('[Library-Free-Chat] Error:', error);
+      if (error.status === 403 && agentConfig.access_level !== 'public') {
+        setIsAuthorized(false);
+        setIsChatOpen(false);
+        setShowGatekeeper(true);
+        setGatekeeperError(error.message);
+      }
+      setMessages(prev => [
+        ...prev,
+        {
+          id: (Date.now() + 2).toString(),
+          role: 'assistant',
+          content: error.message || 'Sorry, I could not connect right now. Please try again in a moment.'
+        }
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -540,15 +548,15 @@ export default function FullPageChat({
                             <div className="markdown-content">
                               <ReactMarkdown
                                 components={{
-                                  h1: ({node, ...props}) => <h1 className="text-xl font-bold mt-4 mb-2 first:mt-0 text-white" {...props} />,
-                                  h2: ({node, ...props}) => <h2 className="text-lg font-bold mt-4 mb-2 first:mt-0 text-blue-200" {...props} />,
-                                  h3: ({node, ...props}) => <h3 className="text-md font-bold mt-3 mb-2 first:mt-0 text-blue-300" {...props} />,
-                                  p: ({node, ...props}) => <p className="leading-relaxed mb-3 last:mb-0" {...props} />,
-                                  ul: ({node, ...props}) => <ul className="list-disc list-inside space-y-1 mb-3 last:mb-0" {...props} />,
-                                  ol: ({node, ...props}) => <ol className="list-decimal list-inside space-y-1 mb-3 last:mb-0" {...props} />,
-                                  li: ({node, ...props}) => <li className="pl-1" {...props} />,
-                                  strong: ({node, ...props}) => <strong className="font-bold text-white" {...props} />,
-                                  em: ({node, ...props}) => <em className="italic text-gray-300" {...props} />,
+                                  h1: (props) => <h1 className="text-xl font-bold mt-4 mb-2 first:mt-0 text-white" {...props} />,
+                                  h2: (props) => <h2 className="text-lg font-bold mt-4 mb-2 first:mt-0 text-blue-200" {...props} />,
+                                  h3: (props) => <h3 className="text-md font-bold mt-3 mb-2 first:mt-0 text-blue-300" {...props} />,
+                                  p: (props) => <p className="leading-relaxed mb-3 last:mb-0" {...props} />,
+                                  ul: (props) => <ul className="list-disc list-inside space-y-1 mb-3 last:mb-0" {...props} />,
+                                  ol: (props) => <ol className="list-decimal list-inside space-y-1 mb-3 last:mb-0" {...props} />,
+                                  li: (props) => <li className="pl-1" {...props} />,
+                                  strong: (props) => <strong className="font-bold text-white" {...props} />,
+                                  em: (props) => <em className="italic text-gray-300" {...props} />,
                                 }}
                               >
                                 {m.content || (isLoading && m.id === messages[messages.length-1].id ? '...' : '')}

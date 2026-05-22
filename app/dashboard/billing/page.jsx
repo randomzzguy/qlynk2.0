@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { getCurrentUser, getCurrentProfile } from '@/lib/supabase';
 import { CreditCard, Zap, Check, ArrowRight, Loader2, Clock } from 'lucide-react';
@@ -169,13 +170,13 @@ export default function BillingPage() {
               <p className="text-gray-400">Upgrade to Pro for unlimited messages and advanced features.</p>
             </div>
           </div>
-          <a 
+          <Link
             href="/pricing"
             className="px-8 py-4 bg-orange text-white rounded-2xl font-black flex items-center gap-3 hover:bg-orange/90 transition-all active:scale-95 whitespace-nowrap"
           >
             Compare Plans
             <ArrowRight size={20} />
-          </a>
+          </Link>
         </div>
       </div>
     </div>

@@ -39,7 +39,7 @@ I've successfully implemented a full-featured AI-powered chatbot system called *
 | Component | Technology |
 |-----------|-----------|
 | **LLM** | Groq (fast inference) |
-| **AI Framework** | AI SDK 6 with React bindings |
+| **AI Framework** | Direct Groq chat completions API |
 | **Database** | Supabase (PostgreSQL + RLS) |
 | **Frontend** | React 19, Next.js 16, Tailwind CSS |
 | **Chat Protocol** | Server-Sent Events (SSE) streaming |
@@ -48,7 +48,7 @@ I've successfully implemented a full-featured AI-powered chatbot system called *
 
 **Backend:**
 - ✅ 5 new database tables with RLS policies
-- ✅ Chat API endpoint (`/api/chat`) with Groq integration
+- ✅ Chat API endpoint (`/api/ai-chat`) with Groq integration
 - ✅ Agent utility library for config/document management
 
 **Frontend:**
@@ -183,10 +183,10 @@ user_trials           -- Free trial tracking
 
 ### 📞 Support
 
-All code is production-ready and documented. The implementation follows Next.js 16 and AI SDK 6 best practices.
+The Q-Agent path is wired through Next.js 16 with Groq streaming and Supabase-backed configuration.
 
 **Key Files to Review:**
-1. `/app/api/chat/route.js` - Chat endpoint
+1. `/app/api/ai-chat/route.js` - Chat endpoint
 2. `/components/ChatWidget.jsx` - Chat UI
 3. `/lib/agent.js` - Agent utilities
 4. `/app/dashboard/agent/page.jsx` - Config dashboard
@@ -202,7 +202,7 @@ You now have a complete AI chatbot system integrated into Qlynk that:
 - ✅ Uploads knowledge documents
 - ✅ Shows analytics
 
-The platform is ready to deploy! All tests pass, build succeeds, and the feature is production-ready.
+Before deployment, run a full local build and end-to-end chat test with valid Supabase, Stripe, and Groq environment variables.
 
 ---
 

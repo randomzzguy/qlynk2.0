@@ -6,6 +6,7 @@ import { cookies } from 'next/headers';
 export async function POST(req) {
   try {
     const { priceId, planName } = await req.json();
+    const normalizedPlanName = planName?.toLowerCase?.() || 'creator';
     const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
 
@@ -52,11 +53,15 @@ export async function POST(req) {
       mode: 'subscription',
       success_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/pricing`,
+      metadata: {
+        supabase_user_id: user.id,
+        plan_name: normalizedPlanName,
+      },
       subscription_data: {
         trial_period_days: planName === 'Trial' || planName === 'Creator' ? 14 : undefined,
         metadata: {
           supabase_user_id: user.id,
-          plan_name: planName,
+          plan_name: normalizedPlanName,
         },
       },
     });

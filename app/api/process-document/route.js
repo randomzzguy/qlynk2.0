@@ -60,6 +60,15 @@ export async function POST(req) {
         console.error('PDF parsing error:', pdfError);
         extractedText = 'Error extracting text from PDF.';
       }
+    } else if (doc.filename.toLowerCase().endsWith('.docx')) {
+      try {
+        const mammoth = require('mammoth');
+        const result = await mammoth.extractRawText({ buffer });
+        extractedText = result.value;
+      } catch (docxError) {
+        console.error('DOCX parsing error:', docxError);
+        extractedText = 'Error extracting text from DOCX.';
+      }
     } else {
       // Treat as plain text
       extractedText = buffer.toString('utf-8');

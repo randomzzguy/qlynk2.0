@@ -168,13 +168,13 @@ export default function PricingPage() {
   const priceIds = {
     monthly: {
       trial: 'price_creator_monthly', // Map trial to creator monthly
-      creator: 'price_1TUVu9DMxhyZS2wA05Hr9eZF',
-      agency: 'price_1TUX2FDMxhyZS2wA9weEnXSH',
+      creator: 'price_1TaOnWD25s8DA4MkNYoCscvq',
+      agency: 'price_1TaQsRD25s8DA4MkiTMr40Bi',
     },
     annual: {
       trial: 'price_creator_annual',
-      creator: 'price_1TUVvSDMxhyZS2wA5QH7RGUM',
-      agency: 'price_1TUWzcDMxhyZS2wA0VQr5bzq',
+      creator: 'price_1TaOqsD25s8DA4MkbdiPqRRm',
+      agency: 'price_1TaQv0D25s8DA4MkAmMlJFF5',
     }
   };
 

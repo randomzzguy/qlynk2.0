@@ -9,6 +9,63 @@ function isValidEmail(email) {
   return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+async function analyzeAndSaveSentiment(conversationId, supabase) {
+  try {
+    // 1. Fetch user's message logs for this conversation
+    const { data: messages, error: fetchErr } = await supabase
+      .from('agent_messages')
+      .select('role, content')
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: true })
+      .limit(12);
+
+    if (fetchErr || !messages || messages.length === 0) return;
+
+    // Filter user messages to gauge accurate guest sentiment
+    const userMessages = messages.filter(m => m.role === 'user').map(m => m.content);
+    if (userMessages.length === 0) return;
+
+    // 2. Query Groq's fast Llama-3-8b model for instant classification
+    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'llama-3.1-8b-instant',
+        messages: [
+          {
+            role: 'system',
+            content: "You are a sentiment classifier. Analyze the user's sentiment based on their messages in the chat history. Choose exactly one of these labels: 'positive', 'neutral', or 'negative'. Reply with ONLY the raw lowercase label. No explanation, no intro, no punctuation."
+          },
+          {
+            role: 'user',
+            content: `Messages to analyze:\n${userMessages.map(msg => `- "${msg}"`).join('\n')}`
+          }
+        ],
+        temperature: 0.1,
+        max_tokens: 10,
+      })
+    });
+
+    if (!groqResponse.ok) return;
+
+    const resData = await groqResponse.json();
+    const sentiment = resData.choices?.[0]?.message?.content?.trim()?.toLowerCase();
+
+    if (['positive', 'neutral', 'negative'].includes(sentiment)) {
+      // 3. Update conversation sentiment
+      await supabase
+        .from('agent_conversations')
+        .update({ sentiment })
+        .eq('id', conversationId);
+    }
+  } catch (err) {
+    console.error('[Sentiment Analysis Background Task Error]:', err);
+  }
+}
+
 function createAssistantPersistenceStream(conversationId, supabase) {
   const decoder = new TextDecoder();
   let buffer = '';
@@ -51,6 +108,11 @@ function createAssistantPersistenceStream(conversationId, supabase) {
 
       if (error) {
         console.error('[AI Chat] Failed to save assistant message:', error);
+      } else {
+        // Perform sentiment analysis in the background
+        analyzeAndSaveSentiment(conversationId, supabase).catch(err => {
+          console.error('[Background Sentiment Async Catch]:', err);
+        });
       }
     },
   });

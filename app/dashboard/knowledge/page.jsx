@@ -21,15 +21,19 @@ import { toast } from 'react-hot-toast';
 import { createClientBrowser } from '@/lib/supabase';
 
 export default function KnowledgeDashboard() {
-  const [activeTab, setActiveTab] = useState('facts'); // 'facts' or 'documents'
+  const [activeTab, setActiveTab] = useState('facts'); // 'facts', 'documents' or 'links'
   const [knowledge, setKnowledge] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
+  const [isAddingLink, setIsAddingLink] = useState(false);
   
   // Fact Form
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
+  
+  // Link Form
+  const [newUrl, setNewUrl] = useState('');
   
   // File State
   const [uploading, setUploading] = useState(false);
@@ -107,6 +111,35 @@ export default function KnowledgeDashboard() {
     } catch (error) {
       console.error('Error adding knowledge:', error);
       toast.error('Failed to add knowledge');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleAddLink = async (e) => {
+    e.preventDefault();
+    if (!newUrl) return;
+
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: newUrl })
+      });
+      const data = await res.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      toast.success(`URL successfully indexed: ${data.title}`);
+      setNewUrl('');
+      setIsAddingLink(false);
+      fetchAllData();
+    } catch (error) {
+      console.error('Error scraping website:', error);
+      toast.error(error.message || 'Failed to index website content');
     } finally {
       setSubmitting(false);
     }
@@ -231,12 +264,18 @@ export default function KnowledgeDashboard() {
           >
             Documents
           </button>
+          <button 
+            onClick={() => setActiveTab('links')}
+            className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all ${activeTab === 'links' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+          >
+            Links
+          </button>
         </div>
       </div>
 
       {/* Main View */}
       <div className="min-h-[400px]">
-        {activeTab === 'facts' ? (
+        {activeTab === 'facts' && (
           <div className="space-y-8">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -296,12 +335,12 @@ export default function KnowledgeDashboard() {
                 <div className="col-span-full flex items-center justify-center py-20">
                   <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
                 </div>
-              ) : knowledge.length === 0 ? (
+              ) : knowledge.filter(k => k.source_type !== 'url').length === 0 ? (
                 <div className="col-span-full py-20 text-center bg-white/5 rounded-[2.5rem] border border-dashed border-white/10">
                   <p className="text-gray-500">No manual facts yet. Add one to boost your AI&apos;s intelligence.</p>
                 </div>
               ) : (
-                knowledge.map((item) => (
+                knowledge.filter(k => k.source_type !== 'url').map((item) => (
                   <div key={item.id} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[2rem] p-8 hover:border-blue-500/50 transition-all group relative overflow-hidden">
                     <div className="flex items-start justify-between mb-4">
                       <h3 className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors">{item.title}</h3>
@@ -318,7 +357,9 @@ export default function KnowledgeDashboard() {
               )}
             </div>
           </div>
-        ) : (
+        )}
+
+        {activeTab === 'documents' && (
           <div className="space-y-8">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -388,6 +429,114 @@ export default function KnowledgeDashboard() {
                     </div>
                   </div>
                 ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'links' && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <Globe className="text-orange-500" size={20} />
+                Web Links
+              </h2>
+              <button 
+                onClick={() => setIsAddingLink(!isAddingLink)}
+                className="flex items-center gap-2 text-sm font-bold bg-white/5 border border-white/10 px-4 py-2 rounded-xl hover:bg-white/10 transition-all text-white"
+              >
+                {isAddingLink ? <X size={16} /> : <Plus size={16} />}
+                {isAddingLink ? 'Close' : 'Scrape Link'}
+              </button>
+            </div>
+
+            {isAddingLink && (
+              <div className="bg-white/5 backdrop-blur-xl border border-orange-500/30 p-8 rounded-[2rem] shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500">
+                <form onSubmit={handleAddLink} className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Website URL</label>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <input 
+                        type="text"
+                        placeholder="https://example.com/about"
+                        className="flex-1 bg-black/40 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-orange-500/50 transition-all placeholder:text-gray-600"
+                        value={newUrl}
+                        onChange={(e) => setNewUrl(e.target.value)}
+                        required
+                      />
+                      <button 
+                        type="submit"
+                        disabled={submitting}
+                        className="bg-orange-500 text-white px-10 py-4 rounded-2xl font-black hover:bg-orange-600 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 disabled:opacity-50"
+                      >
+                        {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sync & Index URL'}
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 ml-1">
+                      Our scraper will safely index public HTML contents and feed them to your clone's neural network.
+                    </p>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {loading ? (
+                <div className="col-span-full flex items-center justify-center py-20">
+                  <Loader2 className="w-10 h-10 animate-spin text-orange-500" />
+                </div>
+              ) : knowledge.filter(k => k.source_type === 'url').length === 0 ? (
+                <div className="col-span-full py-20 text-center bg-white/5 rounded-[2.5rem] border border-dashed border-white/10">
+                  <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4 text-gray-600">
+                    <Globe size={32} />
+                  </div>
+                  <h3 className="text-white font-bold mb-2">No public links indexed</h3>
+                  <p className="text-gray-500 text-sm max-w-xs mx-auto">Paste a website link, blog post, or resume page to index it automatically.</p>
+                </div>
+              ) : (
+                knowledge.filter(k => k.source_type === 'url').map((item) => {
+                  let displayHost = '';
+                  try {
+                    displayHost = new URL(item.source_url).hostname;
+                  } catch {
+                    displayHost = item.source_url || 'Web Link';
+                  }
+
+                  return (
+                    <div key={item.id} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[2rem] p-8 hover:border-orange-500/50 transition-all group relative overflow-hidden flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-start justify-between gap-4 mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-orange-500/10 border border-orange-500/20 rounded-xl flex items-center justify-center">
+                              <Globe className="text-orange-400" size={18} />
+                            </div>
+                            <div>
+                              <h3 className="text-sm font-bold text-white group-hover:text-orange-400 transition-colors truncate max-w-[180px] sm:max-w-[220px]" title={item.title}>
+                                {item.title}
+                              </h3>
+                              <a 
+                                href={item.source_url} 
+                                target="_blank" 
+                                rel="noreferrer"
+                                className="text-[10px] text-gray-500 hover:text-white transition-colors truncate max-w-[180px] sm:max-w-[220px] block"
+                              >
+                                {displayHost}
+                              </a>
+                            </div>
+                          </div>
+                          <button onClick={() => handleDeleteFact(item.id)} className="text-gray-600 hover:text-red-500 transition-colors p-2 shrink-0">
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                        <p className="text-gray-400 text-xs leading-relaxed line-clamp-3 mb-4">{item.content}</p>
+                      </div>
+                      <div className="pt-4 border-t border-white/5 flex items-center justify-between">
+                        <span className="text-[9px] font-black text-orange-400 uppercase tracking-widest bg-orange-500/10 px-2.5 py-1 rounded-full">Web Resource</span>
+                        <span className="text-[10px] text-gray-600 font-medium">~{(item.content?.length || 0)} chars</span>
+                      </div>
+                    </div>
+                  );
+                })
               )}
             </div>
           </div>

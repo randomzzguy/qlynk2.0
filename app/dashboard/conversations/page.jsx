@@ -11,9 +11,11 @@ import {
   Filter,
   Bot,
   User,
-  Calendar
+  Calendar,
+  Download
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { toast } from 'react-hot-toast';
 
 export default function ConversationsPage() {
   const [loading, setLoading] = useState(true);
@@ -93,6 +95,63 @@ export default function ConversationsPage() {
 
   const filteredConversations = getFilteredConversations();
 
+  const exportToCSV = () => {
+    if (filteredConversations.length === 0) {
+      toast.error('No conversations found to export');
+      return;
+    }
+
+    // Define CSV headers
+    const headers = [
+      'Conversation ID',
+      'Visitor Name',
+      'Visitor Email',
+      'Visitor Location',
+      'Visitor Device',
+      'Message Count',
+      'Sentiment',
+      'Created At'
+    ];
+
+    // Map conversation rows
+    const rows = filteredConversations.map(convo => [
+      convo.id,
+      convo.visitor_name || 'Anonymous Visitor',
+      convo.visitor_email || 'N/A',
+      convo.visitor_location || 'N/A',
+      convo.visitor_device || 'N/A',
+      convo.message_count || 0,
+      convo.sentiment || 'neutral',
+      new Date(convo.created_at).toISOString()
+    ]);
+
+    // Build CSV content escaping quotes
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(val => {
+        const escaped = String(val).replace(/"/g, '""');
+        return `"${escaped}"`;
+      }).join(','))
+    ].join('\n');
+
+    // Trigger client download link
+    try {
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `qlynk-conversations-${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success('Conversations logs exported successfully');
+    } catch (err) {
+      console.error('[CSV Export Error]:', err);
+      toast.error('Failed to export conversations');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -110,19 +169,30 @@ export default function ConversationsPage() {
           <p className="text-gray-400">View chat history between visitors and your q-agent</p>
         </div>
         
-        {/* Filter */}
-        <div className="flex items-center gap-2">
-          <Filter size={18} className="text-gray-400" />
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#f46530] transition-colors"
+        {/* Actions Container */}
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <button
+            onClick={exportToCSV}
+            className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl text-white font-bold text-sm transition-all"
+            title="Export logs to CSV"
           >
-            <option value="all">All Time</option>
-            <option value="today">Today</option>
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-          </select>
+            <Download size={16} className="text-[#f46530]" />
+            <span>Export CSV</span>
+          </button>
+
+          <div className="flex items-center gap-2">
+            <Filter size={18} className="text-gray-400" />
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#f46530] transition-colors text-sm"
+            >
+              <option value="all">All Time</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+            </select>
+          </div>
         </div>
       </div>
 

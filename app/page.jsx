@@ -467,9 +467,11 @@ export default function App() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [loopNum, setLoopNum] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const containerRef = useRef(null);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -483,10 +485,22 @@ export default function App() {
     fetchUser();
   }, []);
 
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setUserDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleLogout = async () => {
     await signOut();
     setUser(null);
     setProfile(null);
+    setUserDropdownOpen(false);
   };
 
   // Typing effect
@@ -571,26 +585,55 @@ export default function App() {
               </Link>
             </div>
 
-            <div className="hidden md:flex items-center space-x-6">
+            <div className="hidden md:flex items-center gap-5">
               <Link href="/pricing" className="text-gray-300 hover:text-orange font-medium transition-colors">Pricing</Link>
               {user ? (
-                <>
-                  <span className="text-gray-400 text-sm font-medium mr-2">Welcome back, <span className="text-white">{profile?.username || 'there'}</span></span>
-                  <button 
-                    onClick={handleLogout}
-                    className="text-gray-300 hover:text-red-400 font-medium transition-colors"
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                    className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl border border-gray-700 hover:border-orange/40 bg-gray-800/60 hover:bg-gray-800 transition-all group"
                   >
-                    Logout
+                    {/* Avatar initials */}
+                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange to-[#c14f22] flex items-center justify-center text-white text-xs font-black shadow-md shadow-orange/20">
+                      {(profile?.username || 'U')[0].toUpperCase()}
+                    </div>
+                    <span className="text-sm font-semibold text-white">{profile?.username || 'there'}</span>
+                    <svg className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${userDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" /></svg>
                   </button>
-                  <motion.a
-                    href="/dashboard"
-                    className="bg-orange hover:bg-orange/80 text-white px-6 py-2.5 rounded-xl font-black shadow-lg shadow-orange/20 transition-all"
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Dashboard
-                  </motion.a>
-                </>
+
+                  <AnimatePresence>
+                    {userDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: -8 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: -8 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 top-full mt-2 w-48 bg-gray-800/95 backdrop-blur-xl border border-gray-700 rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50"
+                      >
+                        <div className="px-4 py-3 border-b border-gray-700/60">
+                          <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Signed in as</p>
+                          <p className="text-sm text-white font-semibold mt-0.5 truncate">{profile?.username || user?.email}</p>
+                        </div>
+                        <div className="py-1.5">
+                          <a
+                            href="/dashboard"
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-orange/10 transition-all group"
+                          >
+                            <svg className="w-4 h-4 text-gray-500 group-hover:text-orange transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                            Dashboard
+                          </a>
+                          <button
+                            onClick={handleLogout}
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-red-400 hover:bg-red-500/10 transition-all group"
+                          >
+                            <svg className="w-4 h-4 text-gray-500 group-hover:text-red-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                            Sign out
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               ) : (
                 <>
                   <Link href="/auth/login" className="text-gray-300 hover:text-orange font-medium transition-colors">Log in</Link>
@@ -626,27 +669,35 @@ export default function App() {
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="px-4 py-4 space-y-3">
-                <Link href="/pricing" className="block px-3 py-2 text-gray-300 font-medium">Pricing</Link>
+              <div className="px-4 py-4 space-y-2">
+                <Link href="/pricing" className="block px-3 py-2 text-gray-300 font-medium rounded-lg hover:bg-gray-700/50 transition-colors">Pricing</Link>
                 {user ? (
                   <>
-                    <div className="px-3 py-2 text-gray-400 text-sm">Welcome back, <span className="text-white font-medium">{profile?.username || 'there'}</span></div>
-                    <Link href="/dashboard" className="block bg-orange text-white text-center px-4 py-3 rounded-xl font-black">
+                    <div className="flex items-center gap-3 px-3 py-3 rounded-lg bg-gray-700/40 border border-gray-700">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange to-[#c14f22] flex items-center justify-center text-white text-sm font-black shadow-md">
+                        {(profile?.username || 'U')[0].toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 leading-none">Signed in as</p>
+                        <p className="text-sm text-white font-semibold mt-0.5">{profile?.username || 'there'}</p>
+                      </div>
+                    </div>
+                    <Link href="/dashboard" className="flex items-center justify-center gap-2 bg-orange text-white text-center px-4 py-3 rounded-xl font-black hover:bg-orange/90 transition-colors">
                       Dashboard
                     </Link>
                     <button 
                       onClick={handleLogout}
-                      className="w-full text-center px-3 py-2 text-red-400 font-medium"
+                      className="w-full text-center px-3 py-2.5 text-red-400 font-medium hover:bg-red-500/10 rounded-lg transition-colors"
                     >
-                      Logout
+                      Sign out
                     </button>
                   </>
                 ) : (
                   <>
-                    <Link href="/auth/login" className="block px-3 py-2 text-gray-300 font-medium">Log in</Link>
+                    <Link href="/auth/login" className="block px-3 py-2 text-gray-300 font-medium rounded-lg hover:bg-gray-700/50 transition-colors">Log in</Link>
                     <Link
                       href="/auth/signup"
-                      className="block bg-orange text-white text-center px-4 py-3 rounded-xl font-black"
+                      className="block bg-orange text-white text-center px-4 py-3 rounded-xl font-black hover:bg-orange/90 transition-colors"
                     >
                       Get Started
                     </Link>

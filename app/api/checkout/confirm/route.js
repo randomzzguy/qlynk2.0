@@ -42,19 +42,20 @@ export async function POST(req) {
       return NextResponse.json({ error: 'User ID not found in metadata' }, { status: 400 });
     }
 
-    console.log(`[Checkout Confirm] Updating subscription for user: ${userId} to plan: ${planName}`);
+    const tier = planName.toLowerCase();
+    console.log(`[Checkout Confirm] Activating paid plan for user: ${userId} → ${tier}`);
 
-    // Update database synchronously
+    // Update database synchronously.
+    // status is forced to 'active' and trial_ends_at is cleared —
+    // the user has paid so their trial is done regardless of Stripe's subscription state.
     const { data, error } = await supabaseAdmin
       .from('subscriptions')
       .update({
         stripe_customer_id: session.customer,
         stripe_subscription_id: subscriptionId,
-        tier: planName.toLowerCase(),
-        status: subscription.status,
-        trial_ends_at: subscription.trial_end
-          ? new Date(subscription.trial_end * 1000).toISOString()
-          : null,
+        tier,
+        status: 'active',
+        trial_ends_at: null,
       })
       .eq('user_id', userId)
       .select();
@@ -68,8 +69,8 @@ export async function POST(req) {
 
     return NextResponse.json({
       success: true,
-      tier: planName.toLowerCase(),
-      status: subscription.status,
+      tier,
+      status: 'active',
       updated: true,
       data: data?.[0]
     });

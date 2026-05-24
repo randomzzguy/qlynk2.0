@@ -43,24 +43,25 @@ export async function POST(req) {
         console.log(`[Stripe Webhook] Resolved metadata:`, { userId, planName });
 
         if (userId) {
+          const tier = planName.toLowerCase();
+          const updatePayload = {
+            stripe_customer_id: session.customer,
+            stripe_subscription_id: session.subscription,
+            tier,
+            status: 'active', // They just paid — force active regardless of Stripe state
+            trial_ends_at: null, // Clear trial: once paid, trial is over
+          };
+
           const { data, error } = await supabaseAdmin
             .from('subscriptions')
-            .update({
-              stripe_customer_id: session.customer,
-              stripe_subscription_id: session.subscription,
-              tier: planName.toLowerCase(),
-              status: subscription.status,
-              trial_ends_at: subscription.trial_end
-                ? new Date(subscription.trial_end * 1000).toISOString()
-                : null,
-            })
+            .update(updatePayload)
             .eq('user_id', userId)
             .select();
 
           if (error) {
             console.error(`[Stripe Webhook] DB Update Error:`, error.message);
           } else {
-            console.log(`[Stripe Webhook] DB Update Success:`, data);
+            console.log(`[Stripe Webhook] DB Update Success (user ${userId} → ${tier}):`, data);
           }
         } else {
           console.warn(`[Stripe Webhook] No userId found in session or subscription metadata!`);
@@ -79,11 +80,19 @@ export async function POST(req) {
         const updates = {
           stripe_customer_id: sub.customer,
           status: sub.status,
-          trial_ends_at: sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null,
         };
 
         if (sub.metadata?.plan_name) {
           updates.tier = sub.metadata.plan_name.toLowerCase();
+        }
+
+        // Only update trial_ends_at for genuinely trialing (DB-managed) subscriptions.
+        // For active paid plans we never overwrite trial_ends_at from Stripe
+        // to avoid re-gifting trials or erasing trial history.
+        if (sub.status === 'trialing' && sub.trial_end) {
+          updates.trial_ends_at = new Date(sub.trial_end * 1000).toISOString();
+        } else if (sub.status === 'active') {
+          updates.trial_ends_at = null; // Clear trial: they transitioned to active paid
         }
 
         const { data, error } = await supabaseAdmin

@@ -16,14 +16,14 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get or create customer
-    const { data: subscription } = await supabase
+    // Get or create Stripe customer
+    const { data: existingSubscription } = await supabase
       .from('subscriptions')
-      .select('stripe_customer_id')
+      .select('stripe_customer_id, trial_ends_at, tier')
       .eq('user_id', user.id)
       .single();
 
-    let customerId = subscription?.stripe_customer_id;
+    let customerId = existingSubscription?.stripe_customer_id;
 
     if (!customerId) {
       const customer = await stripe.customers.create({
@@ -34,14 +34,17 @@ export async function POST(req) {
       });
       customerId = customer.id;
 
-      // Save customer ID
+      // Save customer ID immediately
       await supabase
         .from('subscriptions')
         .update({ stripe_customer_id: customerId })
         .eq('user_id', user.id);
     }
 
-    // Create checkout session
+    // Create checkout session.
+    // NOTE: We do NOT pass trial_period_days to Stripe.
+    // Trials are managed entirely in our database (set at signup).
+    // When a user reaches checkout, they are always paying immediately.
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [
@@ -58,7 +61,7 @@ export async function POST(req) {
         plan_name: normalizedPlanName,
       },
       subscription_data: {
-        trial_period_days: planName === 'Trial' || planName === 'Creator' ? 14 : undefined,
+        // No trial_period_days — trials are DB-side only
         metadata: {
           supabase_user_id: user.id,
           plan_name: normalizedPlanName,

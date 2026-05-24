@@ -27,6 +27,7 @@ import {
 } from '@/lib/subscriptionHelpers';
 import UpgradePrompt from '@/components/UpgradePrompt';
 import TrialChoiceManager from '@/components/TrialChoiceManager';
+import confetti from 'canvas-confetti';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -44,133 +45,180 @@ export default function DashboardPage() {
   const [recentConversations, setRecentConversations] = useState([]);
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [verifyingPayment, setVerifyingPayment] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [newPlanName, setNewPlanName] = useState('');
+
+  const loadDashboardData = async () => {
+    try {
+      const user = await getCurrentUser();
+      if (!user) return;
+
+      const userProfile = await getCurrentProfile();
+      setProfile(userProfile);
+
+      const supabase = createClient();
+
+      // Load agent config - rescue if missing
+      let { data: config } = await supabase
+        .from('agent_configs')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (!config) {
+        console.log('[v0] Auto-repairing missing agent config for user:', user.id);
+        const { data: newConfig } = await supabase.from('agent_configs').insert({
+          user_id: user.id,
+          agent_name: 'q-agent',
+          welcome_message: "Hi! I'm the AI assistant for this page. How can I help you?",
+          is_enabled: true,
+          primary_color: '#f46530'
+        }).select().single();
+        config = newConfig;
+      }
+      
+      setAgentConfig(config);
+
+      // Load public page - ensure it exists (Fixes "Setting up the clone" error)
+      const { data: pageData, error: pageFetchError } = await supabase
+        .from('pages')
+        .select('id, theme')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      // If missing or broken, force-create a default
+      if (!pageData || pageFetchError) {
+        console.log('[v0] Auto-repairing missing public page for user:', user.id);
+        await supabase.from('pages').upsert({
+          user_id: user.id,
+          name: userProfile?.full_name || userProfile?.username || 'User',
+          tagline: 'Welcome to my Qlynk page!',
+          profession: 'Creative Professional',
+          theme: 'quickpitch',
+          theme_category: 'freelancers',
+          theme_data: { 
+            config_version: 'v1',
+            headline: userProfile?.full_name || userProfile?.username || 'User',
+            subhead: 'Welcome to my digital twin.',
+            email: user.email || ''
+          },
+          is_published: true
+        }, { onConflict: 'user_id' });
+      }
+
+      // Load subscription for usage limits
+      const { data: subData } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      
+      setSubscription(subData);
+
+      // Load conversation stats
+      const { data: conversations } = await supabase
+        .from('agent_conversations')
+        .select('id, message_count, created_at, visitor_name')
+        .eq('agent_owner_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (conversations) {
+        const totalConvos = conversations.length;
+        const totalMsgs = conversations.reduce((sum, c) => sum + (c.message_count || 0), 0);
+        
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        const recentConvos = conversations.filter(c => new Date(c.created_at) > weekAgo);
+        const msgsThisWeek = recentConvos.reduce((sum, c) => sum + (c.message_count || 0), 0);
+
+        setStats({
+          totalConversations: totalConvos,
+          totalMessages: totalMsgs,
+          messagesThisWeek: msgsThisWeek,
+          avgMessagesPerConvo: totalConvos > 0 ? Math.round(totalMsgs / totalConvos) : 0,
+          messagesUsed: subData?.messages_used || 0,
+          messagesLimit: PLAN_LIMITS[subData?.tier?.toLowerCase()] || 1000,
+          tier: subData?.tier || 'Trial'
+        });
+
+        setRecentConversations(conversations.slice(0, 5));
+      }
+      // Check for trial expiration and handle choice
+      if (subData?.tier === 'trial' && isTrialExpired(subData.trial_ends_at)) {
+        const choice = subData.post_trial_choice || 'pause';
+        
+        if (choice === 'pause') {
+          // Update status to paused if not already
+          if (subData.status !== 'paused') {
+            await supabase
+              .from('subscriptions')
+              .update({ 
+                status: 'paused',
+                pause_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+              })
+              .eq('user_id', user.id);
+          }
+        } else {
+          // Redirect to checkout for the chosen plan
+          // router.push(`/pricing?plan=${choice}`); 
+          // Better to show a modal or a clear message, but for now let's just mark it as "needs payment"
+        }
+      }
+
+    } catch (error) {
+      console.error('Error loading dashboard:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadDashboardData = async () => {
-      try {
-        const user = await getCurrentUser();
-        if (!user) return;
-
-        const userProfile = await getCurrentProfile();
-        setProfile(userProfile);
-
-        const supabase = createClient();
-
-        // Load agent config - rescue if missing
-        let { data: config } = await supabase
-          .from('agent_configs')
-          .select('*')
-          .eq('user_id', user.id)
-          .maybeSingle();
-        
-        if (!config) {
-          console.log('[v0] Auto-repairing missing agent config for user:', user.id);
-          const { data: newConfig } = await supabase.from('agent_configs').insert({
-            user_id: user.id,
-            agent_name: 'q-agent',
-            welcome_message: "Hi! I'm the AI assistant for this page. How can I help you?",
-            is_enabled: true,
-            primary_color: '#f46530'
-          }).select().single();
-          config = newConfig;
-        }
-        
-        setAgentConfig(config);
-
-        // Load public page - ensure it exists (Fixes "Setting up the clone" error)
-        const { data: pageData, error: pageFetchError } = await supabase
-          .from('pages')
-          .select('id, theme')
-          .eq('user_id', user.id)
-          .maybeSingle();
-        
-        // If missing or broken, force-create a default
-        if (!pageData || pageFetchError) {
-          console.log('[v0] Auto-repairing missing public page for user:', user.id);
-          await supabase.from('pages').upsert({
-            user_id: user.id,
-            name: userProfile?.full_name || userProfile?.username || 'User',
-            tagline: 'Welcome to my Qlynk page!',
-            profession: 'Creative Professional',
-            theme: 'quickpitch',
-            theme_category: 'freelancers',
-            theme_data: { 
-              config_version: 'v1',
-              headline: userProfile?.full_name || userProfile?.username || 'User',
-              subhead: 'Welcome to my digital twin.',
-              email: user.email || ''
+    const initDashboard = async () => {
+      await loadDashboardData();
+      
+      // Check Stripe checkout redirect session
+      const searchParams = new URLSearchParams(window.location.search);
+      const sessionId = searchParams.get('session_id');
+      if (sessionId) {
+        setVerifyingPayment(true);
+        try {
+          const res = await fetch('/api/checkout/confirm', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
             },
-            is_published: true
-          }, { onConflict: 'user_id' });
-        }
-
-        // Load subscription for usage limits
-        const { data: subData } = await supabase
-          .from('subscriptions')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-        
-        setSubscription(subData);
-
-        // Load conversation stats
-        const { data: conversations } = await supabase
-          .from('agent_conversations')
-          .select('id, message_count, created_at, visitor_name')
-          .eq('agent_owner_id', user.id)
-          .order('created_at', { ascending: false });
-
-        if (conversations) {
-          const totalConvos = conversations.length;
-          const totalMsgs = conversations.reduce((sum, c) => sum + (c.message_count || 0), 0);
-          
-          const weekAgo = new Date();
-          weekAgo.setDate(weekAgo.getDate() - 7);
-          const recentConvos = conversations.filter(c => new Date(c.created_at) > weekAgo);
-          const msgsThisWeek = recentConvos.reduce((sum, c) => sum + (c.message_count || 0), 0);
-
-          setStats({
-            totalConversations: totalConvos,
-            totalMessages: totalMsgs,
-            messagesThisWeek: msgsThisWeek,
-            avgMessagesPerConvo: totalConvos > 0 ? Math.round(totalMsgs / totalConvos) : 0,
-            messagesUsed: subData?.messages_used || 0,
-            messagesLimit: PLAN_LIMITS[subData?.tier?.toLowerCase()] || 1000,
-            tier: subData?.tier || 'Trial'
+            body: JSON.stringify({ session_id: sessionId })
           });
-
-          setRecentConversations(conversations.slice(0, 5));
-        }
-        // Check for trial expiration and handle choice
-        if (subData?.tier === 'trial' && isTrialExpired(subData.trial_ends_at)) {
-          const choice = subData.post_trial_choice || 'pause';
-          
-          if (choice === 'pause') {
-            // Update status to paused if not already
-            if (subData.status !== 'paused') {
-              await supabase
-                .from('subscriptions')
-                .update({ 
-                  status: 'paused',
-                  pause_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
-                })
-                .eq('user_id', user.id);
-            }
-          } else {
-            // Redirect to checkout for the chosen plan
-            // router.push(`/pricing?plan=${choice}`); 
-            // Better to show a modal or a clear message, but for now let's just mark it as "needs payment"
+          const data = await res.json();
+          if (data.success) {
+            // Trigger confetti welcome animation
+            confetti({
+              particleCount: 150,
+              spread: 80,
+              origin: { y: 0.6 },
+              colors: ['#f46530', '#3b82f6', '#10b981', '#a855f7']
+            });
+            
+            setNewPlanName(data.tier);
+            setShowWelcomeModal(true);
+            
+            // Clean URL query params
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+            
+            // Reload updated billing data
+            await loadDashboardData();
           }
+        } catch (err) {
+          console.error('Error confirming checkout session:', err);
+        } finally {
+          setVerifyingPayment(false);
         }
-
-      } catch (error) {
-        console.error('Error loading dashboard:', error);
-      } finally {
-        setLoading(false);
       }
     };
 
-    loadDashboardData();
+    initDashboard();
   }, []);
 
   const toggleAgentStatus = async () => {
@@ -216,6 +264,45 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      {verifyingPayment && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex flex-col items-center justify-center text-center px-4">
+          <div className="w-20 h-20 bg-[#f46530]/10 rounded-3xl flex items-center justify-center mb-6 border border-[#f46530]/20 animate-pulse">
+            <Sparkles className="text-[#f46530] animate-spin" size={40} />
+          </div>
+          <h2 className="text-2xl font-black text-white mb-2">Verifying Payment...</h2>
+          <p className="text-gray-400 max-w-sm">We are confirming your subscription with Stripe. Your dashboard will update in a moment.</p>
+        </div>
+      )}
+
+      {showWelcomeModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-gray-900 border border-white/10 rounded-[2.5rem] p-8 max-w-md w-full text-center relative overflow-hidden shadow-2xl">
+            {/* Glow effect */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-[#f46530]/10 rounded-full blur-[80px] -mt-32" />
+            
+            <div className="relative z-10">
+              <div className="w-16 h-16 bg-green-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-green-500/20">
+                <Sparkles className="text-green-400" size={32} />
+              </div>
+              
+              <h2 className="text-3xl font-black text-white mb-3">Welcome to Qlynk!</h2>
+              <p className="text-gray-300 font-bold mb-4 capitalize">You are now subscribed to the {newPlanName} Plan!</p>
+              
+              <p className="text-sm text-gray-400 mb-8 leading-relaxed">
+                Thank you for subscribing. Your message limits have been increased and your advanced configurations are now active. Enjoy your personalized AI representative!
+              </p>
+              
+              <button
+                onClick={() => setShowWelcomeModal(false)}
+                className="w-full py-4 bg-[#f46530] text-white rounded-2xl font-bold hover:bg-[#f46530]/95 active:scale-95 transition-all shadow-lg shadow-[#f46530]/20"
+              >
+                Go to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <UpgradePrompt />
       <TrialChoiceManager subscription={subscription} userId={profile?.id} />
 
@@ -383,9 +470,9 @@ export default function DashboardPage() {
                 <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Current Plan</p>
                 <div className="flex items-baseline gap-2">
                   <h3 className="text-2xl font-black text-white capitalize">{stats.tier}</h3>
-                  {stats.tier === 'trial' && !isTrialExpired(profile?.trial_ends_at) && (
+                  {stats.tier?.toLowerCase() === 'trial' && !isTrialExpired(subscription?.trial_ends_at) && (
                     <span className="text-[#f46530] text-sm font-bold bg-[#f46530]/10 px-2 py-0.5 rounded-lg">
-                      {getTrialDaysRemaining(profile?.trial_ends_at)}d left
+                      {getTrialDaysRemaining(subscription?.trial_ends_at)}d left
                     </span>
                   )}
                 </div>

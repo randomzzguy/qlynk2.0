@@ -10,7 +10,8 @@ export default function ChatWidget({
   welcomeMessage = 'Hi! How can I help you today?',
   primaryColor = '#f46530',
   position = 'bottom-right',
-  accessLevel = 'public'
+  accessLevel = 'public',
+  tier
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
@@ -385,9 +386,11 @@ export default function ChatWidget({
                 <Send size={18} />
               </button>
             </div>
-            <p className="text-xs text-gray-400 text-center mt-2">
-              Powered by <span className="font-medium">qlynk</span>
-            </p>
+            {tier?.toLowerCase() !== 'agency' && tier?.toLowerCase() !== 'business' && (
+              <p className="text-xs text-gray-400 text-center mt-2">
+                Powered by <span className="font-medium">qlynk</span>
+              </p>
+            )}
           </form>
         </div>
       )}

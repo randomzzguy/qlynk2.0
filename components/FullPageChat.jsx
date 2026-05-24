@@ -24,7 +24,8 @@ import ReactMarkdown from 'react-markdown';
 export default function FullPageChat({ 
   username, 
   agentConfig,
-  profile
+  profile,
+  tier
 }) {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showGatekeeper, setShowGatekeeper] = useState(false);
@@ -386,10 +387,12 @@ export default function FullPageChat({
             )}
 
             {/* Powered by Branding */}
-            <div className="mt-12 flex items-center gap-2 opacity-30 hover:opacity-100 transition-opacity duration-500">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Powered by</span>
-              <Image src="/logoWhite.svg" alt="qlynk logo" width={60} height={18} className="h-auto" />
-            </div>
+            {tier?.toLowerCase() !== 'agency' && tier?.toLowerCase() !== 'business' && (
+              <div className="mt-12 flex items-center gap-2 opacity-30 hover:opacity-100 transition-opacity duration-500">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Powered by</span>
+                <Image src="/logoWhite.svg" alt="qlynk logo" width={60} height={18} className="h-auto" />
+              </div>
+            )}
           </motion.div>
 
         /* ── GATEKEEPER ───────────────────────────────────────────────────── */

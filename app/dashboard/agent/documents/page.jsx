@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import UpgradePrompt from '@/components/UpgradePrompt';
+import { toast } from 'react-hot-toast';
 
 export default function DocumentsPage() {
   const router = useRouter();
@@ -28,6 +29,13 @@ export default function DocumentsPage() {
   const [documents, setDocuments] = useState([]);
   const [dragActive, setDragActive] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(null);
+  const [subscription, setSubscription] = useState(null);
+
+  const getDocLimit = (tier) => {
+    const t = tier?.toLowerCase();
+    if (t === 'agency' || t === 'business') return 25;
+    return 5;
+  };
 
   const loadDocuments = useCallback(async (uid) => {
     const supabase = createClient();
@@ -51,6 +59,15 @@ export default function DocumentsPage() {
       }
       setUserId(user.id);
       await loadDocuments(user.id);
+
+      const supabase = createClient();
+      const { data: subData } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      setSubscription(subData);
+
       setLoading(false);
     };
 
@@ -91,6 +108,12 @@ export default function DocumentsPage() {
 
   const handleFiles = async (files) => {
     if (!userId) return;
+    
+    const docLimit = getDocLimit(subscription?.tier);
+    if (documents.length + files.length > docLimit) {
+      toast.error(`Plan limit exceeded! Your current plan (${subscription?.tier || 'Trial'}) allows up to ${docLimit} documents. You have ${documents.length} and are attempting to upload ${files.length} more. Please upgrade to upload more.`);
+      return;
+    }
     
     const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
     const allowedTypes = [
@@ -291,9 +314,18 @@ export default function DocumentsPage() {
 
           {/* Documents List */}
           <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8">
-            <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-              Uploaded Documents
-              <span className="text-xs bg-gray-700 text-gray-400 px-2 py-0.5 rounded-full">{documents.length}</span>
+            <h2 className="text-lg font-bold text-white mb-6 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                Uploaded Documents
+                <span className="text-xs bg-gray-700 text-gray-400 px-2 py-0.5 rounded-full">
+                  {documents.length} / {getDocLimit(subscription?.tier)}
+                </span>
+              </div>
+              {subscription?.tier?.toLowerCase() !== 'agency' && subscription?.tier?.toLowerCase() !== 'business' && (
+                <Link href="/pricing" className="text-xs text-[#f46530] hover:text-[#f46530]/80 font-bold flex items-center gap-1">
+                  Increase Limit <Sparkles size={12} />
+                </Link>
+              )}
             </h2>
             
             {documents.length === 0 ? (

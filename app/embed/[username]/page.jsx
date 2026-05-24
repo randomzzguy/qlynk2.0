@@ -41,6 +41,13 @@ export default async function EmbedPage({ params }) {
     return null;
   }
 
+  // Fetch subscription to check for white-labeling
+  const { data: subscription } = await supabase
+    .from('subscriptions')
+    .select('tier')
+    .eq('user_id', profile.id)
+    .maybeSingle();
+
   return (
     <div className="fixed inset-0 bg-transparent flex items-end justify-end pointer-events-none">
       <div className="pointer-events-auto">
@@ -52,6 +59,7 @@ export default async function EmbedPage({ params }) {
           primaryColor={agentConfig.primary_color}
           position={agentConfig.position}
           accessLevel={agentConfig.access_level}
+          tier={subscription?.tier}
         />
       </div>
     </div>

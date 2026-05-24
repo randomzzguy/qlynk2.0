@@ -43,7 +43,7 @@ export default function UpgradePrompt() {
   }
 
   // Show trial expiring soon
-  if (subscription.tier === 'trial' && !isTrialExpired(subscription.trial_ends_at)) {
+  if (subscription.tier?.toLowerCase() === 'trial' && !isTrialExpired(subscription.trial_ends_at)) {
     const daysLeft = getTrialDaysRemaining(subscription.trial_ends_at);
     if (daysLeft <= 3) {
       return (
@@ -76,7 +76,7 @@ export default function UpgradePrompt() {
   }
 
   // Show trial expired or paused
-  if ((subscription.tier === 'trial' && isTrialExpired(subscription.trial_ends_at)) || subscription.status === 'paused') {
+  if ((subscription.tier?.toLowerCase() === 'trial' && isTrialExpired(subscription.trial_ends_at)) || subscription.status === 'paused') {
     const isPaused = subscription.status === 'paused';
     const choice = subscription.post_trial_choice || 'pause';
     
@@ -111,7 +111,7 @@ export default function UpgradePrompt() {
   }
 
   // Show upsell for free tier
-  if (subscription.tier === 'pro' && subscription.status === 'active') {
+  if ((subscription.tier?.toLowerCase() === 'pro' || subscription.tier?.toLowerCase() === 'creator') && subscription.status === 'active') {
     return (
       <div className="bg-emerald-500/10 backdrop-blur-sm border border-emerald-500/30 rounded-2xl p-5 flex items-start gap-5 mb-8 relative group">
         <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center shrink-0 border border-emerald-500/20">

@@ -68,8 +68,8 @@ export default function BillingPage() {
     );
   }
 
-  const tier = subscription?.tier || 'Trial';
-  const isTrial = tier === 'Trial';
+  const tier = subscription?.tier || 'trial';
+  const isTrial = tier.toLowerCase() === 'trial';
   const messagesUsed = subscription?.messages_used || 0;
   const messagesLimit = PLAN_LIMITS[tier.toLowerCase()] || 1000;
   const usagePercent = Math.min(100, (messagesUsed / messagesLimit) * 100);
@@ -95,7 +95,7 @@ export default function BillingPage() {
               </div>
               <div>
                 <p className="text-sm text-gray-500 font-bold uppercase tracking-widest">Current Plan</p>
-                <h2 className="text-2xl font-black text-white">{tier} Plan</h2>
+                <h2 className="text-2xl font-black text-white capitalize">{tier} Plan</h2>
               </div>
             </div>
 
@@ -150,7 +150,7 @@ export default function BillingPage() {
             <div className="mt-8 p-4 rounded-2xl bg-orange/10 border border-orange/20 flex items-center gap-3">
               <Clock className="text-orange" size={20} />
               <div className="text-xs">
-                <p className="text-white font-bold">{getTrialDaysRemaining(subscription?.created_at)} days left</p>
+                <p className="text-white font-bold">{getTrialDaysRemaining(subscription?.trial_ends_at)} days left</p>
                 <p className="text-gray-400">in your free trial</p>
               </div>
             </div>

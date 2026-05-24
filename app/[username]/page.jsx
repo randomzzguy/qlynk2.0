@@ -144,11 +144,19 @@ export default async function PublicPage({ params }) {
   const safeAgentConfig = { ...agentConfig };
   delete safeAgentConfig.access_password;
 
+  // 3. Fetch Subscription
+  const { data: subscription } = await supabase
+    .from('subscriptions')
+    .select('tier')
+    .eq('user_id', profile.id)
+    .maybeSingle();
+
   return (
     <FullPageChat 
       username={username}
       agentConfig={safeAgentConfig}
       profile={pageData}
+      tier={subscription?.tier}
     />
   );
 }

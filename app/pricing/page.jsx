@@ -38,30 +38,30 @@ const GlowingOrb = ({ top, left, size = 300, color = 'orange', delay = 0 }) => (
 
 const faqs = [
   {
-    category: 'About q-agent',
+    category: 'About Qlynk Agent',
     items: [
       {
-        q: 'What exactly is a q-agent?',
-        a: 'A q-agent is an AI-powered version of you that lives on your personal page at qlynk.site/yourname. It answers questions about you, your work, your skills, and your projects — 24/7, without you lifting a finger. Think of it as a digital clone that represents you online.',
+        q: 'What exactly is a Qlynk Agent?',
+        a: 'A Qlynk Agent is an AI-powered version of you that lives on your personal page at qlynk.site/yourname. It answers questions about you, your work, your skills, and your projects — 24/7, without you lifting a finger. Think of it as a digital clone that represents you online.',
       },
       {
         q: 'How does the AI know things about me?',
-        a: 'You train your q-agent through your dashboard. You fill in structured forms covering your bio, skills, projects, social links, and contact info. You can also upload documents like a resume, portfolio PDF, or any text file, and the agent learns from those too.',
+        a: 'You train your Qlynk Agent through your dashboard. You fill in structured forms covering your bio, skills, projects, social links, and contact info. You can also upload documents like a resume, portfolio PDF, or any text file, and the agent learns from those too.',
       },
       {
-        q: 'What kind of questions can visitors ask my q-agent?',
+        q: 'What kind of questions can visitors ask my Qlynk Agent?',
         a: 'Visitors can ask anything about you — your background, what services you offer, how to contact you, what projects you\'ve worked on, your pricing, your availability, and much more. The agent answers conversationally based on the knowledge you\'ve provided.',
       },
       {
-        q: 'Can I customize how my q-agent looks and sounds?',
+        q: 'Can I customize how my Qlynk Agent looks and sounds?',
         a: 'Yes. You can set your agent\'s name, profile avatar, welcome message, and primary brand color. On the Agency tier you can fully white-label the agent, removing all qlynk branding entirely.',
       },
       {
         q: 'What does my public page look like?',
-        a: 'Your public page at qlynk.site/username displays your profile using a theme you choose from the dashboard. The Q-Agent chat widget sits as a floating bubble in the corner, ready for visitors to interact with at any time.',
+        a: 'Your public page at qlynk.site/username displays your profile using a theme you choose from the dashboard. The Qlynk Agent chat widget sits as a floating bubble in the corner, ready for visitors to interact with at any time.',
       },
       {
-        q: 'Is my q-agent available all the time?',
+        q: 'Is my Qlynk Agent available all the time?',
         a: 'During your trial and on any paid plan, yes — your agent runs 24/7. If your trial expires and you have not upgraded, your agent goes offline and visitors will see a "temporarily unavailable" message until you resubscribe.',
       },
     ],
@@ -594,7 +594,7 @@ export default function PricingPage() {
           <h2 className="text-3xl font-black text-white mb-4 text-center">
             Frequently Asked <span className="text-[#f46530]">Questions</span>
           </h2>
-          <p className="text-gray-400 text-center mb-12">Everything you need to know about q-agent</p>
+          <p className="text-gray-400 text-center mb-12">Everything you need to know about Qlynk Agent</p>
           <FAQAccordion />
         </motion.div>
 
@@ -605,7 +605,7 @@ export default function PricingPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.8 }}
         >
-          <p className="text-gray-400 mb-6">Ready to build your q-agent?</p>
+          <p className="text-gray-400 mb-6">Ready to build your Qlynk Agent?</p>
           <motion.a
             href="/auth/signup"
             className="inline-flex items-center gap-2 bg-[#f46530] hover:bg-[#c14f22] text-white px-8 py-4 rounded-lg font-bold shadow-lg shadow-[#f46530]/30 hover:shadow-[#f46530]/50 transition-all"

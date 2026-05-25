@@ -145,7 +145,7 @@ const AgentDemoHero = () => {
                 {
                   icon: Brain,
                   title: "Train Your Agent",
-                  desc: "Upload your bio, resume, projects, and expertise. Your q-agent learns everything about you."
+                  desc: "Upload your bio, resume, projects, and expertise. Your Qlynk Agent learns everything about you."
                 },
                 {
                   icon: MessageSquare,
@@ -192,7 +192,7 @@ const AgentDemoHero = () => {
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    Create Your q-agent Free
+                    Create Your Qlynk Agent Free
                     <ArrowRight size={20} />
                   </motion.a>
                 </div>
@@ -284,7 +284,7 @@ const AgentDemoHero = () => {
                         <div className="bg-orange/10 border border-orange/20 text-white px-5 py-3.5 rounded-2xl rounded-tl-sm max-w-[90%] shadow-xl">
                           <div className="flex items-center gap-2 mb-2">
                             <Image src="/assets/iconWhite.svg" alt="qlynk" width={14} height={14} />
-                            <span className="text-[11px] font-black text-orange uppercase tracking-[0.1em]">q-agent response</span>
+                            <span className="text-[11px] font-black text-orange uppercase tracking-[0.1em]">Qlynk Agent response</span>
                           </div>
                           <p className="text-sm leading-relaxed text-gray-100">
                             {displayedResponse}
@@ -376,7 +376,7 @@ const AboutUs = () => {
               Pioneering the future of <span className="text-orange">personal AI</span>
             </h2>
             <p className="text-xl text-gray-300 leading-relaxed">
-              qlynk started with a vision: what if you could clone your expertise into an AI that works for you around the clock? We made it real with q-agent - your intelligent digital ambassador.
+              qlynk started with a vision: what if you could clone your expertise into an AI that works for you around the clock? We made it real with Qlynk Agent - your intelligent digital ambassador.
             </p>
             <div className="grid sm:grid-cols-3 gap-6 pt-4">
               <div className="text-center p-4 rounded-2xl bg-gray-800/40 border border-gray-700">
@@ -538,7 +538,7 @@ export default function App() {
   }, [text, isDeleting, loopNum]);
 
   const features = [
-    { icon: Brain, title: "Train Your Knowledge", desc: "Upload your bio, resume, projects, and expertise. Your q-agent learns everything about you instantly." },
+    { icon: Brain, title: "Train Your Knowledge", desc: "Upload your bio, resume, projects, and expertise. Your Qlynk Agent learns everything about you instantly." },
     { icon: MessageSquare, title: "Smart Conversations", desc: "Powered by advanced AI, your agent answers questions naturally and accurately about you." },
     { icon: Shield, title: "Your Brand, Your Rules", desc: "Customize your agent's personality, responses, and appearance to match your personal brand." },
     { icon: BarChart3, title: "Actionable Insights", desc: "See what visitors ask, track engagement, and understand what people want to know about you." }
@@ -546,7 +546,7 @@ export default function App() {
 
   const steps = [
     { num: "1", title: "Create Your Agent", desc: "Sign up and claim your unique qlynk.site/username URL in seconds." },
-    { num: "2", title: "Train Your q-agent", desc: "Add your bio, skills, projects, and upload documents. Your AI learns it all." },
+    { num: "2", title: "Train Your Qlynk Agent", desc: "Add your bio, skills, projects, and upload documents. Your AI learns it all." },
     { num: "3", title: "Share & Engage", desc: "Drop your link anywhere. Visitors chat with your AI while you sleep, work, or play." }
   ];
 
@@ -803,7 +803,7 @@ export default function App() {
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
           >
-            Join professionals, creators, and founders who use q-agent to engage visitors 24/7 while focusing on what matters most.
+            Join professionals, creators, and founders who use Qlynk Agent to engage visitors 24/7 while focusing on what matters most.
           </motion.p>
 
           <motion.div
@@ -817,7 +817,7 @@ export default function App() {
               href="/auth/signup"
               className="inline-flex items-center justify-center gap-2 bg-white text-[#f46530] px-10 py-5 rounded-xl font-bold text-xl shadow-lg hover:bg-gray-100 transition-all"
             >
-              Create Your q-agent
+              Create Your Qlynk Agent
               <ArrowRight size={24} />
             </Link>
           </motion.div>

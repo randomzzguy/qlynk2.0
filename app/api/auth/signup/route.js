@@ -128,7 +128,7 @@ export async function POST(request) {
         .from('agent_configs')
         .insert({
           user_id: signUpData.user.id,
-          agent_name: 'q-agent',
+          agent_name: 'Your AI',
           welcome_message: `Hi! I'm ${username}'s AI clone. Ask me anything about their work!`,
           is_enabled: true,
           primary_color: '#f46530'

@@ -37,7 +37,7 @@ export default function FullPageChat({
     {
       id: 'welcome',
       role: 'assistant',
-      content: agentConfig.welcome_message || `Hi! I'm ${agentConfig.agent_name || 'q-agent'}. How can I help you today?`
+      content: agentConfig.welcome_message || `Hi! I'm ${agentConfig.agent_name || 'Your AI'}. How can I help you today?`
     }
   ]);
   const [input, setInput] = useState('');

@@ -166,7 +166,7 @@ export default function ConversationsPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-black text-white mb-2">Conversations</h1>
-          <p className="text-gray-400">View chat history between visitors and your q-agent</p>
+          <p className="text-gray-400">View chat history between visitors and your Qlynk Agent</p>
         </div>
         
         {/* Actions Container */}
@@ -340,7 +340,7 @@ export default function ConversationsPage() {
           </div>
           <h3 className="text-xl font-bold text-white mb-2">No Conversations Yet</h3>
           <p className="text-gray-400 max-w-md mx-auto">
-            Once visitors start chatting with your q-agent, their conversations will appear here.
+            Once visitors start chatting with your Qlynk Agent, their conversations will appear here.
           </p>
         </div>
       )}

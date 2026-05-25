@@ -70,7 +70,7 @@ export default function DashboardPage() {
         console.log('[v0] Auto-repairing missing agent config for user:', user.id);
         const { data: newConfig } = await supabase.from('agent_configs').insert({
           user_id: user.id,
-          agent_name: 'q-agent',
+          agent_name: 'Your AI',
           welcome_message: "Hi! I'm the AI assistant for this page. How can I help you?",
           is_enabled: true,
           primary_color: '#f46530'
@@ -358,7 +358,7 @@ export default function DashboardPage() {
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <h2 className="text-2xl font-bold text-white tracking-tight">
-                    {agentConfig?.agent_name || 'q-agent'}
+                    {agentConfig?.agent_name || 'Your AI'}
                   </h2>
                   {agentConfig?.is_enabled && (
                     <span className="px-2.5 py-0.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">

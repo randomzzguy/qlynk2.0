@@ -5,7 +5,7 @@ import { MessageCircle, X, Send, Bot, User, Loader2 } from 'lucide-react';
 
 export default function ChatWidget({ 
   username, 
-  agentName = 'Q-Agent',
+  agentName = 'Your AI',
   agentAvatar,
   welcomeMessage = 'Hi! How can I help you today?',
   primaryColor = '#f46530',

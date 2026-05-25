@@ -54,7 +54,7 @@ export default function TermsPage() {
               <section>
                 <h2 className="text-2xl font-bold text-white mb-4">2. Description of Service</h2>
                 <p className="leading-relaxed">
-                  Qlynk provides a platform for users to create AI-powered personal ambassadors ("q-agents"). The service includes tools for training the AI, hosting a public profile, and analyzing interactions.
+                  Qlynk provides a platform for users to create AI-powered personal ambassadors ("Qlynk Agents"). The service includes tools for training the AI, hosting a public profile, and analyzing interactions.
                 </p>
               </section>
 

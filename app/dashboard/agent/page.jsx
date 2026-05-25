@@ -96,7 +96,7 @@ export default function AgentConfigPage() {
   
   // Agent config state
   const [config, setConfig] = useState({
-    agent_name: 'q-agent',
+    agent_name: 'Your AI',
     agent_avatar: '',
     welcome_message: 'Hi! I\'m the AI assistant for this page. How can I help you?',
     bio: '',
@@ -336,7 +336,7 @@ export default function AgentConfigPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
         <div>
           <h1 className="text-3xl font-black text-white mb-2 flex items-center gap-3">
-            q-agent
+            Qlynk Agent
             <Sparkles size={20} className="text-[#f46530]" />
           </h1>
           <p className="text-lg text-gray-400">Configure your AI assistant&apos;s personality and branding</p>
@@ -390,7 +390,7 @@ export default function AgentConfigPage() {
                     {config.is_enabled && <Sparkles size={16} className="text-[#f46530]" />}
                   </h3>
                   <p className="text-gray-400">
-                    {config.is_enabled ? 'Your q-agent is live and visible to visitors' : 'Your q-agent is currently offline'}
+                    {config.is_enabled ? 'Your Qlynk Agent is live and visible to visitors' : 'Your Qlynk Agent is currently offline'}
                   </p>
                 </div>
               </div>
@@ -527,7 +527,7 @@ export default function AgentConfigPage() {
                   type="text"
                   value={config.agent_name}
                   onChange={(e) => updateConfig('agent_name', e.target.value)}
-                  placeholder="q-agent"
+                  placeholder="Your AI"
                   className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all"
                 />
               </div>
@@ -725,7 +725,7 @@ export default function AgentConfigPage() {
                 >
                   {/* Mini landing preview */}
                   <div className="p-6 border-b border-white/10">
-                    <p className="text-white font-black text-lg mb-1">{config.agent_name || 'q-agent'}</p>
+                    <p className="text-white font-black text-lg mb-1">{config.agent_name || 'Your AI'}</p>
                     <p className="text-xs mb-4" style={{ color: config.pre_chat_text_color || '#9ca3af' }}>
                       {config.bio || 'Ask me anything about my work or background.'}
                     </p>
@@ -759,7 +759,7 @@ export default function AgentConfigPage() {
                   <div className="p-4 border-t border-white/10">
                     <p className="text-xs font-bold text-white mb-1">Welcome Page</p>
                     <p className="text-xs" style={{ color: config.gatekeeper_text_color || '#9ca3af' }}>
-                      Please introduce yourself before chatting with {config.agent_name || 'q-agent'}.
+                      Please introduce yourself before chatting with {config.agent_name || 'Your AI'}.
                     </p>
                   </div>
                 </div>
@@ -1113,7 +1113,7 @@ export default function AgentConfigPage() {
                   Share & Embed
                 </h2>
                 <p className="text-gray-400 mb-6 max-w-2xl text-lg">
-                  Integrate your q-agent on any website by adding this small script tag to your HTML. 
+                  Integrate your Qlynk Agent on any website by adding this small script tag to your HTML. 
                   It will automatically add the chat widget to your site.
                 </p>
                 
@@ -1121,11 +1121,11 @@ export default function AgentConfigPage() {
                   <div className="absolute -inset-1 bg-gradient-to-r from-[#f46530]/20 to-orange-600/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
                   <div className="relative bg-gray-900/80 border border-gray-700/50 rounded-xl p-6 font-mono text-sm overflow-x-auto custom-scrollbar">
                     <pre className="text-gray-300">
-                      {`<script src="${typeof window !== 'undefined' ? window.location.origin : ''}/q-agent.js" data-username="${username}" defer><\/script>`}
+                      {`<script src="${typeof window !== 'undefined' ? window.location.origin : ''}/qlynk-agent.js" data-username="${username}" defer><\/script>`}
                     </pre>
                     <button 
                       onClick={() => {
-                        const code = `<script src="${window.location.origin}/q-agent.js" data-username="${username}" defer><\/script>`;
+                        const code = `<script src="${window.location.origin}/qlynk-agent.js" data-username="${username}" defer><\/script>`;
                         navigator.clipboard.writeText(code);
                       }}
                       className="absolute top-4 right-4 p-2 bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white rounded-lg border border-gray-700 transition-all"

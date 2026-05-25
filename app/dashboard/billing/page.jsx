@@ -106,7 +106,7 @@ export default function BillingPage() {
               </div>
               <div className="flex items-center gap-3 text-gray-300">
                 <Check className="text-green-500" size={18} />
-                <span>Priority q-agent AI</span>
+                <span>Priority Qlynk Agent AI</span>
               </div>
               <div className="flex items-center gap-3 text-gray-300">
                 <Check className="text-green-500" size={18} />

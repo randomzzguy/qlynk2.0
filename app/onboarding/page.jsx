@@ -49,7 +49,7 @@ export default function OnboardingPage() {
     projects: [],
     custom_knowledge: '',
     // Branding
-    agent_name: 'q-agent',
+    agent_name: 'Your AI',
     welcome_message: "Hi! I'm the AI assistant for this page. How can I help you?",
     primary_color: '#f46530',
   });
@@ -102,7 +102,7 @@ export default function OnboardingPage() {
           skills: agentConfig.skills || [],
           projects: agentConfig.projects || [],
           custom_knowledge: agentConfig.custom_knowledge || '',
-          agent_name: agentConfig.agent_name || 'q-agent',
+          agent_name: agentConfig.agent_name || 'Your AI',
           welcome_message: agentConfig.welcome_message || "Hi! I'm the AI assistant for this page. How can I help you?",
           primary_color: agentConfig.primary_color || '#f46530',
         }));
@@ -393,7 +393,7 @@ export default function OnboardingPage() {
                   Welcome to qlynk, {username}!
                 </h1>
                 <p className="text-xl text-gray-300 mb-8 max-w-md mx-auto">
-                  Let&apos;s set up your q-agent in just a few steps. Your AI ambassador will be ready to chat with visitors 24/7.
+                  Let&apos;s set up your Qlynk Agent in just a few steps. Your AI ambassador will be ready to chat with visitors 24/7.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left max-w-xl mx-auto">
                   {[
@@ -426,7 +426,7 @@ export default function OnboardingPage() {
             {currentStep === 1 && (
               <div>
                 <h2 className="text-3xl font-black text-white mb-2 text-center">Tell us about yourself</h2>
-                <p className="text-gray-400 mb-8 text-center">This helps your q-agent introduce you to visitors.</p>
+                <p className="text-gray-400 mb-8 text-center">This helps your Qlynk Agent introduce you to visitors.</p>
                 
                 <div className="space-y-6">
                   <div>
@@ -554,7 +554,7 @@ export default function OnboardingPage() {
             {currentStep === 3 && (
               <div>
                 <h2 className="text-3xl font-black text-white mb-2 text-center">Customize Your Agent</h2>
-                <p className="text-gray-400 mb-8 text-center">Make your q-agent feel personal and on-brand.</p>
+                <p className="text-gray-400 mb-8 text-center">Make your Qlynk Agent feel personal and on-brand.</p>
                 
                 <div className="space-y-6">
                   <div>
@@ -563,7 +563,7 @@ export default function OnboardingPage() {
                       type="text"
                       value={formData.agent_name}
                       onChange={(e) => setFormData(prev => ({ ...prev, agent_name: e.target.value }))}
-                      placeholder="q-agent"
+                      placeholder="Your AI"
                       className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none"
                     />
                   </div>
@@ -643,7 +643,7 @@ export default function OnboardingPage() {
                   Success! You&apos;re Live.
                 </h1>
                 <p className="text-xl text-gray-400 mb-10 max-w-md mx-auto leading-relaxed">
-                  Your q-agent has been deployed to your personal corner of the internet.
+                  Your Qlynk Agent has been deployed to your personal corner of the internet.
                 </p>
                 
                 <div className="relative group mb-10 inline-block">
@@ -661,11 +661,11 @@ export default function OnboardingPage() {
                       <div className="absolute -inset-1 bg-gradient-to-r from-orange/20 to-orange-600/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition duration-1000" />
                       <div className="relative bg-black/60 border border-white/10 rounded-xl p-4 font-mono text-[10px] text-gray-400 overflow-x-auto">
                         <pre>
-                          {`<script src="${typeof window !== 'undefined' ? window.location.origin : ''}/q-agent.js" data-username="${username}" defer><\/script>`}
+                          {`<script src="${typeof window !== 'undefined' ? window.location.origin : ''}/qlynk-agent.js" data-username="${username}" defer><\/script>`}
                         </pre>
                         <button 
                           onClick={() => {
-                            const code = `<script src="${window.location.origin}/q-agent.js" data-username="${username}" defer><\/script>`;
+                            const code = `<script src="${window.location.origin}/qlynk-agent.js" data-username="${username}" defer><\/script>`;
                             navigator.clipboard.writeText(code);
                             alert('Code copied!');
                           }}

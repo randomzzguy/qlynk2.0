@@ -3,7 +3,7 @@
   const scripts = document.getElementsByTagName('script');
   let currentScript = null;
   for (let i = 0; i < scripts.length; i++) {
-    if (scripts[i].src.includes('q-agent.js')) {
+    if (scripts[i].src.includes('qlynk-agent.js')) {
       currentScript = scripts[i];
       break;
     }
@@ -13,7 +13,7 @@
 
   const username = currentScript.getAttribute('data-username');
   if (!username) {
-    console.error('Q-Agent: Missing data-username attribute on script tag.');
+    console.error('Qlynk Agent: Missing data-username attribute on script tag.');
     return;
   }
 
@@ -26,7 +26,7 @@
   // Create the iframe
   const iframe = document.createElement('iframe');
   iframe.id = 'qlynk-chat-widget';
-  
+
   // Initial styles - small enough for the floating button but large enough for the tooltip/shadow
   const initialStyles = {
     position: 'fixed',
@@ -42,12 +42,12 @@
   };
 
   Object.assign(iframe.style, initialStyles);
-  
+
   iframe.src = `${origin}/embed/${username}`;
   iframe.setAttribute('allow', 'clipboard-read; clipboard-write');
-  
+
   document.body.appendChild(iframe);
-  
+
   // Listen for messages from the iframe to resize
   window.addEventListener('message', (event) => {
     // Basic security check: ensure message is from our origin

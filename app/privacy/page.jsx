@@ -47,7 +47,7 @@ export default function PrivacyPage() {
               <section>
                 <h2 className="text-2xl font-bold text-white mb-4">1. Information We Collect</h2>
                 <p className="leading-relaxed">
-                  We collect information you provide directly to us, such as when you create an account, train your q-agent, or contact support. This includes your name, email address, password, bio, and any documents you upload to train your AI.
+                  We collect information you provide directly to us, such as when you create an account, train your Qlynk Agent, or contact support. This includes your name, email address, password, bio, and any documents you upload to train your AI.
                 </p>
               </section>
 
@@ -57,7 +57,7 @@ export default function PrivacyPage() {
                   We use your information to provide, maintain, and improve the Service, specifically to:
                 </p>
                 <ul className="list-disc pl-6 space-y-2 mt-4 text-gray-400">
-                  <li>Power your personal AI agent (q-agent).</li>
+                  <li>Power your personal AI agent (Qlynk Agent).</li>
                   <li>Process payments and subscriptions.</li>
                   <li>Send you technical notices and support messages.</li>
                   <li>Respond to your comments and questions.</li>
@@ -67,7 +67,7 @@ export default function PrivacyPage() {
               <section>
                 <h2 className="text-2xl font-bold text-white mb-4">3. AI Training and Data</h2>
                 <p className="leading-relaxed">
-                  The data you provide to train your q-agent is used specifically for that purpose. We do not sell your personal data or your AI training data to third parties. Your documents are stored securely and processed to allow the AI to answer questions accurately.
+                  The data you provide to train your Qlynk Agent is used specifically for that purpose. We do not sell your personal data or your AI training data to third parties. Your documents are stored securely and processed to allow the AI to answer questions accurately.
                 </p>
               </section>
 

@@ -78,15 +78,15 @@ Q-Agent is a SaaS platform that allows users to create AI-powered clones of them
 
 #### 2. Advanced AI Features
 - [ ] Improved text extraction from PDFs/DOCX
-- [ ] Support for URL scraping as a knowledge source
+- [x] Support for URL scraping as a knowledge source
 - [ ] Multi-agent support (Business tier)
 - [ ] White-labeling (remove Qlynk branding)
 
 ### Medium Priority
 
 #### 3. Analytics Improvements
-- [ ] Sentiment analysis for conversations
-- [ ] Export conversation data to CSV
+- [x] Sentiment analysis for conversations (asynchronous, zero-latency)
+- [x] Export conversation data to CSV (client-side download)
 - [ ] Weekly email summary for users
 
 ---

@@ -27,7 +27,6 @@ import {
   Sparkles,
   ExternalLink,
   Copy,
-  Code,
   Palette,
   Type,
   MessageSquare
@@ -1102,50 +1101,19 @@ export default function AgentConfigPage() {
               </Link>
             </div>
           </div>
-          {/* Share & Embed Section */}
+          {/* Share Section */}
           <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-8 mb-20 hover:border-[#f46530]/20 transition-all">
-            <div className="flex flex-col md:flex-row justify-between items-start gap-8">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-8">
               <div className="flex-1">
                 <h2 className="text-2xl font-bold text-white mb-3 flex items-center gap-3">
                   <div className="w-10 h-10 bg-[#f46530]/10 rounded-xl flex items-center justify-center">
-                    <Code size={22} className="text-[#f46530]" />
+                    <Globe size={22} className="text-[#f46530]" />
                   </div>
-                  Share & Embed
+                  Share Your Page
                 </h2>
-                <p className="text-gray-400 mb-6 max-w-2xl text-lg">
-                  Integrate your Qlynk Agent on any website by adding this small script tag to your HTML. 
-                  It will automatically add the chat widget to your site.
+                <p className="text-gray-400 max-w-2xl text-lg">
+                  Share your Qlynk Agent with others. Copy your profile link or view your public page.
                 </p>
-                
-                <div className="relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-[#f46530]/20 to-orange-600/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-                  <div className="relative bg-gray-900/80 border border-gray-700/50 rounded-xl p-6 font-mono text-sm overflow-x-auto custom-scrollbar">
-                    <pre className="text-gray-300">
-                      {`<script src="${typeof window !== 'undefined' ? window.location.origin : ''}/qlynk-agent.js" data-username="${username}" defer><\/script>`}
-                    </pre>
-                    <button 
-                      onClick={() => {
-                        const code = `<script src="${window.location.origin}/qlynk-agent.js" data-username="${username}" defer><\/script>`;
-                        navigator.clipboard.writeText(code);
-                      }}
-                      className="absolute top-4 right-4 p-2 bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white rounded-lg border border-gray-700 transition-all"
-                      title="Copy to clipboard"
-                    >
-                      <Copy size={16} />
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="mt-6 flex items-center gap-4">
-                  <div className="flex -space-x-2">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div key={i} className="w-8 h-8 rounded-full border-2 border-gray-900 bg-gray-800 flex items-center justify-center">
-                        <Globe size={14} className="text-gray-500" />
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-sm text-gray-500">Works on WordPress, Webflow, Shopify, and custom sites</p>
-                </div>
               </div>
 
               <div className="w-full md:w-64 flex flex-col gap-3">
@@ -1167,9 +1135,9 @@ export default function AgentConfigPage() {
                   <ExternalLink size={18} />
                   View Public Page
                 </a>
+              </div>
             </div>
           </div>
         </div>
-      </div>
     );
 }

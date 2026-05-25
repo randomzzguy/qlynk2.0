@@ -50,12 +50,14 @@ export default function KnowledgeDashboard() {
       const { data: facts } = await supabase
         .from('agent_knowledge')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       // Fetch documents
       const { data: docs } = await supabase
         .from('agent_documents')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       setKnowledge(facts || []);

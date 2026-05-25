@@ -48,7 +48,7 @@ export default function Footer() {
             <ul className="space-y-3 text-sm">
               <li><Link href="/blog/what-is-an-ai-clone" className="hover:text-[#f46530] transition-colors">What is an AI Clone?</Link></li>
               <li><Link href="/blog/how-to-create-ai-clone" className="hover:text-[#f46530] transition-colors">How to Create an AI Clone</Link></li>
-              <li><Link href="#" className="hover:text-[#f46530] transition-colors">AI Clone vs Chatbot</Link></li>
+              <li><Link href="/blog/ai-clone-vs-chatbot" className="hover:text-[#f46530] transition-colors">AI Clone vs Chatbot</Link></li>
             </ul>
           </div>
         </div>
@@ -56,8 +56,8 @@ export default function Footer() {
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
           <p>&copy; {new Date().getFullYear()} qlynk. All rights reserved.</p>
           <div className="flex gap-6">
-            <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link href="#" className="hover:text-white transition-colors">Terms of Service</Link>
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
           </div>
         </div>
       </div>

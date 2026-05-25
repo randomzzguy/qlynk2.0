@@ -15,7 +15,7 @@ export default function HowToCreateAIClone() {
 
       <main className="max-w-4xl mx-auto px-6 py-24 relative z-10">
         <Link href="/blog" className="text-gray-400 hover:text-white mb-8 inline-block transition-colors">
-          ← Back to Blog
+          ← Back to Resources
         </Link>
         
         <article className="prose prose-invert lg:prose-lg max-w-none">

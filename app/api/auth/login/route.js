@@ -1,12 +1,17 @@
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { rateLimitResponse } from '@/lib/rate-limit';
 
 export async function POST(request) {
-    try {
-        const body = await request.json();
-        const { email, password, hcaptchaToken } = body;
-        console.log('[API] Login attempt received:', { email, hcaptchaToken });
+  // Rate limit: 5 requests per 15 minutes per IP
+  const rateLimit = rateLimitResponse(request, 'auth-login', 5, 15 * 60 * 1000);
+  if (rateLimit) return rateLimit;
+
+  try {
+    const body = await request.json();
+    const { email, password, hcaptchaToken } = body;
+    console.log('[API] Login attempt received:', { email, hcaptchaToken });
 
         // Verify hCaptcha token
         const secret = process.env.HCAPTCHA_SECRET;

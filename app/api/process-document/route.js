@@ -1,4 +1,5 @@
-import { createAdminClient } from '@/utils/supabase/server';
+import { createAdminClient, createClient } from '@/utils/supabase/server';
+import { cookies } from 'next/headers';
 import { createRequire } from 'module';
 
 export const dynamic = 'force-dynamic';
@@ -23,10 +24,19 @@ export async function POST(req) {
       return new Response(JSON.stringify({ error: 'documentId is required' }), { status: 400 });
     }
 
-    const supabase = createAdminClient();
+    // Authenticate the requesting user
+    const cookieStore = await cookies();
+    const authClient = createClient(cookieStore);
+    const { data: { user }, error: authError } = await authClient.auth.getUser();
+
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+    }
+
+    const adminSupabase = createAdminClient();
 
     // 1. Fetch the document record
-    const { data: doc, error: fetchError } = await supabase
+    const { data: doc, error: fetchError } = await adminSupabase
       .from('agent_documents')
       .select('*')
       .eq('id', documentId)
@@ -37,8 +47,13 @@ export async function POST(req) {
       return new Response(JSON.stringify({ error: 'Document not found' }), { status: 404 });
     }
 
-    // 2. Download the file from storage
-    const { data: fileData, error: downloadError } = await supabase
+    // 2. Verify ownership
+    if (doc.user_id !== user.id) {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
+    }
+
+    // 3. Download the file from storage
+    const { data: fileData, error: downloadError } = await adminSupabase
       .storage
       .from('agent-documents')
       .download(doc.storage_path);
@@ -48,7 +63,7 @@ export async function POST(req) {
       return new Response(JSON.stringify({ error: 'Failed to download file from storage' }), { status: 500 });
     }
 
-    // 3. Extract text based on file type
+    // 4. Extract text based on file type
     let extractedText = '';
     const buffer = Buffer.from(await fileData.arrayBuffer());
 
@@ -74,8 +89,8 @@ export async function POST(req) {
       extractedText = buffer.toString('utf-8');
     }
 
-    // 4. Update the record
-    const { error: updateError } = await supabase
+    // 5. Update the record
+    const { error: updateError } = await adminSupabase
       .from('agent_documents')
       .update({
         extracted_text: extractedText,

@@ -1,6 +1,7 @@
 import { createAdminClient, createClient } from '@/utils/supabase/server';
 import { buildAgentSystemPrompt, getAgentKnowledge } from '@/lib/agent';
 import { getMessageLimit, isSubscriptionLive, normalizeTier } from '@/lib/plans';
+import { rateLimitResponse } from '@/lib/rate-limit';
 import { cookies } from 'next/headers';
 
 export const maxDuration = 30;
@@ -66,7 +67,7 @@ async function analyzeAndSaveSentiment(conversationId, supabase) {
   }
 }
 
-function createAssistantPersistenceStream(conversationId, supabase) {
+function createAssistantPersistenceStream(conversationId, supabase, adminSupabase) {
   const decoder = new TextDecoder();
   let buffer = '';
   let assistantContent = '';
@@ -110,7 +111,7 @@ function createAssistantPersistenceStream(conversationId, supabase) {
         console.error('[AI Chat] Failed to save assistant message:', error);
       } else {
         // Perform sentiment analysis in the background
-        analyzeAndSaveSentiment(conversationId, supabase).catch(err => {
+        analyzeAndSaveSentiment(conversationId, adminSupabase).catch(err => {
           console.error('[Background Sentiment Async Catch]:', err);
         });
       }
@@ -119,6 +120,10 @@ function createAssistantPersistenceStream(conversationId, supabase) {
 }
 
 export async function POST(req) {
+  // Rate limit: 20 requests per minute per IP
+  const rateLimit = rateLimitResponse(req, 'ai-chat', 20, 60 * 1000);
+  if (rateLimit) return rateLimit;
+
   try {
     const {
       messages,
@@ -248,7 +253,7 @@ export async function POST(req) {
     }
 
     const responseBody = activeConversationId
-      ? groqResponse.body.pipeThrough(createAssistantPersistenceStream(activeConversationId, supabase))
+      ? groqResponse.body.pipeThrough(createAssistantPersistenceStream(activeConversationId, supabase, adminSupabase))
       : groqResponse.body;
 
     // Pass the stream back to the browser with the conversation ID in headers

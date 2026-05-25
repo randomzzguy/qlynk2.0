@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { rateLimitResponse } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30; // 30s timeout
@@ -63,6 +64,10 @@ function extractTitle(html, url) {
 }
 
 export async function POST(req) {
+  // Rate limit: 5 requests per hour per IP
+  const rateLimit = rateLimitResponse(req, 'scrape', 5, 60 * 60 * 1000);
+  if (rateLimit) return rateLimit;
+
   try {
     const { url } = await req.json();
 

@@ -2,8 +2,13 @@ import { createClient as createServerClient } from '@/utils/supabase/server';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { rateLimitResponse } from '@/lib/rate-limit';
 
 export async function POST(request) {
+  // Rate limit: 3 requests per 15 minutes per IP
+  const rateLimit = rateLimitResponse(request, 'auth-signup', 3, 15 * 60 * 1000);
+  if (rateLimit) return rateLimit;
+
   try {
     const body = await request.json();
     const { email, password, username, hcaptchaToken, profession = 'Creative Professional' } = body;

@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Qlynk
 
-## Getting Started
+AI-powered agent platform that lets creators build personalized chatbots for their websites.
 
-First, run the development server:
+## Features
+
+- **AI Chat Widget** - Embeddable chat agent that answers questions based on user knowledge
+- **Customizable Themes** - Dark tech aesthetic with color, position, and branding options
+- **Knowledge Base** - Upload documents, add custom facts, or scrape URLs
+- **Analytics Dashboard** - Track conversations, sentiment, and engagement
+- **Free Trial** - 14-day trial with automatic subscription management
+- **Stripe Integration** - Subscription billing with webhook support
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Framework | Next.js 16 (App Router) |
+| Database | Supabase (PostgreSQL) |
+| Auth | Supabase Auth with hCaptcha |
+| AI | Groq API (LLM streaming) |
+| Payments | Stripe |
+| Styling | Tailwind CSS + Framer Motion |
+
+## Quick Start
 
 ```bash
+# Install dependencies
+npm install
+
+# Copy environment template and fill in values
+cp .env.local.example .env.local
+
+# Run dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=
+SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
 
-## Learn More
+# AI
+GROQ_API_KEY=
 
-To learn more about Next.js, take a look at the following resources:
+# Payments
+STRIPE_SECRET_KEY=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+STRIPE_WEBHOOK_SECRET=
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Security
+NEXT_PUBLIC_HCAPTCHA_SITE_KEY=
+HCAPTCHA_SECRET_KEY=
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
+See [docs/DEPLOYMENT_CHECKLIST.md](./docs/DEPLOYMENT_CHECKLIST.md) for production deployment steps.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+app/
+  api/           # API routes (AI chat, webhooks, auth)
+  auth/          # Login/signup pages
+  dashboard/     # User dashboard (agent config, analytics)
+  [username]/    # Public profile pages with chat widget
+  embed/         # Embeddable widget for external sites
+
+components/      # React components
+lib/            # Utilities, database helpers
+utils/          # Supabase clients
+supabase/       # Database migrations
+public/         # Static assets
+scripts/        # Build scripts
+```
+
+## License
+
+Private - All rights reserved.

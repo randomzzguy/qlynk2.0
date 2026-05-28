@@ -334,7 +334,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Notification Preferences */}
-        <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-8 mb-8 hover:border-[#f46530]/20 hover:bg-white/10 transition-all group">
+        <div id="notifications" className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-8 mb-8 hover:border-[#f46530]/20 hover:bg-white/10 transition-all group">
           <div className="flex items-center gap-4 mb-8">
             <div className="w-12 h-12 bg-[#f46530]/10 text-[#f46530] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
               <Bell size={24} />

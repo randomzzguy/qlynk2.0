@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -10,8 +9,6 @@ import {
   MessageSquare, 
   Settings, 
   LogOut, 
-  Bot, 
-  FileText, 
   X, 
   Home, 
   ChevronLeft, 
@@ -20,7 +17,8 @@ import {
   Palette,
   CreditCard,
   ExternalLink,
-  Sparkles
+  Sparkles,
+  Bell
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -49,6 +47,7 @@ const navGroups = [
     title: 'Configuration',
     items: [
       { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
+      { href: '/dashboard/settings#notifications', icon: Bell, label: 'Notifications' },
       { href: '/dashboard/billing', icon: CreditCard, label: 'Billing' },
     ]
   }

@@ -10,12 +10,14 @@ import {
   Shield, 
   Sparkles, 
   Loader2, 
-  CheckCircle, 
-  AlertCircle,
   Eye,
   EyeOff,
   Upload,
-  Trash2
+  Trash2,
+  Bell,
+  MessageSquare,
+  CreditCard,
+  Clock
 } from 'lucide-react';
 import UpgradePrompt from '@/components/UpgradePrompt';
 import { toast, Toaster } from 'react-hot-toast';
@@ -24,7 +26,6 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null);
 
   // Form states
   const [fullName, setFullName] = useState('');
@@ -36,6 +37,11 @@ export default function SettingsPage() {
   const [avatarUrl, setAvatarUrl] = useState('');
   const [avatarUploading, setAvatarUploading] = useState(false);
 
+  // Notification preferences
+  const [notifNewMessage, setNotifNewMessage] = useState(true);
+  const [notifTrialExpiry, setNotifTrialExpiry] = useState(true);
+  const [notifSubscription, setNotifSubscription] = useState(true);
+
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -46,9 +52,11 @@ export default function SettingsPage() {
 
         const currentProfile = await getCurrentProfile();
         if (currentProfile) {
-          setProfile(currentProfile);
           setFullName(currentProfile.full_name || '');
           setAvatarUrl(currentProfile.avatar_url || '');
+          setNotifNewMessage(currentProfile.notif_new_message !== false);
+          setNotifTrialExpiry(currentProfile.notif_trial_expiry !== false);
+          setNotifSubscription(currentProfile.notif_subscription !== false);
         }
 
         // Fetch bio from agent_configs as it's the primary source for the AI
@@ -82,12 +90,15 @@ export default function SettingsPage() {
     try {
       const supabase = createClient();
 
-      // 1. Update Profile (full_name, avatar_url)
+      // 1. Update Profile (full_name, avatar_url, notification prefs)
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ 
           full_name: fullName,
-          avatar_url: avatarUrl 
+          avatar_url: avatarUrl,
+          notif_new_message: notifNewMessage,
+          notif_trial_expiry: notifTrialExpiry,
+          notif_subscription: notifSubscription,
         })
         .eq('id', user.id);
 
@@ -319,6 +330,90 @@ export default function SettingsPage() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Notification Preferences */}
+        <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-8 mb-8 hover:border-[#f46530]/20 hover:bg-white/10 transition-all group">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-12 h-12 bg-[#f46530]/10 text-[#f46530] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Bell size={24} />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white">Email Notifications</h2>
+              <p className="text-gray-400 text-sm">Choose which emails you want to receive</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <label className="flex items-center justify-between p-4 rounded-2xl border border-white/10 bg-white/5 hover:border-[#f46530]/30 hover:bg-white/10 transition-all cursor-pointer">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center">
+                  <MessageSquare size={18} className="text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-white font-semibold text-sm">New Conversations</p>
+                  <p className="text-gray-500 text-xs">Get notified when someone starts chatting with your agent</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setNotifNewMessage(v => !v)}
+                className={`relative w-12 h-6 rounded-full transition-all flex-shrink-0 ${
+                  notifNewMessage ? 'bg-[#f46530] shadow-lg shadow-[#f46530]/30' : 'bg-gray-700'
+                }`}
+              >
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform shadow ${
+                  notifNewMessage ? 'translate-x-7' : 'translate-x-1'
+                }`} />
+              </button>
+            </label>
+
+            <label className="flex items-center justify-between p-4 rounded-2xl border border-white/10 bg-white/5 hover:border-[#f46530]/30 hover:bg-white/10 transition-all cursor-pointer">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center">
+                  <Clock size={18} className="text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-white font-semibold text-sm">Trial & Expiry Reminders</p>
+                  <p className="text-gray-500 text-xs">Warnings before your trial ends and expiry notices</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setNotifTrialExpiry(v => !v)}
+                className={`relative w-12 h-6 rounded-full transition-all flex-shrink-0 ${
+                  notifTrialExpiry ? 'bg-[#f46530] shadow-lg shadow-[#f46530]/30' : 'bg-gray-700'
+                }`}
+              >
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform shadow ${
+                  notifTrialExpiry ? 'translate-x-7' : 'translate-x-1'
+                }`} />
+              </button>
+            </label>
+
+            <label className="flex items-center justify-between p-4 rounded-2xl border border-white/10 bg-white/5 hover:border-[#f46530]/30 hover:bg-white/10 transition-all cursor-pointer">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-green-500/10 rounded-xl flex items-center justify-center">
+                  <CreditCard size={18} className="text-green-400" />
+                </div>
+                <div>
+                  <p className="text-white font-semibold text-sm">Billing & Subscription</p>
+                  <p className="text-gray-500 text-xs">Renewal confirmations and billing events</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setNotifSubscription(v => !v)}
+                className={`relative w-12 h-6 rounded-full transition-all flex-shrink-0 ${
+                  notifSubscription ? 'bg-[#f46530] shadow-lg shadow-[#f46530]/30' : 'bg-gray-700'
+                }`}
+              >
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform shadow ${
+                  notifSubscription ? 'translate-x-7' : 'translate-x-1'
+                }`} />
+              </button>
+            </label>
           </div>
         </div>
 

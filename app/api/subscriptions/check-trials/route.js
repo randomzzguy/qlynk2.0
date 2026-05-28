@@ -8,9 +8,11 @@ import { trialExpiredEmail } from '@/lib/email/templates/trial-expired';
  * This endpoint should be called periodically (e.g., via a cron job)
  */
 export async function GET(request) {
-  // Verify the request is coming from a trusted source (e.g., cron job)
+  // Verify the request is from Vercel's cron runner or a manual call with the cron secret
   const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const isVercelCron = request.headers.get('x-vercel-cron') === '1';
+  const isValidBearer = authHeader === `Bearer ${process.env.CRON_SECRET}`;
+  if (!isVercelCron && !isValidBearer) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -36,7 +38,7 @@ export async function GET(request) {
       throw fetchError;
     }
 
-    // For each expired trial, mark agents as offline and send expired email
+    // For each expired trial, mark agents as offline, flip tier to 'expired', and send email
     let updated = 0;
     let emailsSent = 0;
     for (const trial of expiredTrials || []) {
@@ -50,6 +52,12 @@ export async function GET(request) {
       } else {
         updated++;
       }
+
+      // Flip tier to 'expired' so this user is never picked up by this cron again
+      await supabase
+        .from('subscriptions')
+        .update({ tier: 'expired' })
+        .eq('user_id', trial.user_id);
 
       // Send trial expired email
       const { data: authUser } = await supabase.auth.admin.getUserById(trial.user_id);
@@ -74,6 +82,7 @@ export async function GET(request) {
       .from('subscriptions')
       .select('user_id, trial_ends_at')
       .eq('tier', 'trial')
+      .eq('trial_warning_sent', false)
       .gte('trial_ends_at', in3DaysStart.toISOString())
       .lt('trial_ends_at', in3DaysEnd.toISOString());
 
@@ -87,7 +96,14 @@ export async function GET(request) {
           to: userEmail,
           ...trialExpiringEmail({ username, daysLeft: 3 }),
         });
-        if (success) warningsSent++;
+        if (success) {
+          warningsSent++;
+          // Mark as warned so this user is skipped on future cron runs
+          await supabase
+            .from('subscriptions')
+            .update({ trial_warning_sent: true })
+            .eq('user_id', trial.user_id);
+        }
       }
     }
 

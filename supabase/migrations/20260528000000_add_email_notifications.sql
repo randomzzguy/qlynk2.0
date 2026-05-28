@@ -3,6 +3,11 @@
 ALTER TABLE agent_conversations
   ADD COLUMN IF NOT EXISTS email_notified BOOLEAN DEFAULT FALSE;
 
+-- Add trial_warning_sent flag to subscriptions
+-- Prevents the 3-day warning email from being re-sent on subsequent cron runs
+ALTER TABLE subscriptions
+  ADD COLUMN IF NOT EXISTS trial_warning_sent BOOLEAN DEFAULT FALSE;
+
 -- Add notification preferences to profiles
 -- Each column controls whether the user wants that type of email
 ALTER TABLE profiles

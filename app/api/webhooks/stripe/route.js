@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { createClient } from '@supabase/supabase-js';
+import { sendEmail } from '@/lib/email/send';
+import { subscriptionRenewedEmail } from '@/lib/email/templates/subscription-renewed';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -105,6 +107,30 @@ export async function POST(req) {
           console.error(`[Stripe Webhook] DB Update Error on sub.update:`, error.message);
         } else {
           console.log(`[Stripe Webhook] DB Update Success on sub.update:`, data);
+        }
+        break;
+      }
+
+      case 'invoice.payment_succeeded': {
+        const invoice = event.data.object;
+        if (invoice.billing_reason === 'subscription_cycle' && invoice.subscription) {
+          const sub = await stripe.subscriptions.retrieve(invoice.subscription);
+          const userId = sub.metadata?.supabase_user_id;
+          if (userId) {
+            const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId);
+            const userEmail = authUser?.user?.email;
+            const username = authUser?.user?.user_metadata?.username || 'there';
+            const planName = sub.metadata?.plan_name || sub.items?.data?.[0]?.price?.nickname || 'Pro';
+            const nextRenewal = sub.current_period_end
+              ? new Date(sub.current_period_end * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+              : null;
+            if (userEmail) {
+              sendEmail({
+                to: userEmail,
+                ...subscriptionRenewedEmail({ username, planName, renewalDate: nextRenewal }),
+              }).catch((err) => console.error('[Stripe Webhook] Renewal email failed:', err));
+            }
+          }
         }
         break;
       }

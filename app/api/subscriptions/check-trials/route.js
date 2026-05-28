@@ -1,4 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
+import { sendEmail } from '@/lib/email/send';
+import { trialExpiringEmail } from '@/lib/email/templates/trial-expiring';
+import { trialExpiredEmail } from '@/lib/email/templates/trial-expired';
 
 /**
  * Check all trial expirations and handle accordingly
@@ -33,8 +36,9 @@ export async function GET(request) {
       throw fetchError;
     }
 
-    // For each expired trial, mark agents as offline (is_published = false)
+    // For each expired trial, mark agents as offline and send expired email
     let updated = 0;
+    let emailsSent = 0;
     for (const trial of expiredTrials || []) {
       const { error: updateError } = await supabase
         .from('agent_configs')
@@ -46,28 +50,52 @@ export async function GET(request) {
       } else {
         updated++;
       }
+
+      // Send trial expired email
+      const { data: authUser } = await supabase.auth.admin.getUserById(trial.user_id);
+      const userEmail = authUser?.user?.email;
+      const username = authUser?.user?.user_metadata?.username || 'there';
+      if (userEmail) {
+        const { success } = await sendEmail({
+          to: userEmail,
+          ...trialExpiredEmail({ username }),
+        });
+        if (success) emailsSent++;
+      }
     }
 
-    // Also send email notifications to users whose trials expired today
-    const today = new Date();
-    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
+    // Find trials expiring in exactly 3 days and send a warning email
+    const now = new Date();
+    const in3DaysStart = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+    in3DaysStart.setHours(0, 0, 0, 0);
+    const in3DaysEnd = new Date(in3DaysStart.getTime() + 24 * 60 * 60 * 1000);
 
-    const { data: todaysExpiries } = await supabase
+    const { data: expiringIn3Days } = await supabase
       .from('subscriptions')
       .select('user_id, trial_ends_at')
       .eq('tier', 'trial')
-      .gte('trial_ends_at', startOfDay.toISOString())
-      .lt('trial_ends_at', endOfDay.toISOString());
+      .gte('trial_ends_at', in3DaysStart.toISOString())
+      .lt('trial_ends_at', in3DaysEnd.toISOString());
 
-    // You can add email sending here (e.g., using SendGrid, Resend, etc.)
-    // Example: await sendTrialExpiredEmail(user.email)
+    let warningsSent = 0;
+    for (const trial of expiringIn3Days || []) {
+      const { data: authUser } = await supabase.auth.admin.getUserById(trial.user_id);
+      const userEmail = authUser?.user?.email;
+      const username = authUser?.user?.user_metadata?.username || 'there';
+      if (userEmail) {
+        const { success } = await sendEmail({
+          to: userEmail,
+          ...trialExpiringEmail({ username, daysLeft: 3 }),
+        });
+        if (success) warningsSent++;
+      }
+    }
 
     return Response.json({
       success: true,
-      message: `Updated ${updated} expired agents, found ${todaysExpiries?.length || 0} expiring today`,
+      message: `Updated ${updated} expired agents, sent ${emailsSent} expiry emails, sent ${warningsSent} 3-day warning emails`,
       expiredCount: expiredTrials?.length || 0,
-      expiringTodayCount: todaysExpiries?.length || 0,
+      expiringIn3DaysCount: expiringIn3Days?.length || 0,
     });
   } catch (error) {
     console.error('Error checking trial expirations:', error);

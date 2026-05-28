@@ -3,6 +3,8 @@ import { buildAgentSystemPrompt, getAgentKnowledge } from '@/lib/agent';
 import { getMessageLimit, isSubscriptionLive, normalizeTier } from '@/lib/plans';
 import { rateLimitResponse } from '@/lib/rate-limit';
 import { cookies } from 'next/headers';
+import { sendEmail } from '@/lib/email/send';
+import { newMessageEmail } from '@/lib/email/templates/new-message';
 
 export const maxDuration = 30;
 
@@ -218,6 +220,32 @@ export async function POST(req) {
         .select('id')
         .single();
       activeConversationId = newConv?.id;
+
+      // Notify the agent owner of the new conversation (fire-and-forget)
+      if (newConv?.id) {
+        const { data: ownerAuthUser } = await adminSupabase.auth.admin.getUserById(profile.id);
+        const ownerEmail = ownerAuthUser?.user?.email;
+        const ownerNotifEnabled = ownerAuthUser?.user?.user_metadata?.notif_new_message !== false;
+        if (ownerEmail && ownerNotifEnabled) {
+          const firstUserMessage = messages[messages.length - 1]?.content;
+          sendEmail({
+            to: ownerEmail,
+            ...newMessageEmail({
+              visitorName: visitorName || null,
+              visitorEmail: visitorEmail || null,
+              messagePreview: firstUserMessage || null,
+              conversationsUrl: `https://qlynk.site/dashboard/conversations`,
+            }),
+          }).then(() => {
+            adminSupabase
+              .from('agent_conversations')
+              .update({ email_notified: true })
+              .eq('id', newConv.id)
+              .then(() => {})
+              .catch(() => {});
+          }).catch((err) => console.error('[AI Chat] New message email failed:', err));
+        }
+      }
     }
 
     // 2. SAVE USER MESSAGE

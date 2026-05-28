@@ -3,6 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { rateLimitResponse } from '@/lib/rate-limit';
+import { sendEmail } from '@/lib/email/send';
+import { welcomeEmail } from '@/lib/email/templates/welcome';
 
 export async function POST(request) {
   // Rate limit: 3 requests per 15 minutes per IP
@@ -138,6 +140,11 @@ export async function POST(request) {
         console.error('[v0] Manual Agent Error:', agentError.message);
       }
     }
+
+    // Send welcome email (fire-and-forget — don't block signup response)
+    sendEmail({ to: email, ...welcomeEmail({ username }) }).catch((err) =>
+      console.error('[Signup] Welcome email failed:', err)
+    );
 
     return NextResponse.json({ message: 'Signup successful! Please check your email to verify your account.' });
   } catch (error) {

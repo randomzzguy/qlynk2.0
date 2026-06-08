@@ -33,7 +33,7 @@ cp .env.local.example .env.local
 
 # Run dev server
 npm run dev
-```
+``
 
 Open [http://localhost:3000](http://localhost:3000)
 

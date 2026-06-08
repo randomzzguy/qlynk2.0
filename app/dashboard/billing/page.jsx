@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { getCurrentUser, getCurrentProfile } from '@/lib/supabase';
-import { CreditCard, Zap, Check, ArrowRight, Loader2, Clock } from 'lucide-react';
+import { CreditCard, Zap, Check, ArrowRight, Loader2, Clock, FileText, Download, Receipt } from 'lucide-react';
 import { getTrialDaysRemaining, isTrialExpired, PLAN_LIMITS } from '@/lib/subscriptionHelpers';
 
 export default function BillingPage() {
@@ -12,6 +12,8 @@ export default function BillingPage() {
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [invoices, setInvoices] = useState([]);
+  const [loadingInvoices, setLoadingInvoices] = useState(false);
 
   useEffect(() => {
     const loadBillingData = async () => {
@@ -30,6 +32,20 @@ export default function BillingPage() {
           .maybeSingle();
         
         setSubscription(sub);
+
+        // Load invoices
+        setLoadingInvoices(true);
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          const invRes = await fetch('/api/invoices', {
+            headers: { 'Authorization': `Bearer ${session.access_token}` }
+          });
+          if (invRes.ok) {
+            const invData = await invRes.json();
+            setInvoices(invData.invoices || []);
+          }
+        }
+        setLoadingInvoices(false);
       } catch (error) {
         console.error('Error loading billing data:', error);
       } finally {
@@ -156,6 +172,84 @@ export default function BillingPage() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Invoice History */}
+      <div className="mt-8 mb-20">
+        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <Receipt size={18} className="text-blue-400" />
+          Invoice History
+        </h3>
+        
+        {loadingInvoices ? (
+          <div className="flex items-center justify-center py-10 bg-white/5 rounded-2xl border border-white/10">
+            <Loader2 className="w-6 h-6 text-blue-400 animate-spin" />
+          </div>
+        ) : invoices.length === 0 ? (
+          <div className="text-center py-10 bg-white/5 rounded-2xl border border-white/10">
+            <FileText className="mx-auto mb-3 text-gray-600" size={32} />
+            <p className="text-gray-400 text-sm">No invoices yet</p>
+            <p className="text-gray-600 text-xs mt-1">
+              {isTrial ? 'Upgrade to see your billing history' : 'Invoices will appear here after your first payment'}
+            </p>
+          </div>
+        ) : (
+          <div className="bg-white/5 rounded-2xl border border-white/10 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-white/10 text-left">
+                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Date</th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Description</th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Amount</th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {invoices.map((inv) => (
+                    <tr key={inv.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td className="px-6 py-4 text-sm text-white">
+                        {new Date(inv.date * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-300">
+                        {inv.description}
+                        <p className="text-xs text-gray-500 mt-0.5">{inv.number}</p>
+                      </td>
+                      <td className="px-6 py-4 text-sm font-bold text-white">
+                        ${inv.amount.toFixed(2)} {inv.currency}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                          inv.status === 'paid' 
+                            ? 'bg-green-500/10 text-green-400 border border-green-500/30' 
+                            : inv.status === 'open'
+                            ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30'
+                            : 'bg-gray-500/10 text-gray-400 border border-gray-500/30'
+                        }`}>
+                          {inv.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        {inv.pdfUrl && (
+                          <a 
+                            href={inv.pdfUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                          >
+                            <Download size={14} />
+                            PDF
+                          </a>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Plans Section */}

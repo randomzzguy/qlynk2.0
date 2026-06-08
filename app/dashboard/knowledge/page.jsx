@@ -15,13 +15,16 @@ import {
   Upload,
   File,
   X,
-  Zap
+  Zap,
+  HelpCircle,
+  Pin,
+  Tag
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { createClientBrowser } from '@/lib/supabase';
 
 export default function KnowledgeDashboard() {
-  const [activeTab, setActiveTab] = useState('facts'); // 'facts', 'documents' or 'links'
+  const [activeTab, setActiveTab] = useState('facts'); // 'facts', 'documents', 'links' or 'faq'
   const [knowledge, setKnowledge] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,6 +37,13 @@ export default function KnowledgeDashboard() {
   
   // Link Form
   const [newUrl, setNewUrl] = useState('');
+
+  // FAQ Form
+  const [isAddingFaq, setIsAddingFaq] = useState(false);
+  const [newFaqQuestion, setNewFaqQuestion] = useState('');
+  const [newFaqAnswer, setNewFaqAnswer] = useState('');
+  const [newFaqPriority, setNewFaqPriority] = useState(1);
+  const [faqCategory, setFaqCategory] = useState('general');
   
   // File State
   const [uploading, setUploading] = useState(false);
@@ -229,8 +239,60 @@ export default function KnowledgeDashboard() {
       
       setDocuments(documents.filter(d => d.id !== doc.id));
       toast.success('Document erased');
-    } catch (error) {
+    } catch (err) {
       toast.error('Failed to erase');
+    }
+  };
+
+  const handleAddFaq = async (e) => {
+    e.preventDefault();
+    if (!newFaqQuestion || !newFaqAnswer) return;
+
+    setSubmitting(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { error: insertError } = await supabase
+        .from('agent_knowledge')
+        .insert({
+          user_id: user.id,
+          title: newFaqQuestion,
+          content: newFaqAnswer,
+          source_type: 'faq',
+          priority: newFaqPriority,
+          category: faqCategory,
+        });
+
+      if (insertError) throw insertError;
+
+      toast.success('FAQ added successfully');
+      setNewFaqQuestion('');
+      setNewFaqAnswer('');
+      setNewFaqPriority(1);
+      setFaqCategory('general');
+      setIsAddingFaq(false);
+      fetchAllData();
+    } catch (err) {
+      console.error('Error adding FAQ:', err);
+      toast.error('Failed to add FAQ');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleUpdatePriority = async (itemId, newPriority) => {
+    try {
+      const { error: updateError } = await supabase
+        .from('agent_knowledge')
+        .update({ priority: newPriority })
+        .eq('id', itemId);
+
+      if (updateError) throw updateError;
+
+      setKnowledge(knowledge.map(k => k.id === itemId ? { ...k, priority: newPriority } : k));
+      toast.success('Priority updated');
+    } catch (err) {
+      toast.error('Failed to update priority');
     }
   };
 
@@ -259,6 +321,12 @@ export default function KnowledgeDashboard() {
             className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all ${activeTab === 'facts' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
           >
             Facts
+          </button>
+          <button 
+            onClick={() => setActiveTab('faq')}
+            className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all ${activeTab === 'faq' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+          >
+            FAQ
           </button>
           <button 
             onClick={() => setActiveTab('documents')}
@@ -539,6 +607,154 @@ export default function KnowledgeDashboard() {
                     </div>
                   );
                 })
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'faq' && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <HelpCircle className="text-emerald-500" size={20} />
+                Frequently Asked Questions
+                <span className="text-xs text-gray-500 font-normal ml-2">High priority FAQs appear first in responses</span>
+              </h2>
+              <button 
+                onClick={() => setIsAddingFaq(!isAddingFaq)}
+                className="flex items-center gap-2 text-sm font-bold bg-white/5 border border-white/10 px-4 py-2 rounded-xl hover:bg-white/10 transition-all text-white"
+              >
+                {isAddingFaq ? <X size={16} /> : <Plus size={16} />}
+                {isAddingFaq ? 'Close' : 'Add FAQ'}
+              </button>
+            </div>
+
+            {isAddingFaq && (
+              <div className="bg-white/5 backdrop-blur-xl border border-emerald-500/30 p-8 rounded-[2rem] shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500">
+                <form onSubmit={handleAddFaq} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2 md:col-span-2">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Question</label>
+                      <input 
+                        type="text"
+                        placeholder="e.g. What services do you offer?"
+                        className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-emerald-500/50 transition-all placeholder:text-gray-600"
+                        value={newFaqQuestion}
+                        onChange={(e) => setNewFaqQuestion(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2 md:col-span-2">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Answer</label>
+                      <textarea 
+                        placeholder="Detailed answer for your AI to use..."
+                        className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 px-6 text-white h-32 focus:outline-none focus:border-emerald-500/50 transition-all placeholder:text-gray-600 resize-none"
+                        value={newFaqAnswer}
+                        onChange={(e) => setNewFaqAnswer(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Category</label>
+                      <select
+                        value={faqCategory}
+                        onChange={(e) => setFaqCategory(e.target.value)}
+                        className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-emerald-500/50 transition-all"
+                      >
+                        <option value="general">General</option>
+                        <option value="pricing">Pricing & Plans</option>
+                        <option value="services">Services</option>
+                        <option value="contact">Contact & Availability</option>
+                        <option value="technical">Technical</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Priority (1-5)</label>
+                      <div className="flex items-center gap-3">
+                        <input 
+                          type="range"
+                          min="1"
+                          max="5"
+                          value={newFaqPriority}
+                          onChange={(e) => setNewFaqPriority(parseInt(e.target.value))}
+                          className="flex-1 h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                        />
+                        <span className="text-white font-bold w-8 text-center">{newFaqPriority}</span>
+                      </div>
+                      <p className="text-xs text-gray-500">Higher priority = AI references this first</p>
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <button 
+                      type="submit"
+                      disabled={submitting}
+                      className="bg-emerald-600 text-white px-10 py-4 rounded-2xl font-black hover:bg-emerald-500 active:scale-95 transition-all flex items-center gap-2 shadow-lg shadow-emerald-600/20 disabled:opacity-50"
+                    >
+                      {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Add FAQ'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              {loading ? (
+                <div className="col-span-full flex items-center justify-center py-20">
+                  <Loader2 className="w-10 h-10 animate-spin text-emerald-500" />
+                </div>
+              ) : knowledge.filter(k => k.source_type === 'faq').length === 0 ? (
+                <div className="col-span-full py-20 text-center bg-white/5 rounded-[2.5rem] border border-dashed border-white/10">
+                  <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4 text-gray-600">
+                    <HelpCircle size={32} />
+                  </div>
+                  <h3 className="text-white font-bold mb-2">No FAQs yet</h3>
+                  <p className="text-gray-500 text-sm max-w-xs mx-auto">Add common questions and answers to help your AI respond more accurately.</p>
+                </div>
+              ) : (
+                knowledge
+                  .filter(k => k.source_type === 'faq')
+                  .sort((a, b) => (b.priority || 1) - (a.priority || 1))
+                  .map((item) => (
+                    <div key={item.id} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[2rem] p-6 hover:border-emerald-500/50 transition-all group relative overflow-hidden">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">{item.title}</h3>
+                            <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-2.5 py-1 rounded-full">
+                              {item.category || 'general'}
+                            </span>
+                          </div>
+                          <p className="text-gray-400 text-sm leading-relaxed">{item.content}</p>
+                        </div>
+                        <button onClick={() => handleDeleteFact(item.id)} className="text-gray-600 hover:text-red-500 transition-colors p-2 shrink-0">
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                      <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">Priority:</span>
+                          <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map((level) => (
+                              <button
+                                key={level}
+                                onClick={() => handleUpdatePriority(item.id, level)}
+                                className={`w-6 h-6 rounded-md text-[10px] font-bold transition-all ${
+                                  (item.priority || 1) >= level
+                                    ? 'bg-emerald-500 text-white'
+                                    : 'bg-gray-800 text-gray-600 hover:bg-gray-700'
+                                }`}
+                              >
+                                {level}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <span className="text-[10px] text-gray-600">
+                          {item.priority >= 4 ? 'High Priority' : item.priority >= 2 ? 'Medium Priority' : 'Low Priority'}
+                        </span>
+                      </div>
+                    </div>
+                  ))
               )}
             </div>
           </div>

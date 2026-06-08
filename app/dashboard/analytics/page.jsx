@@ -108,6 +108,19 @@ export default function AnalyticsPage() {
       const todayConvos     = countInRange(convos, 'created_at', todayStart, todayEnd);
       const uniqueVisitors  = new Set(convos.map(c => c.visitor_id).filter(Boolean)).size;
 
+      // ── Sentiment Analysis ───────────────────────────────────────────
+      const sentimentCounts = {
+        positive: convos.filter(c => c.sentiment === 'positive').length,
+        negative: convos.filter(c => c.sentiment === 'negative').length,
+        neutral: convos.filter(c => !c.sentiment || c.sentiment === 'neutral').length,
+      };
+      const totalWithSentiment = sentimentCounts.positive + sentimentCounts.negative + sentimentCounts.neutral;
+      const sentimentBreakdown = [
+        { label: 'Positive', count: sentimentCounts.positive, color: 'bg-green-500', textColor: 'text-green-400', pct: totalWithSentiment > 0 ? Math.round((sentimentCounts.positive / totalWithSentiment) * 100) : 0 },
+        { label: 'Neutral', count: sentimentCounts.neutral, color: 'bg-gray-500', textColor: 'text-gray-400', pct: totalWithSentiment > 0 ? Math.round((sentimentCounts.neutral / totalWithSentiment) * 100) : 0 },
+        { label: 'Negative', count: sentimentCounts.negative, color: 'bg-red-500', textColor: 'text-red-400', pct: totalWithSentiment > 0 ? Math.round((sentimentCounts.negative / totalWithSentiment) * 100) : 0 },
+      ];
+
       // Engagement rate = conversations / views (capped at 100%)
       const engagementRate  = totalViews > 0
         ? Math.min(100, Math.round((totalConvos / totalViews) * 100))
@@ -162,6 +175,7 @@ export default function AnalyticsPage() {
         uniqueVisitors, engagementRate,
         avgMessagesPerConvo: totalConvos > 0 ? (totalMessages / totalConvos).toFixed(1) : 0,
         dailyBreakdown, hourlyBreakdown, topReferrers,
+        sentimentBreakdown,
       });
 
       setLoading(false);
@@ -435,6 +449,44 @@ export default function AnalyticsPage() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* ── Sentiment Analysis ──────────────────────────────────────────── */}
+      <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-8 mb-6 hover:bg-white/10 hover:border-emerald-500/30 transition-all">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-bold text-white flex items-center gap-2">
+            <Activity size={18} className="text-emerald-400" />
+            Conversation Sentiment
+          </h3>
+          <span className="text-xs text-gray-500 font-mono">{stats.totalConvos} conversations analyzed</span>
+        </div>
+        {stats.totalConvos === 0 ? (
+          <div className="flex flex-col items-center justify-center py-10 text-center">
+            <Activity className="text-gray-700 mb-3" size={32} />
+            <p className="text-gray-500 text-sm">No conversation data yet</p>
+            <p className="text-gray-600 text-xs mt-1">Sentiment analysis appears once conversations start</p>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            {stats.sentimentBreakdown.map((item, i) => (
+              <div key={i} className="space-y-2">
+                <div className="flex justify-between items-center font-bold">
+                  <span className="text-sm text-white flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${item.color}`} />
+                    {item.label}
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-gray-400 font-mono">{item.count} chats</span>
+                    <span className={`text-xs font-mono ${item.textColor}`}>{item.pct}%</span>
+                  </div>
+                </div>
+                <div className="h-2 bg-gray-900 rounded-full overflow-hidden border border-gray-800">
+                  <div className={`h-full rounded-full transition-all duration-700 ${item.color}`} style={{ width: `${item.pct}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── Referrer Breakdown ──────────────────────────────────────────── */}

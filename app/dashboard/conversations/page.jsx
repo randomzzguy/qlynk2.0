@@ -12,7 +12,10 @@ import {
   Bot,
   User,
   Calendar,
-  Download
+  Download,
+  Search,
+  Send,
+  Reply
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'react-hot-toast';
@@ -24,6 +27,10 @@ export default function ConversationsPage() {
   const [messages, setMessages] = useState([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [filter, setFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [replyText, setReplyText] = useState('');
+  const [sendingReply, setSendingReply] = useState(false);
+  const [visitorInfo, setVisitorInfo] = useState(null);
 
   useEffect(() => {
     const loadConversations = async () => {
@@ -54,21 +61,34 @@ export default function ConversationsPage() {
     if (selectedConvo === conversationId) {
       setSelectedConvo(null);
       setMessages([]);
+      setVisitorInfo(null);
       return;
     }
 
     setLoadingMessages(true);
     setSelectedConvo(conversationId);
+    setReplyText('');
 
     try {
       const supabase = createClient();
-      const { data } = await supabase
+      
+      // Fetch messages
+      const { data: msgData } = await supabase
         .from('agent_messages')
         .select('*')
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
 
-      setMessages(data || []);
+      setMessages(msgData || []);
+
+      // Fetch conversation details for visitor info
+      const { data: convoData } = await supabase
+        .from('agent_conversations')
+        .select('visitor_name, visitor_email, visitor_id')
+        .eq('id', conversationId)
+        .single();
+
+      setVisitorInfo(convoData);
     } catch (error) {
       console.error('Error loading messages:', error);
     } finally {
@@ -76,21 +96,83 @@ export default function ConversationsPage() {
     }
   };
 
+  const handleSendReply = async (e) => {
+    e.preventDefault();
+    if (!replyText.trim() || !selectedConvo) return;
+
+    setSendingReply(true);
+    try {
+      const supabase = createClient();
+      
+      // Insert reply as owner (marked as assistant role but with owner flag)
+      const { error } = await supabase
+        .from('agent_messages')
+        .insert({
+          conversation_id: selectedConvo,
+          role: 'assistant',
+          content: replyText.trim(),
+          sender_type: 'owner', // Distinguishes from AI responses
+        });
+
+      if (error) throw error;
+
+      // Update conversation message count and mark as updated
+      await supabase
+        .from('agent_conversations')
+        .update({
+          message_count: (messages.filter(m => m.role === 'user').length + 1) + (messages.filter(m => m.role === 'assistant').length + 1),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', selectedConvo);
+
+      toast.success('Reply sent');
+      setReplyText('');
+      
+      // Refresh messages
+      const { data } = await supabase
+        .from('agent_messages')
+        .select('*')
+        .eq('conversation_id', selectedConvo)
+        .order('created_at', { ascending: true });
+      setMessages(data || []);
+    } catch (error) {
+      console.error('Error sending reply:', error);
+      toast.error('Failed to send reply');
+    } finally {
+      setSendingReply(false);
+    }
+  };
+
   const getFilteredConversations = () => {
-    if (filter === 'all') return conversations;
+    let filtered = conversations;
 
-    const now = new Date();
-    const filterDate = new Date();
+    // Time filter
+    if (filter !== 'all') {
+      const now = new Date();
+      const filterDate = new Date();
 
-    if (filter === 'today') {
-      filterDate.setHours(0, 0, 0, 0);
-    } else if (filter === 'week') {
-      filterDate.setDate(now.getDate() - 7);
-    } else if (filter === 'month') {
-      filterDate.setMonth(now.getMonth() - 1);
+      if (filter === 'today') {
+        filterDate.setHours(0, 0, 0, 0);
+      } else if (filter === 'week') {
+        filterDate.setDate(now.getDate() - 7);
+      } else if (filter === 'month') {
+        filterDate.setMonth(now.getMonth() - 1);
+      }
+
+      filtered = filtered.filter(c => new Date(c.created_at) >= filterDate);
     }
 
-    return conversations.filter(c => new Date(c.created_at) >= filterDate);
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(c => 
+        (c.visitor_name && c.visitor_name.toLowerCase().includes(query)) ||
+        (c.visitor_email && c.visitor_email.toLowerCase().includes(query)) ||
+        (c.visitor_id && c.visitor_id.toLowerCase().includes(query))
+      );
+    }
+
+    return filtered;
   };
 
   const filteredConversations = getFilteredConversations();
@@ -193,6 +275,18 @@ export default function ConversationsPage() {
               <option value="month">This Month</option>
             </select>
           </div>
+
+          {/* Search */}
+          <div className="relative">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search visitors..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#f46530] transition-colors text-sm w-full md:w-48"
+            />
+          </div>
         </div>
       </div>
 
@@ -275,12 +369,32 @@ export default function ConversationsPage() {
               {/* Messages Panel */}
               {selectedConvo === convo.id && (
                 <div className="border-t border-white/10 bg-white/5 p-5">
+                  {/* Visitor Info Header */}
+                  {visitorInfo && (
+                    <div className="flex items-center justify-between mb-4 pb-4 border-b border-white/10">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center">
+                          <User size={20} className="text-gray-400" />
+                        </div>
+                        <div>
+                          <p className="text-white font-semibold">
+                            {visitorInfo.visitor_name || 'Anonymous Visitor'}
+                          </p>
+                          {visitorInfo.visitor_email && (
+                            <p className="text-xs text-gray-500">{visitorInfo.visitor_email}</p>
+                          )}
+                        </div>
+                      </div>
+                      <span className="text-xs text-gray-500 font-mono">ID: {visitorInfo.visitor_id?.slice(0, 8)}</span>
+                    </div>
+                  )}
+
                   {loadingMessages ? (
                     <div className="text-center py-8">
                       <div className="w-8 h-8 border-3 border-[#f46530] border-t-transparent rounded-full animate-spin mx-auto"></div>
                     </div>
                   ) : messages.length > 0 ? (
-                    <div className="space-y-4 max-h-96 overflow-y-auto">
+                    <div className="space-y-4 max-h-96 overflow-y-auto mb-4">
                       {messages.map((msg) => (
                         <div 
                           key={msg.id}
@@ -290,20 +404,31 @@ export default function ConversationsPage() {
                         >
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                             msg.role === 'assistant' 
-                              ? 'bg-[#f46530]/20 border border-[#f46530]/30' 
+                              ? msg.sender_type === 'owner'
+                                ? 'bg-blue-500/20 border border-blue-500/30'
+                                : 'bg-[#f46530]/20 border border-[#f46530]/30'
                               : 'bg-white/10 border border-white/10'
                           }`}>
                             {msg.role === 'assistant' ? (
-                              <Bot size={16} className="text-[#f46530]" />
+                              msg.sender_type === 'owner' ? (
+                                <Reply size={14} className="text-blue-400" />
+                              ) : (
+                                <Bot size={16} className="text-[#f46530]" />
+                              )
                             ) : (
                               <User size={16} className="text-gray-400" />
                             )}
                           </div>
                           <div className={`max-w-[80%] p-3 rounded-2xl ${
                             msg.role === 'assistant'
-                              ? 'bg-white/10 border border-white/10'
+                              ? msg.sender_type === 'owner'
+                                ? 'bg-blue-500/10 border border-blue-500/20'
+                                : 'bg-white/10 border border-white/10'
                               : 'bg-[#f46530]/10 border border-[#f46530]/20'
                           }`}>
+                            {msg.sender_type === 'owner' && (
+                              <p className="text-[10px] text-blue-400 font-bold uppercase tracking-widest mb-1">You replied</p>
+                            )}
                             <div className="text-white text-sm">
                               <ReactMarkdown
                                 components={{
@@ -328,6 +453,35 @@ export default function ConversationsPage() {
                   ) : (
                     <p className="text-center text-gray-400 py-8">No messages in this conversation</p>
                   )}
+
+                  {/* Reply Form */}
+                  <form onSubmit={handleSendReply} className="mt-4 pt-4 border-t border-white/10">
+                    <div className="flex gap-3">
+                      <input
+                        type="text"
+                        placeholder="Type your reply as the agent owner..."
+                        value={replyText}
+                        onChange={(e) => setReplyText(e.target.value)}
+                        className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#f46530] transition-colors text-sm"
+                        disabled={sendingReply}
+                      />
+                      <button
+                        type="submit"
+                        disabled={!replyText.trim() || sendingReply}
+                        className="flex items-center gap-2 px-5 py-3 bg-[#f46530] text-white rounded-xl font-bold text-sm hover:bg-[#f46530]/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {sendingReply ? (
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <Send size={16} />
+                        )}
+                        Reply
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Your reply will appear as part of the conversation. The visitor will see it on their next message.
+                    </p>
+                  </form>
                 </div>
               )}
             </div>

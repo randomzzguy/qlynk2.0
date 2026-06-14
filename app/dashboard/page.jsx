@@ -301,7 +301,7 @@ export default function DashboardPage() {
             <div className="hidden sm:flex items-center gap-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-amber-100">
               <Clock size={16} />
               <div className="text-left">
-                <div className="text-xs font-bold uppercase tracking-wider">Deletion scheduled</div>
+                <div className="text-xs font-bold uppercase tracking-wider">Deletion pending</div>
                 <div className="text-[11px] text-amber-100/80">
                   {new Date(profile.account_deletion_scheduled_for).toLocaleDateString('en-US', {
                     month: 'short',
@@ -334,7 +334,7 @@ export default function DashboardPage() {
         <div className="mb-8 rounded-3xl border border-amber-500/30 bg-amber-500/10 p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <p className="text-sm font-bold uppercase tracking-widest text-amber-300 mb-1">Account pending deletion</p>
-            <h2 className="text-xl font-black text-white">Your account is scheduled for deletion</h2>
+            <h2 className="text-xl font-black text-white">Your account will be deleted soon</h2>
             <p className="text-sm text-amber-100/80 mt-1">
               You can still use the app until {new Date(profile.account_deletion_scheduled_for).toLocaleString('en-US', {
                 month: 'long',
@@ -342,7 +342,7 @@ export default function DashboardPage() {
                 year: 'numeric',
                 hour: 'numeric',
                 minute: '2-digit',
-              })}. You can cancel it from Settings if you changed your mind.
+              })}. The final removal runs automatically and may finish later that day. You can cancel it from Settings if you changed your mind.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">

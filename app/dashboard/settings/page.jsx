@@ -502,18 +502,18 @@ export default function SettingsPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="max-w-2xl">
               <p className="text-sm text-gray-300 leading-relaxed">
-                You can delete immediately, or schedule a 7-day buffer in case you change your mind. Deletion removes your profile, public page, knowledge, conversations, documents, billing records in Supabase, uploaded avatar files, and your qlynk.site/username URL.
+                You can delete immediately, or choose a 7-day buffer if you want time to change your mind. When the scheduled date arrives, your account is automatically marked for removal and the final purge usually completes later that day. Deletion removes your profile, public page, knowledge, conversations, documents, billing records in Supabase, uploaded avatar files, and your qlynk.site/username URL.
               </p>
               {accountDeletionScheduledFor && (
                 <div className="mt-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
-                  <p className="font-semibold">Deletion scheduled</p>
+                  <p className="font-semibold">Deletion pending</p>
                   {accountDeletionRequestedAt && (
                     <p className="mt-1 text-amber-100/80">
                       Requested on {new Date(accountDeletionRequestedAt).toLocaleString()}.
                     </p>
                   )}
                   <p className="mt-1">
-                    Your account is set to be permanently deleted on {new Date(accountDeletionScheduledFor).toLocaleString()}.
+                    Your account will be permanently deleted on {new Date(accountDeletionScheduledFor).toLocaleString()}.
                   </p>
                   <button
                     type="button"
@@ -523,7 +523,7 @@ export default function SettingsPage() {
                     }}
                     className="mt-3 inline-flex items-center gap-2 rounded-xl border border-amber-400/40 px-4 py-2 text-xs font-bold text-amber-50 hover:bg-amber-400/10 transition-all"
                   >
-                    Cancel scheduled deletion
+                    Cancel deletion
                   </button>
                 </div>
               )}
@@ -592,7 +592,7 @@ export default function SettingsPage() {
             <div className="space-y-4">
               <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-100 leading-relaxed">
                 {deleteMode === 'scheduled'
-                  ? 'Scheduling marks your account for permanent deletion in 7 days. You can cancel before then from this screen.'
+                  ? 'This will mark your account for permanent deletion in 7 days. You can cancel before then from this screen. The final purge runs automatically and may complete later that day.'
                   : 'Deleting now removes your public URL, dashboard data, chat history, documents, knowledge base, avatar uploads, billing records, and your auth user.'}
               </div>
 

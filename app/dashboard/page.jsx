@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { getCurrentProfile, getCurrentUser } from '@/lib/supabase';
 import { createClient } from '@/utils/supabase/client';
 import { 
@@ -10,8 +9,6 @@ import {
   MessageSquare, 
   Users, 
   TrendingUp, 
-  Eye, 
-  EyeOff,
   Settings,
   ExternalLink,
   Clock,
@@ -30,7 +27,6 @@ import TrialChoiceManager from '@/components/TrialChoiceManager';
 import confetti from 'canvas-confetti';
 
 export default function DashboardPage() {
-  const router = useRouter();
   const [profile, setProfile] = useState(null);
   const [agentConfig, setAgentConfig] = useState(null);
   const [stats, setStats] = useState({
@@ -48,6 +44,8 @@ export default function DashboardPage() {
   const [verifyingPayment, setVerifyingPayment] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [newPlanName, setNewPlanName] = useState('');
+  const isPaymentPastDue = subscription?.status?.toLowerCase() === 'past_due';
+  const isAccountDeletionScheduled = !!profile?.account_deletion_scheduled_for;
 
   const loadDashboardData = async () => {
     try {
@@ -237,23 +235,6 @@ export default function DashboardPage() {
     }
   };
 
-  const handlePortal = async () => {
-    try {
-      const response = await fetch('/api/portal', {
-        method: 'POST',
-      });
-      const data = await response.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        // Fallback to pricing if no portal (e.g. trial with no stripe customer yet)
-        router.push('/pricing');
-      }
-    } catch (error) {
-      console.error('Error opening portal:', error);
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -316,6 +297,21 @@ export default function DashboardPage() {
         </div>
         
         <div className="flex items-center gap-3 w-full md:w-auto">
+          {isAccountDeletionScheduled && (
+            <div className="hidden sm:flex items-center gap-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-amber-100">
+              <Clock size={16} />
+              <div className="text-left">
+                <div className="text-xs font-bold uppercase tracking-wider">Deletion scheduled</div>
+                <div className="text-[11px] text-amber-100/80">
+                  {new Date(profile.account_deletion_scheduled_for).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
           <Link 
             href={`/${profile?.username}`}
             target="_blank"
@@ -333,6 +329,58 @@ export default function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      {isAccountDeletionScheduled && (
+        <div className="mb-8 rounded-3xl border border-amber-500/30 bg-amber-500/10 p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-widest text-amber-300 mb-1">Account pending deletion</p>
+            <h2 className="text-xl font-black text-white">Your account is scheduled for deletion</h2>
+            <p className="text-sm text-amber-100/80 mt-1">
+              You can still use the app until {new Date(profile.account_deletion_scheduled_for).toLocaleString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+              })}. You can cancel it from Settings if you changed your mind.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Link
+              href="/dashboard/settings"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-black transition hover:bg-gray-100"
+            >
+              Manage deletion
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {isPaymentPastDue && (
+        <div className="mb-8 rounded-3xl border border-amber-500/30 bg-amber-500/10 p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-widest text-amber-300 mb-1">Payment issue</p>
+            <h2 className="text-xl font-black text-white">Your subscription is past due</h2>
+            <p className="text-sm text-amber-100/80 mt-1">
+              Update your payment method to keep your agent live and restore full access.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Link
+              href="/dashboard/billing"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-black transition hover:bg-gray-100"
+            >
+              Fix billing
+            </Link>
+            <Link
+              href="/pricing"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+            >
+              View plans
+            </Link>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         

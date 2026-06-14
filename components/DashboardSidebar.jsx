@@ -18,7 +18,8 @@ import {
   CreditCard,
   ExternalLink,
   Sparkles,
-  Bell
+  Bell,
+  Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -53,8 +54,9 @@ const navGroups = [
   }
 ];
 
-export default function DashboardSidebar({ onSignOut, isOpen, onClose, username, avatarUrl, isCollapsed, onCollapseToggle, tier }) {
+export default function DashboardSidebar({ onSignOut, isOpen, onClose, username, avatarUrl, isCollapsed, onCollapseToggle, tier, accountDeletionScheduledFor }) {
   const pathname = usePathname();
+  const isDeletionScheduled = Boolean(accountDeletionScheduledFor);
 
   const NavItem = ({ item, collapsed }) => {
     const isActive = pathname === item.href || 
@@ -202,14 +204,49 @@ export default function DashboardSidebar({ onSignOut, isOpen, onClose, username,
 
         {/* Footer Area - Logout & Toggle */}
         <div className="p-4 bg-black/20 border-t border-gray-800/50 space-y-2">
+          {isDeletionScheduled && !isCollapsed && (
+            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-amber-100">
+              <div className="flex items-center gap-2">
+                <Clock size={14} />
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest">Pending deletion</p>
+                  <p className="text-[10px] text-amber-100/80">
+                    {new Date(accountDeletionScheduledFor).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          {isDeletionScheduled && isCollapsed && (
+            <div className="flex justify-center pb-1">
+              <div
+                className="w-10 h-10 rounded-xl border border-amber-500/20 bg-amber-500/10 flex items-center justify-center text-amber-100 relative group"
+                title={`Pending deletion: ${new Date(accountDeletionScheduledFor).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}`}
+              >
+                <Clock size={16} />
+                <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap border border-gray-800 font-bold uppercase tracking-widest">
+                  Pending deletion
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* User Profile Summary */}
           {!isCollapsed ? (
             <div className="flex items-center gap-3 px-3 py-4 bg-white/5 rounded-2xl border border-white/5 mb-2">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg overflow-hidden border border-white/10">
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt={username} className="w-full h-full object-cover" />
+                  <Image src={avatarUrl} alt={username || 'Profile'} width={40} height={40} className="w-full h-full object-cover" />
                 ) : username ? (
-                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`} alt={username} className="w-full h-full object-cover" />
+                  <Image src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`} alt={username || 'Profile'} width={40} height={40} className="w-full h-full object-cover" />
                 ) : (
                   '?'
                 )}
@@ -223,9 +260,9 @@ export default function DashboardSidebar({ onSignOut, isOpen, onClose, username,
             <div className="flex justify-center py-4 relative group">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg overflow-hidden border border-white/10 group-hover:scale-110 transition-transform cursor-help">
                  {avatarUrl ? (
-                   <img src={avatarUrl} alt={username} className="w-full h-full object-cover" />
+                   <Image src={avatarUrl} alt={username || 'Profile'} width={40} height={40} className="w-full h-full object-cover" />
                  ) : (
-                   <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`} alt={username} className="w-full h-full object-cover" />
+                   <Image src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`} alt={username || 'Profile'} width={40} height={40} className="w-full h-full object-cover" />
                  )}
               </div>
               <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap border border-gray-800 font-bold uppercase tracking-widest">
@@ -267,4 +304,3 @@ export default function DashboardSidebar({ onSignOut, isOpen, onClose, username,
     </>
   );
 }
-

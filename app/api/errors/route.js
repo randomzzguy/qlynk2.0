@@ -38,8 +38,16 @@ export async function POST(req) {
   }
 }
 
-export async function GET() {
-  // Return recent errors for monitoring (admin only)
+export async function GET(req) {
+  const authHeader = req.headers.get('authorization');
+  const expectedSecret = process.env.CRON_SECRET;
+
+  if (process.env.NODE_ENV === 'production') {
+    if (!expectedSecret || authHeader !== `Bearer ${expectedSecret}`) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+  }
+
   const metrics = monitoring.getMetrics();
   
   return NextResponse.json({

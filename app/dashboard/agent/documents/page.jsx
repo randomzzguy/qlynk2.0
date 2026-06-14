@@ -14,7 +14,6 @@ import {
   AlertCircle,
   File,
   FileType,
-  X,
   Sparkles
 } from 'lucide-react';
 import Link from 'next/link';
@@ -73,12 +72,6 @@ export default function DocumentsPage() {
 
     init();
   }, [router, loadDocuments]);
-
-  const handleSignOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push('/');
-  };
 
   const handleDrag = (e) => {
     e.preventDefault();

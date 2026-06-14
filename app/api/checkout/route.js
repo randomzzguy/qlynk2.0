@@ -3,10 +3,34 @@ import { stripe } from '@/lib/stripe';
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 
+const STRIPE_PRICE_PLAN_MAP = Object.fromEntries([
+  [process.env.NEXT_PUBLIC_STRIPE_PRICE_CREATOR_MONTHLY, 'creator'],
+  [process.env.NEXT_PUBLIC_STRIPE_PRICE_CREATOR_ANNUAL, 'creator'],
+  [process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY_MONTHLY, 'agency'],
+  [process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY_ANNUAL, 'agency'],
+  ...(process.env.NODE_ENV !== 'production'
+    ? [
+        ['price_1TaOnWD25s8DA4MkNYoCscvq', 'creator'],
+        ['price_1TaOqsD25s8DA4MkbdiPqRRm', 'creator'],
+        ['price_1TaQsRD25s8DA4MkiTMr40Bi', 'agency'],
+        ['price_1TaQv0D25s8DA4MkAmMlJFF5', 'agency'],
+      ]
+    : []),
+].filter(([priceId]) => Boolean(priceId)));
+
 export async function POST(req) {
   try {
-    const { priceId, planName } = await req.json();
-    const normalizedPlanName = planName?.toLowerCase?.() || 'creator';
+    const { priceId } = await req.json();
+    const normalizedPlanName = STRIPE_PRICE_PLAN_MAP[priceId];
+
+    if (!normalizedPlanName) {
+      return NextResponse.json({ error: 'Invalid plan selected' }, { status: 400 });
+    }
+
+    if (!priceId) {
+      return NextResponse.json({ error: 'Stripe price IDs are not configured' }, { status: 500 });
+    }
+
     const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
 

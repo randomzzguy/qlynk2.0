@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { getCurrentProfile, signOut, getCurrentUser, createClientBrowser } from '@/lib/supabase';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import QlynkBackground from '@/components/QlynkBackground';
-import { Menu, Sparkles } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Toaster } from 'react-hot-toast';
@@ -154,6 +154,7 @@ export default function DashboardLayout({ children }) {
           username={profile?.username}
           avatarUrl={profile?.avatar_url}
           tier={profile?.tier}
+          accountDeletionScheduledFor={profile?.account_deletion_scheduled_for}
         />
         
         {/* Main Content Scrollable Area */}
@@ -169,4 +170,3 @@ export default function DashboardLayout({ children }) {
     </div>
   );
 }
-

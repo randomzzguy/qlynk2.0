@@ -5,10 +5,9 @@ import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { getCurrentUser, getCurrentProfile } from '@/lib/supabase';
 import { CreditCard, Zap, Check, ArrowRight, Loader2, Clock, FileText, Download, Receipt } from 'lucide-react';
-import { getTrialDaysRemaining, isTrialExpired, PLAN_LIMITS } from '@/lib/subscriptionHelpers';
+import { getTrialDaysRemaining, PLAN_LIMITS } from '@/lib/subscriptionHelpers';
 
 export default function BillingPage() {
-  const [profile, setProfile] = useState(null);
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [portalLoading, setPortalLoading] = useState(false);
@@ -21,8 +20,7 @@ export default function BillingPage() {
         const user = await getCurrentUser();
         if (!user) return;
 
-        const userProfile = await getCurrentProfile();
-        setProfile(userProfile);
+        await getCurrentProfile();
 
         const supabase = createClient();
         const { data: sub } = await supabase
@@ -86,12 +84,33 @@ export default function BillingPage() {
 
   const tier = subscription?.tier || 'trial';
   const isTrial = tier.toLowerCase() === 'trial';
+  const isPastDue = subscription?.status?.toLowerCase() === 'past_due';
   const messagesUsed = subscription?.messages_used || 0;
   const messagesLimit = PLAN_LIMITS[tier.toLowerCase()] || 1000;
   const usagePercent = Math.min(100, (messagesUsed / messagesLimit) * 100);
 
   return (
     <div className="p-6 md:p-8 max-w-4xl mx-auto">
+      {isPastDue && (
+        <div className="mb-8 rounded-3xl border border-amber-500/30 bg-amber-500/10 p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-widest text-amber-300 mb-1">Payment issue</p>
+            <h2 className="text-xl font-black text-white">Your latest payment failed</h2>
+            <p className="text-sm text-amber-100/80 mt-1">
+              Update your billing details in Stripe to keep your agent and subscriptions active.
+            </p>
+          </div>
+          <button
+            onClick={handlePortal}
+            disabled={portalLoading}
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-black transition hover:bg-gray-100 disabled:opacity-60"
+          >
+            {portalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard size={16} />}
+            Fix billing
+          </button>
+        </div>
+      )}
+
       <div className="mb-8">
         <h1 className="text-3xl font-black text-white mb-2">Billing & Subscription</h1>
         <p className="text-gray-400">Manage your plan and usage</p>

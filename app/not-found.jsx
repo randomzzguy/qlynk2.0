@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Home, Search, ArrowLeft, Bot } from 'lucide-react';
+import { Home, Search, Bot } from 'lucide-react';
 import QlynkBackground from '@/components/QlynkBackground';
 
 export default function NotFound() {

@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
@@ -164,14 +165,14 @@ export default function AgentConfigPage() {
           .single();
 
         if (existingConfig) {
-          setConfig({
-            ...config,
+          setConfig((current) => ({
+            ...current,
             ...existingConfig,
             skills: existingConfig.skills || [],
             projects: existingConfig.projects || [],
             contact_info: existingConfig.contact_info || {},
             social_links: existingConfig.social_links || [],
-          });
+          }));
         }
 
         setLoading(false);
@@ -183,12 +184,6 @@ export default function AgentConfigPage() {
 
     loadConfig();
   }, [router]);
-
-  const handleSignOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push('/');
-  };
 
   const handleSave = async () => {
     if (!userId) return;
@@ -566,7 +561,13 @@ export default function AgentConfigPage() {
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 overflow-hidden flex items-center justify-center relative group">
                     {config.agent_avatar ? (
-                      <img src={config.agent_avatar} alt="Avatar" className="w-full h-full object-cover" />
+                      <Image
+                        src={config.agent_avatar}
+                        alt="Avatar"
+                        fill
+                        className="object-cover"
+                        sizes="64px"
+                      />
                     ) : (
                       <Bot className="text-gray-600" size={32} />
                     )}

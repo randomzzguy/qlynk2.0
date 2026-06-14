@@ -8,17 +8,12 @@ import {
   FileText, 
   Globe, 
   MessageSquare, 
-  Sparkles,
   Loader2,
-  AlertCircle,
-  CheckCircle2,
   Upload,
   File,
   X,
   Zap,
   HelpCircle,
-  Pin,
-  Tag
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { createClientBrowser } from '@/lib/supabase';
@@ -174,7 +169,7 @@ export default function KnowledgeDashboard() {
       // 1. Upload to Storage
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/${Math.random()}.${fileExt}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('agent-documents')
         .upload(fileName, file);
 
@@ -224,7 +219,7 @@ export default function KnowledgeDashboard() {
       if (error) throw error;
       setKnowledge(knowledge.filter(k => k.id !== id));
       toast.success('Neural fact purged');
-    } catch (error) {
+    } catch {
       toast.error('Failed to purge');
     }
   };
@@ -239,7 +234,7 @@ export default function KnowledgeDashboard() {
       
       setDocuments(documents.filter(d => d.id !== doc.id));
       toast.success('Document erased');
-    } catch (err) {
+    } catch {
       toast.error('Failed to erase');
     }
   };
@@ -272,8 +267,8 @@ export default function KnowledgeDashboard() {
       setFaqCategory('general');
       setIsAddingFaq(false);
       fetchAllData();
-    } catch (err) {
-      console.error('Error adding FAQ:', err);
+    } catch (error) {
+      console.error('Error adding FAQ:', error);
       toast.error('Failed to add FAQ');
     } finally {
       setSubmitting(false);
@@ -291,7 +286,7 @@ export default function KnowledgeDashboard() {
 
       setKnowledge(knowledge.map(k => k.id === itemId ? { ...k, priority: newPriority } : k));
       toast.success('Priority updated');
-    } catch (err) {
+    } catch {
       toast.error('Failed to update priority');
     }
   };

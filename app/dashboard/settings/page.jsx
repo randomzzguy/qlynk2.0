@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { createClient } from '@/utils/supabase/client';
 import { getCurrentUser, getCurrentProfile } from '@/lib/supabase';
 import { 
@@ -17,7 +18,8 @@ import {
   Bell,
   MessageSquare,
   CreditCard,
-  Clock
+  Clock,
+  AlertTriangle
 } from 'lucide-react';
 import UpgradePrompt from '@/components/UpgradePrompt';
 import { toast, Toaster } from 'react-hot-toast';
@@ -36,6 +38,13 @@ export default function SettingsPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState('');
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteMode, setDeleteMode] = useState('immediate');
+  const [deleteEmailConfirm, setDeleteEmailConfirm] = useState('');
+  const [deletePhrase, setDeletePhrase] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [accountDeletionRequestedAt, setAccountDeletionRequestedAt] = useState(null);
+  const [accountDeletionScheduledFor, setAccountDeletionScheduledFor] = useState(null);
 
   // Notification preferences
   const [notifNewMessage, setNotifNewMessage] = useState(true);
@@ -57,6 +66,8 @@ export default function SettingsPage() {
           setNotifNewMessage(currentProfile.notif_new_message !== false);
           setNotifTrialExpiry(currentProfile.notif_trial_expiry !== false);
           setNotifSubscription(currentProfile.notif_subscription !== false);
+          setAccountDeletionRequestedAt(currentProfile.account_deletion_requested_at || null);
+          setAccountDeletionScheduledFor(currentProfile.account_deletion_scheduled_for || null);
         }
 
         // Fetch bio from agent_configs as it's the primary source for the AI
@@ -176,6 +187,65 @@ export default function SettingsPage() {
     }
   };
 
+  const handleDeleteAccount = async (mode) => {
+    if (!user) return;
+
+    if (mode !== 'cancel') {
+      if (deleteEmailConfirm.trim().toLowerCase() !== user.email?.toLowerCase()) {
+        toast.error('Please type your current email address exactly.');
+        return;
+      }
+
+      if (deletePhrase.trim() !== 'DELETE MY ACCOUNT') {
+        toast.error('Please type DELETE MY ACCOUNT to confirm.');
+        return;
+      }
+    }
+
+    setDeleting(true);
+    try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const response = await fetch('/api/account/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({
+          mode,
+          email: deleteEmailConfirm,
+          confirmation: deletePhrase,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete account');
+      }
+
+      if (mode === 'scheduled') {
+        setAccountDeletionRequestedAt(data.account_deletion_requested_at || null);
+        setAccountDeletionScheduledFor(data.account_deletion_scheduled_for || null);
+        setDeleteOpen(false);
+        toast.success('Account deletion scheduled');
+      } else if (mode === 'cancel') {
+        setAccountDeletionRequestedAt(null);
+        setAccountDeletionScheduledFor(null);
+        toast.success('Scheduled deletion cancelled');
+      } else {
+        toast.success('Account deleted');
+        window.location.href = '/';
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      toast.error(error.message || 'Failed to delete account');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -194,7 +264,7 @@ export default function SettingsPage() {
         <Sparkles size={20} className="text-[#f46530]" />
       </h1>
 
-      <div className="space-y-6">
+        <div className="space-y-6">
         {/* Profile Settings */}
         <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-8 mb-8 hover:border-blue-500/20 hover:bg-white/10 transition-all group">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-8 mb-10">
@@ -202,7 +272,7 @@ export default function SettingsPage() {
             <div className="relative group">
               <div className="w-32 h-32 rounded-3xl bg-white/5 border-2 border-white/10 overflow-hidden flex items-center justify-center relative shadow-2xl group-hover:border-[#f46530]/50 transition-all">
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                  <Image src={avatarUrl} alt="Profile" width={128} height={128} className="w-full h-full object-cover" />
                 ) : (
                   <User size={48} className="text-gray-700" />
                 )}
@@ -417,6 +487,72 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* Danger Zone */}
+        <div className="bg-red-500/5 backdrop-blur-xl rounded-3xl border border-red-500/20 p-8 mb-8 hover:border-red-500/35 hover:bg-red-500/10 transition-all group">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-12 h-12 bg-red-500/10 text-red-400 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <AlertTriangle size={24} />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white">Danger Zone</h2>
+              <p className="text-gray-400 text-sm">Delete your account and remove all associated Qlynk data</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="max-w-2xl">
+              <p className="text-sm text-gray-300 leading-relaxed">
+                You can delete immediately, or schedule a 7-day buffer in case you change your mind. Deletion removes your profile, public page, knowledge, conversations, documents, billing records in Supabase, uploaded avatar files, and your qlynk.site/username URL.
+              </p>
+              {accountDeletionScheduledFor && (
+                <div className="mt-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+                  <p className="font-semibold">Deletion scheduled</p>
+                  {accountDeletionRequestedAt && (
+                    <p className="mt-1 text-amber-100/80">
+                      Requested on {new Date(accountDeletionRequestedAt).toLocaleString()}.
+                    </p>
+                  )}
+                  <p className="mt-1">
+                    Your account is set to be permanently deleted on {new Date(accountDeletionScheduledFor).toLocaleString()}.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!window.confirm('Cancel your scheduled account deletion?')) return;
+                      await handleDeleteAccount('cancel');
+                    }}
+                    className="mt-3 inline-flex items-center gap-2 rounded-xl border border-amber-400/40 px-4 py-2 text-xs font-bold text-amber-50 hover:bg-amber-400/10 transition-all"
+                  >
+                    Cancel scheduled deletion
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => {
+                  setDeleteMode('scheduled');
+                  setDeleteOpen(true);
+                }}
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all"
+              >
+                <Clock size={18} />
+                Delete in 7 days
+              </button>
+              <button
+                onClick={() => {
+                  setDeleteMode('immediate');
+                  setDeleteOpen(true);
+                }}
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-red-500 text-white font-bold hover:bg-red-400 transition-all shadow-lg shadow-red-500/20"
+              >
+                <Trash2 size={18} />
+                Delete now
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Save Button */}
         <div className="flex justify-end mb-20">
           <button 
@@ -433,6 +569,78 @@ export default function SettingsPage() {
           </button>
         </div>
       </div>
+
+      {deleteOpen && (
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="w-full max-w-lg rounded-[2rem] border border-red-500/20 bg-[#0b0b10] p-6 md:p-8 shadow-2xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center text-red-400">
+                <AlertTriangle size={24} />
+              </div>
+              <div>
+                <h3 className="text-2xl font-black text-white">
+                  {deleteMode === 'scheduled' ? 'Schedule account deletion?' : 'Delete account?'}
+                </h3>
+                <p className="text-sm text-gray-400">
+                  {deleteMode === 'scheduled'
+                    ? 'You will keep access until the deletion date.'
+                    : 'This cannot be undone.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-100 leading-relaxed">
+                {deleteMode === 'scheduled'
+                  ? 'Scheduling marks your account for permanent deletion in 7 days. You can cancel before then from this screen.'
+                  : 'Deleting now removes your public URL, dashboard data, chat history, documents, knowledge base, avatar uploads, billing records, and your auth user.'}
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-300 mb-2">Confirm your current email</label>
+                <input
+                  type="email"
+                  value={deleteEmailConfirm}
+                  onChange={(e) => setDeleteEmailConfirm(e.target.value)}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-red-500/50"
+                  placeholder={user?.email || 'you@example.com'}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-300 mb-2">Type DELETE MY ACCOUNT</label>
+                <input
+                  type="text"
+                  value={deletePhrase}
+                  onChange={(e) => setDeletePhrase(e.target.value)}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-red-500/50"
+                  placeholder="DELETE MY ACCOUNT"
+                />
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setDeleteOpen(false)}
+                  className="flex-1 px-5 py-3 rounded-2xl bg-white/5 text-white font-semibold border border-white/10 hover:bg-white/10 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteAccount(deleteMode)}
+                  disabled={deleting}
+                  className="flex-1 px-5 py-3 rounded-2xl bg-red-500 text-white font-bold hover:bg-red-400 transition-all disabled:opacity-60"
+                >
+                  {deleting
+                    ? (deleteMode === 'scheduled' ? 'Scheduling...' : 'Deleting...')
+                    : (deleteMode === 'scheduled' ? 'Schedule deletion' : 'Delete permanently')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

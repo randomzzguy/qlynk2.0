@@ -5,7 +5,6 @@ import { cookies } from 'next/headers';
 export async function GET(request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
-  const next = requestUrl.searchParams.get('next') ?? '/';
 
   if (code) {
     const cookieStore = await cookies();
@@ -14,7 +13,7 @@ export async function GET(request) {
 
     if (!error && data?.user) {
       // Check if this user has completed onboarding
-      const { data: profile } = await supabase
+      await supabase
         .from('profiles')
         .select('onboarding_completed')
         .eq('id', data.user.id)

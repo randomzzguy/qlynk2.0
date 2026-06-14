@@ -432,12 +432,12 @@ export default function ConversationsPage() {
                             <div className="text-white text-sm">
                               <ReactMarkdown
                                 components={{
-                                  h1: ({node, ...props}) => <h1 className="text-lg font-bold mt-3 mb-1 first:mt-0 text-white" {...props} />,
-                                  h2: ({node, ...props}) => <h2 className="text-md font-bold mt-3 mb-1 first:mt-0 text-gray-200" {...props} />,
-                                  p: ({node, ...props}) => <p className="leading-relaxed mb-2 last:mb-0" {...props} />,
-                                  ul: ({node, ...props}) => <ul className="list-disc list-inside space-y-0.5 mb-2 last:mb-0" {...props} />,
-                                  ol: ({node, ...props}) => <ol className="list-decimal list-inside space-y-0.5 mb-2 last:mb-0" {...props} />,
-                                  strong: ({node, ...props}) => <strong className="font-bold text-white" {...props} />,
+                                  h1: ({ ...props }) => <h1 className="text-lg font-bold mt-3 mb-1 first:mt-0 text-white" {...props} />,
+                                  h2: ({ ...props }) => <h2 className="text-md font-bold mt-3 mb-1 first:mt-0 text-gray-200" {...props} />,
+                                  p: ({ ...props }) => <p className="leading-relaxed mb-2 last:mb-0" {...props} />,
+                                  ul: ({ ...props }) => <ul className="list-disc list-inside space-y-0.5 mb-2 last:mb-0" {...props} />,
+                                  ol: ({ ...props }) => <ol className="list-decimal list-inside space-y-0.5 mb-2 last:mb-0" {...props} />,
+                                  strong: ({ ...props }) => <strong className="font-bold text-white" {...props} />,
                                 }}
                               >
                                 {msg.content}

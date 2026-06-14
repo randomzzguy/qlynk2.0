@@ -14,12 +14,12 @@ export async function POST(request) {
     console.log('[API] Login attempt received:', { email, hcaptchaToken });
 
         // Verify hCaptcha token
-        const secret = process.env.HCAPTCHA_SECRET;
+        const secret = process.env.HCAPTCHA_SECRET_KEY || process.env.HCAPTCHA_SECRET;
         const isLocalBypass = hcaptchaToken === 'local-bypass';
 
         if (!isLocalBypass) {
             if (!secret) {
-                console.warn('HCAPTCHA_SECRET is missing, but hcaptchaToken provided. Bypassing verification.');
+                console.warn('hCaptcha secret is missing, but hcaptchaToken provided. Bypassing verification.');
             } else {
                 const params = new URLSearchParams();
                 params.append('secret', secret);

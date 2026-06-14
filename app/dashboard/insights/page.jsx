@@ -1,22 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { 
-  BarChart3, 
   Users, 
   MessageCircle, 
   Zap, 
   Lock, 
   ChevronRight, 
-  Search,
   Calendar,
   Sparkles,
   ArrowUpRight,
   TrendingUp,
   BrainCircuit,
   ShieldCheck,
-  Loader2
+  
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -33,11 +31,7 @@ export default function NeuralInsights() {
 
   const supabase = createClient();
 
-  useEffect(() => {
-    fetchInsights();
-  }, []);
-
-  const fetchInsights = async () => {
+  const fetchInsights = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -76,7 +70,11 @@ export default function NeuralInsights() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [supabase]);
+
+  useEffect(() => {
+    fetchInsights();
+  }, [fetchInsights]);
 
   const fetchMessages = async (convId) => {
     const { data, error } = await supabase

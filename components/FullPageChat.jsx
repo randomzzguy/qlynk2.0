@@ -292,10 +292,12 @@ export default function FullPageChat({
                 {/* Avatar */}
                 <div className="relative mb-8">
                   <div className="w-32 h-32 rounded-3xl overflow-hidden border-2 border-white/20 shadow-2xl transform -rotate-3 group-hover:rotate-0 transition-transform duration-500">
-                    <img 
+                    <Image 
                       src={agentConfig.agent_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`} 
                       alt={profile?.name} 
-                      className="w-full h-full object-cover"
+                      width={128}
+                      height={128}
+                      className="w-full h-full object-cover" 
                     />
                   </div>
                   <div className="absolute -bottom-2 -right-2 bg-green-500 w-6 h-6 rounded-full border-4 border-[#0a0a0f] shadow-lg" />
@@ -499,7 +501,7 @@ export default function FullPageChat({
                 </button>
                 <div className="relative">
                   <div className="w-10 h-10 rounded-xl overflow-hidden bg-white/10 flex items-center justify-center border border-white/20">
-                    <img src={agentConfig.agent_avatar} alt={agentConfig.agent_name} className="w-full h-full object-cover" />
+                    <Image src={agentConfig.agent_avatar} alt={agentConfig.agent_name || 'Agent'} width={40} height={40} className="w-full h-full object-cover" />
                   </div>
                   <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-[#0a0a0f]" />
                 </div>

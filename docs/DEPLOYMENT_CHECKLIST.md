@@ -8,6 +8,7 @@
 - [ ] Configure all environment variables
 - [ ] Test environment variable validation
 - [ ] Set up Stripe production account
+- [ ] Add production Stripe price IDs for Creator monthly/annual and Agency monthly/annual
 - [ ] Configure hCaptcha production keys
 
 ### Security 🛡️

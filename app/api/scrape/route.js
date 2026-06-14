@@ -2,6 +2,8 @@ import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { rateLimitResponse } from '@/lib/rate-limit';
+import dns from 'node:dns/promises';
+import net from 'node:net';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30; // 30s timeout
@@ -63,6 +65,67 @@ function extractTitle(html, url) {
   }
 }
 
+function isPrivateIp(ip) {
+  if (net.isIP(ip) === 4) {
+    const [a, b] = ip.split('.').map(Number);
+    if (a === 10) return true;
+    if (a === 127) return true;
+    if (a === 169 && b === 254) return true;
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 192 && b === 168) return true;
+    if (a === 100 && b >= 64 && b <= 127) return true;
+    if (a === 0) return true;
+    return false;
+  }
+
+  if (net.isIP(ip) === 6) {
+    const normalized = ip.toLowerCase();
+    if (normalized === '::1') return true;
+    if (normalized.startsWith('fc') || normalized.startsWith('fd')) return true;
+    if (normalized.startsWith('fe80')) return true;
+    if (normalized === '::') return true;
+  }
+
+  return false;
+}
+
+async function validatePublicTargetUrl(targetUrl) {
+  const parsed = new URL(targetUrl);
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    return { ok: false, reason: 'Only http and https URLs are allowed.' };
+  }
+
+  const hostname = parsed.hostname.toLowerCase();
+  if (
+    hostname === 'localhost' ||
+    hostname.endsWith('.localhost') ||
+    hostname === '127.0.0.1' ||
+    hostname === '::1' ||
+    hostname === '0.0.0.0' ||
+    hostname.endsWith('.local')
+  ) {
+    return { ok: false, reason: 'Local addresses are not allowed.' };
+  }
+
+  if (net.isIP(hostname)) {
+    if (isPrivateIp(hostname)) {
+      return { ok: false, reason: 'Private IP addresses are not allowed.' };
+    }
+    return { ok: true };
+  }
+
+  const addresses = await dns.lookup(hostname, { all: true, verbatim: true });
+  if (addresses.length === 0) {
+    return { ok: false, reason: 'Could not resolve host.' };
+  }
+
+  if (addresses.some(({ address }) => isPrivateIp(address))) {
+    return { ok: false, reason: 'Private or internal hosts are not allowed.' };
+  }
+
+  return { ok: true };
+}
+
 export async function POST(req) {
   // Rate limit: 5 requests per hour per IP
   const rateLimit = rateLimitResponse(req, 'scrape', 5, 60 * 60 * 1000);
@@ -86,6 +149,15 @@ export async function POST(req) {
       new URL(targetUrl);
     } catch {
       return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 });
+    }
+
+    try {
+      const targetValidation = await validatePublicTargetUrl(targetUrl);
+      if (!targetValidation.ok) {
+        return NextResponse.json({ error: targetValidation.reason }, { status: 400 });
+      }
+    } catch {
+      return NextResponse.json({ error: 'Unable to validate target host' }, { status: 400 });
     }
 
     const cookieStore = await cookies();
@@ -114,6 +186,15 @@ export async function POST(req) {
 
     if (!response.ok) {
       return NextResponse.json({ error: `Website returned status ${response.status}. Could not fetch content.` }, { status: 400 });
+    }
+
+    try {
+      const finalValidation = await validatePublicTargetUrl(response.url || targetUrl);
+      if (!finalValidation.ok) {
+        return NextResponse.json({ error: 'Redirected target is not allowed.' }, { status: 400 });
+      }
+    } catch {
+      return NextResponse.json({ error: 'Redirect validation failed.' }, { status: 400 });
     }
 
     const contentType = response.headers.get('content-type') || '';

@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { stripe } from '@/lib/stripe';
 
-export async function POST(req) {
+export async function POST() {
   try {
     const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
@@ -28,7 +28,7 @@ export async function POST(req) {
     // Create a Stripe Customer Portal session
     const session = await stripe.billingPortal.sessions.create({
       customer: subscription.stripe_customer_id,
-      return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`,
+      return_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/dashboard`,
     });
 
     return NextResponse.json({ url: session.url });

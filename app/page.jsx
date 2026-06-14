@@ -3,13 +3,34 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, Bot, Sparkles, Brain, MessageSquare, Zap, Shield, BarChart3, ChevronUp, Users, Heart, Target } from 'lucide-react';
+import { ArrowRight, Bot, Sparkles, Brain, MessageSquare, Shield, BarChart3, ChevronUp, Users, Heart, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import QlynkBackground from '@/components/QlynkBackground';
 import Footer from '@/components/Footer';
 import { getCurrentUser, getCurrentProfile, signOut } from '@/lib/supabase';
 
 // ====== Animated Components ======
+
+const DEMO_CONVERSATIONS = [
+  {
+    question: "What does Sarah specialize in?",
+    answer: "Sarah is a full-stack developer with 5+ years of experience in React, Node.js, and cloud architecture. She's particularly passionate about building scalable SaaS products.",
+    name: "Sarah Chen",
+    role: "Full-Stack Developer"
+  },
+  {
+    question: "Can I book a consultation with Alex?",
+    answer: "Absolutely! Alex offers free 30-minute discovery calls. You can book directly at calendly.com/alex-design or I can share his availability for this week.",
+    name: "Alex Rivera",
+    role: "UX Designer"
+  },
+  {
+    question: "What projects has Jordan worked on?",
+    answer: "Jordan has led development on 3 successful startups, including a fintech app with 50k+ users and an AI-powered analytics platform. Check out the portfolio section for case studies!",
+    name: "Jordan Kim",
+    role: "Startup Founder"
+  }
+];
 
 const GlowingOrb = ({ top, left, size = 300, color = 'orange', delay = 0 }) => (
   <motion.div
@@ -42,33 +63,12 @@ const AgentDemoHero = () => {
   const [phase, setPhase] = useState('typing'); // 'typing' | 'done'
   const [displayedResponse, setDisplayedResponse] = useState('');
 
-  const conversations = [
-    {
-      question: "What does Sarah specialize in?",
-      answer: "Sarah is a full-stack developer with 5+ years of experience in React, Node.js, and cloud architecture. She's particularly passionate about building scalable SaaS products.",
-      name: "Sarah Chen",
-      role: "Full-Stack Developer"
-    },
-    {
-      question: "Can I book a consultation with Alex?",
-      answer: "Absolutely! Alex offers free 30-minute discovery calls. You can book directly at calendly.com/alex-design or I can share his availability for this week.",
-      name: "Alex Rivera",
-      role: "UX Designer"
-    },
-    {
-      question: "What projects has Jordan worked on?",
-      answer: "Jordan has led development on 3 successful startups, including a fintech app with 50k+ users and an AI-powered analytics platform. Check out the portfolio section for case studies!",
-      name: "Jordan Kim",
-      role: "Startup Founder"
-    }
-  ];
-
   // Re-run the whole typing sequence every time currentMessage changes
   useEffect(() => {
     setDisplayedResponse('');
     setPhase('typing');
 
-    const answer = conversations[currentMessage].answer;
+    const answer = DEMO_CONVERSATIONS[currentMessage].answer;
     let charIndex = 0;
 
     const typingInterval = setInterval(() => {
@@ -87,12 +87,12 @@ const AgentDemoHero = () => {
   useEffect(() => {
     if (phase !== 'done') return;
     const pauseTimer = setTimeout(() => {
-      setCurrentMessage((prev) => (prev + 1) % conversations.length);
+      setCurrentMessage((prev) => (prev + 1) % DEMO_CONVERSATIONS.length);
     }, 3500);
     return () => clearTimeout(pauseTimer);
   }, [phase]);
 
-  const currentConvo = conversations[currentMessage];
+  const currentConvo = DEMO_CONVERSATIONS[currentMessage];
 
   return (
     <div className="w-full py-16">
@@ -615,13 +615,13 @@ export default function App() {
                           <p className="text-sm text-white font-semibold mt-0.5 truncate">{profile?.username || user?.email}</p>
                         </div>
                         <div className="py-1.5">
-                          <a
+                          <Link
                             href="/dashboard"
                             className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-orange/10 transition-all group"
                           >
                             <svg className="w-4 h-4 text-gray-500 group-hover:text-orange transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
                             Dashboard
-                          </a>
+                          </Link>
                           <button
                             onClick={handleLogout}
                             className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-red-400 hover:bg-red-500/10 transition-all group"

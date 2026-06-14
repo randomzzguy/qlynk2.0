@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { MessageCircle, X, Send, Bot, User, Loader2 } from 'lucide-react';
 
 export default function ChatWidget({ 
@@ -209,9 +210,11 @@ export default function ChatWidget({
           >
             <div className="flex items-center gap-3">
               {agentAvatar ? (
-                <img 
+                <Image 
                   src={agentAvatar} 
                   alt={agentName}
+                  width={40}
+                  height={40}
                   className="w-10 h-10 rounded-full object-cover border-2 border-white/30"
                 />
               ) : (

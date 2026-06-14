@@ -70,6 +70,36 @@ export async function GET() {
       hasRequiredKeys: envValidation.summary.configuredRequired === envValidation.summary.totalRequired
     };
 
+    // Recent activity (last 24 hours)
+    let recentActivity = {};
+    try {
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      
+      const [recentConversations, recentSignups] = await Promise.all([
+        supabase
+          .from('agent_conversations')
+          .select('id')
+          .gte('created_at', twentyFourHoursAgo)
+          .select('id', { count: 'exact', head: true }),
+        supabase
+          .from('profiles')
+          .select('id')
+          .gte('created_at', twentyFourHoursAgo)
+          .select('id', { count: 'exact', head: true })
+      ]);
+
+      recentActivity = {
+        conversations24h: recentConversations.count || 0,
+        signups24h: recentSignups.count || 0,
+        period: '24 hours'
+      };
+    } catch (activityError) {
+      recentActivity = {
+        error: activityError.message,
+        period: '24 hours'
+      };
+    }
+
     // Free tier monitoring
     let freeTierUsage = {};
     try {
@@ -115,36 +145,6 @@ export async function GET() {
       freeTierUsage = {
         status: 'error',
         error: usageError.message
-      };
-    }
-
-    // Recent activity (last 24 hours)
-    let recentActivity = {};
-    try {
-      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      
-      const [recentConversations, recentSignups] = await Promise.all([
-        supabase
-          .from('agent_conversations')
-          .select('id')
-          .gte('created_at', twentyFourHoursAgo)
-          .select('id', { count: 'exact', head: true }),
-        supabase
-          .from('profiles')
-          .select('id')
-          .gte('created_at', twentyFourHoursAgo)
-          .select('id', { count: 'exact', head: true })
-      ]);
-
-      recentActivity = {
-        conversations24h: recentConversations.count || 0,
-        signups24h: recentSignups.count || 0,
-        period: '24 hours'
-      };
-    } catch (activityError) {
-      recentActivity = {
-        error: activityError.message,
-        period: '24 hours'
       };
     }
 

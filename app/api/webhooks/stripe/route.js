@@ -3,6 +3,7 @@ import { stripe } from '@/lib/stripe';
 import { createClient } from '@supabase/supabase-js';
 import { sendEmail } from '@/lib/email/send';
 import { subscriptionRenewedEmail } from '@/lib/email/templates/subscription-renewed';
+import { paymentFailedEmail } from '@/lib/email/templates/payment-failed';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -129,6 +130,51 @@ export async function POST(req) {
                 to: userEmail,
                 ...subscriptionRenewedEmail({ username, planName, renewalDate: nextRenewal }),
               }).catch((err) => console.error('[Stripe Webhook] Renewal email failed:', err));
+            }
+          }
+        }
+        break;
+      }
+
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object;
+        if (invoice.subscription) {
+          const sub = await stripe.subscriptions.retrieve(invoice.subscription);
+          const userId = sub.metadata?.supabase_user_id;
+          if (userId) {
+            const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId);
+            const userEmail = authUser?.user?.email;
+            const username = authUser?.user?.user_metadata?.username || 'there';
+            const planName = sub.metadata?.plan_name || sub.items?.data?.[0]?.price?.nickname || 'Pro';
+            const amountDue = typeof invoice.amount_due === 'number'
+              ? `${(invoice.amount_due / 100).toFixed(2)} ${String(invoice.currency || 'usd').toUpperCase()}`
+              : null;
+
+            const { data, error } = await supabaseAdmin
+              .from('subscriptions')
+              .update({
+                status: 'past_due',
+                stripe_customer_id: sub.customer,
+              })
+              .eq('stripe_subscription_id', sub.id)
+              .select();
+
+            if (error) {
+              console.error(`[Stripe Webhook] DB Update Error on payment_failed:`, error.message);
+            } else {
+              console.log(`[Stripe Webhook] DB Update Success on payment_failed:`, data);
+            }
+
+            if (userEmail) {
+              sendEmail({
+                to: userEmail,
+                ...paymentFailedEmail({
+                  username,
+                  planName,
+                  amountDue,
+                  invoiceUrl: invoice.hosted_invoice_url || 'https://qlynk.site/dashboard/billing',
+                }),
+              }).catch((err) => console.error('[Stripe Webhook] Payment failed email error:', err));
             }
           }
         }

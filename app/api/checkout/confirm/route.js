@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { createClient } from '@supabase/supabase-js';
+import { createClient as createSupabaseClient } from '@/utils/supabase/server';
+import { cookies } from 'next/headers';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -12,6 +14,14 @@ export async function POST(req) {
     const { session_id } = await req.json();
     if (!session_id) {
       return NextResponse.json({ error: 'Session ID is required' }, { status: 400 });
+    }
+
+    const cookieStore = await cookies();
+    const supabase = createSupabaseClient(cookieStore);
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     console.log(`[Checkout Confirm] Verifying session: ${session_id}`);
@@ -40,6 +50,10 @@ export async function POST(req) {
     if (!userId) {
       console.warn(`[Checkout Confirm] No user ID resolved in metadata for session ${session_id}`);
       return NextResponse.json({ error: 'User ID not found in metadata' }, { status: 400 });
+    }
+
+    if (userId !== user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const tier = planName.toLowerCase();

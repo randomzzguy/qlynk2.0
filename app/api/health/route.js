@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { validateEnvironmentVariables, getEnvironmentInfo } from '@/lib/env-validation';
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 

@@ -290,7 +290,6 @@ Then extend it to protect `/dashboard` routes.
 
 **Where:**
 - `supabase/migrations/20260511060000_setup_agent_documents_storage.sql` (lines 2–4)
-- `app/dashboard/agent/documents/page.jsx` (line 147) — upload path pattern
 
 **Why it's a risk:** If someone knows or guesses the file path, they can download private PDFs/resumes without authentication. User IDs are discoverable from public profiles.
 

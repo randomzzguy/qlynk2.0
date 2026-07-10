@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { getCurrentUser } from '@/lib/supabase';
@@ -1155,30 +1154,6 @@ export function AgentConfigPage({ sectionOverride = null }) {
             />
           </div>
 
-          </>}
-
-          {section === 'profile' && <>
-          {/* Document Upload Section - Link to dedicated page */}
-          <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mb-12 hover:border-[#f46530]/20 transition-all">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-[#f46530]/10 rounded-xl flex items-center justify-center">
-                  <Upload size={28} className="text-[#f46530]" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-white">Knowledge Base</h2>
-                  <p className="text-gray-400">Upload PDFs, text files, or documents to expand knowledge</p>
-                </div>
-              </div>
-              <Link
-                href="/dashboard/agent/documents"
-                className="flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-white hover:border-[#f46530]/50 hover:bg-gray-900 transition-all font-semibold group"
-              >
-                <Upload size={18} className="group-hover:translate-y-[-2px] transition-transform" />
-                Manage Documents
-              </Link>
-            </div>
-          </div>
           </>}
 
           {section === 'general' && <>

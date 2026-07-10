@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { createClient } from '@/utils/supabase/client';
 import { getCurrentUser, getCurrentProfile } from '@/lib/supabase';
@@ -50,6 +50,13 @@ export default function SettingsPage() {
   const [notifNewMessage, setNotifNewMessage] = useState(true);
   const [notifTrialExpiry, setNotifTrialExpiry] = useState(true);
   const [notifSubscription, setNotifSubscription] = useState(true);
+  const savedSettingsRef = useRef(null);
+  const currentSettings = {
+    fullName, bio, primaryColor, email, newPassword, avatarUrl,
+    notifNewMessage, notifTrialExpiry, notifSubscription,
+  };
+  const isDirty = savedSettingsRef.current !== null
+    && JSON.stringify(currentSettings) !== savedSettingsRef.current;
 
   useEffect(() => {
     const loadData = async () => {
@@ -60,12 +67,17 @@ export default function SettingsPage() {
         setEmail(currentUser.email);
 
         const currentProfile = await getCurrentProfile();
+        const loadedFullName = currentProfile?.full_name || '';
+        const loadedAvatarUrl = currentProfile?.avatar_url || '';
+        const loadedNotifNewMessage = currentProfile?.notif_new_message !== false;
+        const loadedNotifTrialExpiry = currentProfile?.notif_trial_expiry !== false;
+        const loadedNotifSubscription = currentProfile?.notif_subscription !== false;
+        setFullName(loadedFullName);
+        setAvatarUrl(loadedAvatarUrl);
+        setNotifNewMessage(loadedNotifNewMessage);
+        setNotifTrialExpiry(loadedNotifTrialExpiry);
+        setNotifSubscription(loadedNotifSubscription);
         if (currentProfile) {
-          setFullName(currentProfile.full_name || '');
-          setAvatarUrl(currentProfile.avatar_url || '');
-          setNotifNewMessage(currentProfile.notif_new_message !== false);
-          setNotifTrialExpiry(currentProfile.notif_trial_expiry !== false);
-          setNotifSubscription(currentProfile.notif_subscription !== false);
           setAccountDeletionRequestedAt(currentProfile.account_deletion_requested_at || null);
           setAccountDeletionScheduledFor(currentProfile.account_deletion_scheduled_for || null);
         }
@@ -78,10 +90,21 @@ export default function SettingsPage() {
           .eq('user_id', currentUser.id)
           .maybeSingle();
         
-        if (agentConfig) {
-          setBio(agentConfig.bio || '');
-          setPrimaryColor(agentConfig.primary_color || '#f46530');
-        }
+        const loadedBio = agentConfig?.bio || '';
+        const loadedPrimaryColor = agentConfig?.primary_color || '#f46530';
+        setBio(loadedBio);
+        setPrimaryColor(loadedPrimaryColor);
+        savedSettingsRef.current = JSON.stringify({
+          fullName: loadedFullName,
+          bio: loadedBio,
+          primaryColor: loadedPrimaryColor,
+          email: currentUser.email,
+          newPassword: '',
+          avatarUrl: loadedAvatarUrl,
+          notifNewMessage: loadedNotifNewMessage,
+          notifTrialExpiry: loadedNotifTrialExpiry,
+          notifSubscription: loadedNotifSubscription,
+        });
 
       } catch (error) {
         console.error('Error loading settings:', error);
@@ -93,6 +116,16 @@ export default function SettingsPage() {
 
     loadData();
   }, []);
+
+  useEffect(() => {
+    const warnAboutUnsavedChanges = (event) => {
+      if (!isDirty) return;
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', warnAboutUnsavedChanges);
+    return () => window.removeEventListener('beforeunload', warnAboutUnsavedChanges);
+  }, [isDirty]);
 
   const handleSave = async () => {
     if (!user) return;
@@ -141,6 +174,8 @@ export default function SettingsPage() {
         setNewPassword('');
         toast.success('Password updated successfully');
       }
+
+      savedSettingsRef.current = JSON.stringify({ ...currentSettings, newPassword: '' });
 
       toast.success('Profile updated successfully');
     } catch (error) {
@@ -557,7 +592,7 @@ export default function SettingsPage() {
         <div className="flex justify-end mb-20">
           <button 
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || !isDirty}
             className="flex items-center gap-2 px-10 py-4 bg-[#f46530] text-white rounded-2xl font-black text-lg hover:bg-[#f46530]/90 shadow-[0_10px_30px_rgba(244,101,48,0.3)] hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-50 disabled:translate-y-0"
           >
             {saving ? (

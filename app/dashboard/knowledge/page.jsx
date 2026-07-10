@@ -17,9 +17,10 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { createClientBrowser } from '@/lib/supabase';
+import { AgentConfigPage } from '@/app/dashboard/agent/page';
 
 export default function KnowledgeDashboard() {
-  const [activeTab, setActiveTab] = useState('facts'); // 'facts', 'documents', 'links' or 'faq'
+  const [activeTab, setActiveTab] = useState('profile');
   const [knowledge, setKnowledge] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,6 +44,13 @@ export default function KnowledgeDashboard() {
   // File State
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const hasUnsavedDraft = Boolean(
+    newTitle.trim()
+    || newContent.trim()
+    || newUrl.trim()
+    || newFaqQuestion.trim()
+    || newFaqAnswer.trim()
+  );
 
   const supabase = createClientBrowser();
 
@@ -79,6 +87,16 @@ export default function KnowledgeDashboard() {
     setLoading(true);
     fetchAllData();
   }, [fetchAllData]);
+
+  useEffect(() => {
+    const warnAboutUnsavedChanges = (event) => {
+      if (!hasUnsavedDraft) return;
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', warnAboutUnsavedChanges);
+    return () => window.removeEventListener('beforeunload', warnAboutUnsavedChanges);
+  }, [hasUnsavedDraft]);
 
   // Neural Polling: Refresh data every 5s if any document is still processing
   useEffect(() => {
@@ -310,7 +328,13 @@ export default function KnowledgeDashboard() {
           </div>
         </div>
 
-        <div className="relative z-10 flex p-1.5 bg-black/40 rounded-2xl border border-white/10">
+        <div className="relative z-10 flex flex-wrap p-1.5 bg-black/40 rounded-2xl border border-white/10">
+          <button
+            onClick={() => setActiveTab('profile')}
+            className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all ${activeTab === 'profile' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+          >
+            Profile
+          </button>
           <button 
             onClick={() => setActiveTab('facts')}
             className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all ${activeTab === 'facts' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
@@ -340,6 +364,10 @@ export default function KnowledgeDashboard() {
 
       {/* Main View */}
       <div className="min-h-[400px]">
+        {activeTab === 'profile' && (
+          <AgentConfigPage sectionOverride="profile" />
+        )}
+
         {activeTab === 'facts' && (
           <div className="space-y-8">
             <div className="flex justify-between items-center">

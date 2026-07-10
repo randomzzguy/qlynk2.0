@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { 
   LayoutDashboard, 
   BarChart3, 
@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Database,
   Palette,
+  SlidersHorizontal,
   CreditCard,
   ExternalLink,
   Sparkles,
@@ -33,7 +34,8 @@ const navGroups = [
   {
     title: 'AI Clone',
     items: [
-      { href: '/dashboard/agent', icon: Palette, label: 'Visual Style' },
+      { href: '/dashboard/agent?section=general', icon: SlidersHorizontal, label: 'Agent Setup', section: 'general' },
+      { href: '/dashboard/agent?section=visual', icon: Palette, label: 'Visual Style', section: 'visual' },
       { href: '/dashboard/knowledge', icon: Database, label: 'Knowledge Base' },
       { href: '/dashboard/conversations', icon: MessageSquare, label: 'Conversations' },
     ]
@@ -56,11 +58,15 @@ const navGroups = [
 
 export default function DashboardSidebar({ onSignOut, isOpen, onClose, username, avatarUrl, isCollapsed, onCollapseToggle, tier, accountDeletionScheduledFor }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const isDeletionScheduled = Boolean(accountDeletionScheduledFor);
 
   const NavItem = ({ item, collapsed }) => {
-    const isActive = pathname === item.href || 
-      (item.href !== '/dashboard' && pathname.startsWith(item.href));
+    const itemPath = item.href.split('?')[0];
+    const currentAgentSection = searchParams.get('section') || 'general';
+    const isActive = item.section
+      ? pathname === itemPath && currentAgentSection === item.section
+      : pathname === itemPath || (itemPath !== '/dashboard' && pathname.startsWith(itemPath));
     
     return (
       <Link

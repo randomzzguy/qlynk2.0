@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { getCurrentUser } from '@/lib/supabase';
 import { 
@@ -85,8 +85,10 @@ function ColorField({ label, value, onChange, hint }) {
   );
 }
 
-export default function AgentConfigPage() {
+export function AgentConfigPage({ sectionOverride = null }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const section = sectionOverride || searchParams.get('section') || 'general';
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null); // 'success' | 'error' | null
@@ -134,6 +136,9 @@ export default function AgentConfigPage() {
   const [newSocialLink, setNewSocialLink] = useState({ platform: '', url: '' });
   const [accessPassword, setAccessPassword] = useState('');
   const [passwordIsSet, setPasswordIsSet] = useState(false);
+  const savedConfigRef = useRef(null);
+  const isDirty = savedConfigRef.current !== null
+    && (JSON.stringify(config) !== savedConfigRef.current || Boolean(accessPassword));
 
   useEffect(() => {
     const loadConfig = async () => {
@@ -167,14 +172,23 @@ export default function AgentConfigPage() {
 
         if (existingConfig) {
           delete existingConfig.access_password;
-          setConfig((current) => ({
-            ...current,
-            ...existingConfig,
-            skills: existingConfig.skills || [],
-            projects: existingConfig.projects || [],
-            contact_info: existingConfig.contact_info || {},
-            social_links: existingConfig.social_links || [],
-          }));
+          setConfig((current) => {
+            const loadedConfig = {
+              ...current,
+              ...existingConfig,
+              skills: existingConfig.skills || [],
+              projects: existingConfig.projects || [],
+              contact_info: existingConfig.contact_info || {},
+              social_links: existingConfig.social_links || [],
+            };
+            savedConfigRef.current = JSON.stringify(loadedConfig);
+            return loadedConfig;
+          });
+        } else {
+          setConfig((current) => {
+            savedConfigRef.current = JSON.stringify(current);
+            return current;
+          });
         }
 
         const passwordStatusResponse = await fetch('/api/agent/access-password', {
@@ -194,6 +208,16 @@ export default function AgentConfigPage() {
 
     loadConfig();
   }, [router]);
+
+  useEffect(() => {
+    const warnAboutUnsavedChanges = (event) => {
+      if (!isDirty) return;
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', warnAboutUnsavedChanges);
+    return () => window.removeEventListener('beforeunload', warnAboutUnsavedChanges);
+  }, [isDirty]);
 
   const handleSave = async () => {
     if (!userId) return;
@@ -234,6 +258,8 @@ export default function AgentConfigPage() {
         setAccessPassword('');
         setPasswordIsSet(true);
       }
+
+      savedConfigRef.current = JSON.stringify(config);
       
       setSaveStatus('success');
       setTimeout(() => setSaveStatus(null), 3000);
@@ -359,10 +385,16 @@ export default function AgentConfigPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
         <div>
           <h1 className="text-3xl font-black text-white mb-2 flex items-center gap-3">
-            Qlynk Agent
+            {section === 'visual' ? 'Visual Style' : section === 'profile' ? 'Profile Knowledge' : 'Agent Setup'}
             <Sparkles size={20} className="text-[#f46530]" />
           </h1>
-          <p className="text-lg text-gray-400">Configure your AI assistant&apos;s personality and branding</p>
+          <p className="text-lg text-gray-400">
+            {section === 'visual'
+              ? 'Customize the appearance of your AI clone'
+              : section === 'profile'
+                ? 'Teach your AI clone about you, your work, and how visitors can reach you'
+                : 'Manage your AI clone status, access, and branding'}
+          </p>
         </div>
             
             <div className="flex items-center gap-3">
@@ -379,7 +411,7 @@ export default function AgentConfigPage() {
               )}
               <button
                 onClick={handleSave}
-                disabled={saving}
+                disabled={saving || !isDirty}
                 className="flex items-center gap-2 px-6 py-2.5 bg-[#f46530] text-white rounded-xl font-semibold hover:bg-[#f46530]/90 shadow-lg shadow-[#f46530]/20 transition-all disabled:opacity-50"
               >
                 {saving ? (
@@ -396,6 +428,7 @@ export default function AgentConfigPage() {
             </div>
           </div>
 
+          {section === 'general' && <>
           {/* Enable/Disable Toggle */}
           <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mb-8">
             <div className="flex items-center justify-between">
@@ -673,6 +706,9 @@ export default function AgentConfigPage() {
             </div>
           </div>
 
+          </>}
+
+          {section === 'visual' && <>
           {/* Visual Style Customization */}
           <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mb-8 hover:border-pink-500/20 transition-all">
             <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
@@ -803,6 +839,9 @@ export default function AgentConfigPage() {
             </div>
           </div>
 
+          </>}
+
+          {section === 'profile' && <>
           {/* Bio & About */}
           <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mb-8 hover:border-cyan-500/20 transition-all">
             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
@@ -1116,6 +1155,9 @@ export default function AgentConfigPage() {
             />
           </div>
 
+          </>}
+
+          {section === 'profile' && <>
           {/* Document Upload Section - Link to dedicated page */}
           <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mb-12 hover:border-[#f46530]/20 transition-all">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -1137,6 +1179,9 @@ export default function AgentConfigPage() {
               </Link>
             </div>
           </div>
+          </>}
+
+          {section === 'general' && <>
           {/* Share Section */}
           <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-8 mb-20 hover:border-[#f46530]/20 transition-all">
             <div className="flex flex-col md:flex-row justify-between items-center gap-8">
@@ -1174,6 +1219,9 @@ export default function AgentConfigPage() {
               </div>
             </div>
           </div>
+          </>}
         </div>
     );
 }
+
+export default AgentConfigPage;

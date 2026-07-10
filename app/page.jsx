@@ -503,6 +503,18 @@ export default function App() {
     setUserDropdownOpen(false);
   };
 
+  // Auth metadata keeps the navbar useful while the profile row is loading (or
+  // if an older account does not have a profile row yet).
+  const displayUsername = profile?.username
+    || user?.user_metadata?.username
+    || user?.email?.split('@')[0]
+    || 'User';
+  const avatarUrl = profile?.avatar_url
+    || user?.user_metadata?.avatar_url
+    || user?.user_metadata?.picture
+    || null;
+  const userInitial = displayUsername.charAt(0).toUpperCase();
+
   // Typing effect
   useEffect(() => {
     const words = ['Freelancers', 'Founders', 'Creators', 'Consultants', 'Coaches', 'Everyone'];
@@ -593,11 +605,12 @@ export default function App() {
                     onClick={() => setUserDropdownOpen(!userDropdownOpen)}
                     className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl border border-gray-700 hover:border-orange/40 bg-gray-800/60 hover:bg-gray-800 transition-all group"
                   >
-                    {/* Avatar initials */}
-                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange to-[#c14f22] flex items-center justify-center text-white text-xs font-black shadow-md shadow-orange/20">
-                      {(profile?.username || 'U')[0].toUpperCase()}
+                    <div className="relative w-7 h-7 overflow-hidden rounded-lg bg-gradient-to-br from-orange to-[#c14f22] flex items-center justify-center text-white text-xs font-black shadow-md shadow-orange/20">
+                      {avatarUrl ? (
+                        <Image src={avatarUrl} alt={`${displayUsername}'s profile`} fill sizes="28px" className="object-cover" />
+                      ) : userInitial}
                     </div>
-                    <span className="text-sm font-semibold text-white">{profile?.username || 'there'}</span>
+                    <span className="text-sm font-semibold text-white">{displayUsername}</span>
                     <svg className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${userDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" /></svg>
                   </button>
 
@@ -612,7 +625,7 @@ export default function App() {
                       >
                         <div className="px-4 py-3 border-b border-gray-700/60">
                           <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Signed in as</p>
-                          <p className="text-sm text-white font-semibold mt-0.5 truncate">{profile?.username || user?.email}</p>
+                          <p className="text-sm text-white font-semibold mt-0.5 truncate">{displayUsername}</p>
                         </div>
                         <div className="py-1.5">
                           <Link
@@ -674,12 +687,14 @@ export default function App() {
                 {user ? (
                   <>
                     <div className="flex items-center gap-3 px-3 py-3 rounded-lg bg-gray-700/40 border border-gray-700">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange to-[#c14f22] flex items-center justify-center text-white text-sm font-black shadow-md">
-                        {(profile?.username || 'U')[0].toUpperCase()}
+                      <div className="relative w-8 h-8 overflow-hidden rounded-lg bg-gradient-to-br from-orange to-[#c14f22] flex items-center justify-center text-white text-sm font-black shadow-md">
+                        {avatarUrl ? (
+                          <Image src={avatarUrl} alt={`${displayUsername}'s profile`} fill sizes="32px" className="object-cover" />
+                        ) : userInitial}
                       </div>
                       <div>
                         <p className="text-xs text-gray-500 leading-none">Signed in as</p>
-                        <p className="text-sm text-white font-semibold mt-0.5">{profile?.username || 'there'}</p>
+                        <p className="text-sm text-white font-semibold mt-0.5">{displayUsername}</p>
                       </div>
                     </div>
                     <Link href="/dashboard" className="flex items-center justify-center gap-2 bg-orange text-white text-center px-4 py-3 rounded-xl font-black hover:bg-orange/90 transition-colors">

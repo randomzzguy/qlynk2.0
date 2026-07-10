@@ -102,33 +102,19 @@ export default function ConversationsPage() {
 
     setSendingReply(true);
     try {
-      const supabase = createClient();
-      
-      // Insert reply as owner (marked as assistant role but with owner flag)
-      const { error } = await supabase
-        .from('agent_messages')
-        .insert({
-          conversation_id: selectedConvo,
-          role: 'assistant',
-          content: replyText.trim(),
-          sender_type: 'owner', // Distinguishes from AI responses
-        });
-
-      if (error) throw error;
-
-      // Update conversation message count and mark as updated
-      await supabase
-        .from('agent_conversations')
-        .update({
-          message_count: (messages.filter(m => m.role === 'user').length + 1) + (messages.filter(m => m.role === 'assistant').length + 1),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', selectedConvo);
+      const response = await fetch(`/api/conversations/${selectedConvo}/reply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: replyText.trim() }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Unable to send reply');
 
       toast.success('Reply sent');
       setReplyText('');
       
       // Refresh messages
+      const supabase = createClient();
       const { data } = await supabase
         .from('agent_messages')
         .select('*')

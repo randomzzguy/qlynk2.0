@@ -75,8 +75,9 @@ export default function FullPageChat({
   const [visitorId, setVisitorId] = useState(null);
   useEffect(() => {
     let vid = localStorage.getItem('qlynk_visitor_id');
-    if (!vid) {
-      vid = `visitor_${Math.random().toString(36).substring(2, 15)}`;
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(vid || '');
+    if (!isUuid) {
+      vid = crypto.randomUUID();
       localStorage.setItem('qlynk_visitor_id', vid);
     }
     setVisitorId(vid);

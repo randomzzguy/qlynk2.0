@@ -1,22 +1,46 @@
 import { monitoring } from '@/lib/monitoring';
 import { NextResponse } from 'next/server';
+import { rateLimitResponse } from '@/lib/rate-limit';
+import { canAccessDetailedDiagnostics } from '@/lib/diagnostics-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req) {
+  const rateLimit = rateLimitResponse(req, 'client-errors', 10, 60 * 1000);
+  if (rateLimit) return rateLimit;
+
   try {
-    const errorData = await req.json();
+    const rawBody = await req.text();
+    if (rawBody.length > 16_000) {
+      return NextResponse.json({ error: 'Payload too large' }, { status: 413 });
+    }
+
+    let errorData;
+    try {
+      errorData = JSON.parse(rawBody);
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
     
     // Validate required fields
-    if (!errorData.message) {
+    if (typeof errorData.message !== 'string' || !errorData.message.trim()) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
 
+    const message = errorData.message.trim().slice(0, 2_000);
+    const context = errorData.context && typeof errorData.context === 'object'
+      ? {
+          url: typeof errorData.context.url === 'string' ? errorData.context.url.slice(0, 2_048) : undefined,
+          component: typeof errorData.context.component === 'string' ? errorData.context.component.slice(0, 200) : undefined,
+          action: typeof errorData.context.action === 'string' ? errorData.context.action.slice(0, 200) : undefined,
+        }
+      : {};
+
     // Track the client error
     const trackedError = monitoring.trackError(
-      new Error(errorData.message),
+      new Error(message),
       {
-        ...errorData.context,
+        ...context,
         type: 'client',
         userAgent: req.headers.get('user-agent'),
         ip: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip')
@@ -39,13 +63,8 @@ export async function POST(req) {
 }
 
 export async function GET(req) {
-  const authHeader = req.headers.get('authorization');
-  const expectedSecret = process.env.CRON_SECRET;
-
-  if (process.env.NODE_ENV === 'production') {
-    if (!expectedSecret || authHeader !== `Bearer ${expectedSecret}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  if (!canAccessDetailedDiagnostics(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const metrics = monitoring.getMetrics();

@@ -20,11 +20,22 @@ const nextConfig: NextConfig = {
   },
 
   async headers() {
-    const securityHeaders = [
-      {
-        key: "X-Frame-Options",
-        value: "DENY",
-      },
+    const contentSecurityPolicy = (frameAncestors: string) => [
+      "default-src 'self'",
+      // unsafe-eval required by Next.js (webpack/runtime), unsafe-inline for inline scripts/styles
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://hcaptcha.com https://*.hcaptcha.com",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob: https://*.supabase.co https://api.dicebear.com https://www.qlynk.site",
+      "font-src 'self'",
+      "connect-src 'self' https://api.groq.com https://*.supabase.co https://api.stripe.com https://*.hcaptcha.com",
+      "frame-src https://js.stripe.com https://hcaptcha.com https://*.hcaptcha.com",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      `frame-ancestors ${frameAncestors}`,
+    ].join("; ");
+
+    const commonHeaders = (frameAncestors: string) => [
       {
         key: "X-Content-Type-Options",
         value: "nosniff",
@@ -39,21 +50,15 @@ const nextConfig: NextConfig = {
       },
       {
         key: "Content-Security-Policy",
-        value: [
-          "default-src 'self'",
-          // unsafe-eval required by Next.js (webpack/runtime), unsafe-inline for inline scripts/styles
-          "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://hcaptcha.com https://*.hcaptcha.com",
-          "style-src 'self' 'unsafe-inline'",
-          "img-src 'self' data: blob: https://*.supabase.co https://api.dicebear.com https://www.qlynk.site",
-          "font-src 'self'",
-          "connect-src 'self' https://api.groq.com https://*.supabase.co https://api.stripe.com https://*.hcaptcha.com",
-          "frame-src https://js.stripe.com https://hcaptcha.com https://*.hcaptcha.com",
-          "object-src 'none'",
-          "base-uri 'self'",
-          "form-action 'self'",
-        ].join("; "),
+        value: contentSecurityPolicy(frameAncestors),
       },
     ];
+
+    const securityHeaders = [
+      { key: "X-Frame-Options", value: "DENY" },
+      ...commonHeaders("'none'"),
+    ];
+    const embedHeaders = commonHeaders("*");
 
     // HSTS only in production
     if (isProd) {
@@ -61,12 +66,20 @@ const nextConfig: NextConfig = {
         key: "Strict-Transport-Security",
         value: "max-age=63072000; includeSubDomains; preload",
       });
+      embedHeaders.push({
+        key: "Strict-Transport-Security",
+        value: "max-age=63072000; includeSubDomains; preload",
+      });
     }
 
     return [
       {
-        source: "/:path*",
+        source: "/((?!embed(?:/|$)).*)",
         headers: securityHeaders,
+      },
+      {
+        source: "/embed/:path*",
+        headers: embedHeaders,
       },
     ];
   },

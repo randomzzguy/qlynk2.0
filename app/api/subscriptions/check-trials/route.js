@@ -2,19 +2,15 @@ import { createClient } from '@supabase/supabase-js';
 import { sendEmail } from '@/lib/email/send';
 import { trialExpiringEmail } from '@/lib/email/templates/trial-expiring';
 import { trialExpiredEmail } from '@/lib/email/templates/trial-expired';
+import { authorizeCronRequest } from '@/lib/cron-auth';
 
 /**
  * Check all trial expirations and handle accordingly
  * This endpoint should be called periodically (e.g., via a cron job)
  */
 export async function GET(request) {
-  // Verify the request is from Vercel's cron runner or a manual call with the cron secret
-  const authHeader = request.headers.get('authorization');
-  const isVercelCron = request.headers.get('x-vercel-cron') === '1';
-  const isValidBearer = authHeader === `Bearer ${process.env.CRON_SECRET}`;
-  if (!isVercelCron && !isValidBearer) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const authorization = authorizeCronRequest(request);
+  if (!authorization.ok) return authorization.response;
 
   // Validate environment variables only when the function runs
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

@@ -41,9 +41,7 @@ UPDATE pages
 SET theme_data = jsonb_build_object(
   'config_version', 'v1',
   'headline', COALESCE(tagline, name || ' - ' || profession),
-  'subhead', COALESCE(bio, 'Welcome to my page'),
-  'email', COALESCE(email, ''),
-  'phone', COALESCE(phone, '')
+  'subhead', COALESCE(bio, 'Welcome to my page')
 )
 WHERE theme_data = '{}'::jsonb OR theme_data IS NULL;
 

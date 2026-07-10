@@ -43,7 +43,7 @@
 
   Object.assign(iframe.style, initialStyles);
 
-  iframe.src = `${origin}/embed/${username}`;
+  iframe.src = `${origin}/embed/${encodeURIComponent(username)}?parentOrigin=${encodeURIComponent(window.location.origin)}`;
   iframe.setAttribute('allow', 'clipboard-read; clipboard-write');
 
   document.body.appendChild(iframe);

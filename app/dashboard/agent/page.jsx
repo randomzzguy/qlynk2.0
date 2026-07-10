@@ -116,7 +116,6 @@ export default function AgentConfigPage() {
     is_enabled: true,
     tone: 'professional',
     access_level: 'public',
-    access_password: '',
     // Visual customization
     chat_bg_color: '#0a0a0f',
     user_bubble_color: '#ffffff1a',
@@ -133,6 +132,8 @@ export default function AgentConfigPage() {
   const [newSkill, setNewSkill] = useState({ name: '', level: '' });
   const [newProject, setNewProject] = useState({ name: '', description: '', url: '' });
   const [newSocialLink, setNewSocialLink] = useState({ platform: '', url: '' });
+  const [accessPassword, setAccessPassword] = useState('');
+  const [passwordIsSet, setPasswordIsSet] = useState(false);
 
   useEffect(() => {
     const loadConfig = async () => {
@@ -165,6 +166,7 @@ export default function AgentConfigPage() {
           .single();
 
         if (existingConfig) {
+          delete existingConfig.access_password;
           setConfig((current) => ({
             ...current,
             ...existingConfig,
@@ -173,6 +175,14 @@ export default function AgentConfigPage() {
             contact_info: existingConfig.contact_info || {},
             social_links: existingConfig.social_links || [],
           }));
+        }
+
+        const passwordStatusResponse = await fetch('/api/agent/access-password', {
+          cache: 'no-store',
+        });
+        if (passwordStatusResponse.ok) {
+          const passwordStatus = await passwordStatusResponse.json();
+          setPasswordIsSet(Boolean(passwordStatus.passwordSet));
         }
 
         setLoading(false);
@@ -187,6 +197,11 @@ export default function AgentConfigPage() {
 
   const handleSave = async () => {
     if (!userId) return;
+
+    if (config.access_level === 'password' && !passwordIsSet && !accessPassword) {
+      setSaveStatus('error');
+      return;
+    }
     
     setSaving(true);
     setSaveStatus(null);
@@ -205,6 +220,20 @@ export default function AgentConfigPage() {
         });
 
       if (error) throw error;
+
+      if (config.access_level === 'password' && accessPassword) {
+        const passwordResponse = await fetch('/api/agent/access-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: accessPassword }),
+        });
+        const passwordResult = await passwordResponse.json();
+        if (!passwordResponse.ok) {
+          throw new Error(passwordResult.error || 'Unable to save access password');
+        }
+        setAccessPassword('');
+        setPasswordIsSet(true);
+      }
       
       setSaveStatus('success');
       setTimeout(() => setSaveStatus(null), 3000);
@@ -493,12 +522,18 @@ export default function AgentConfigPage() {
                   <div className="ml-12 mr-4">
                     <label className="block text-sm font-medium text-gray-400 mb-2">Access Password</label>
                     <input
-                      type="text"
-                      value={config.access_password || ''}
-                      onChange={(e) => updateConfig('access_password', e.target.value)}
-                      placeholder="Enter a secret password..."
+                      type="password"
+                      value={accessPassword}
+                      onChange={(e) => setAccessPassword(e.target.value)}
+                      placeholder={passwordIsSet ? 'Enter a new password to replace the current one' : 'Enter a secret password...'}
+                      minLength={6}
+                      maxLength={200}
+                      autoComplete="new-password"
                       className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:bg-gray-900 transition-all"
                     />
+                    {passwordIsSet && (
+                      <p className="mt-2 text-xs text-green-400">A password is set. Leave this blank to keep it unchanged.</p>
+                    )}
                   </div>
                 )}
               </div>

@@ -142,28 +142,6 @@ export default function DashboardPage() {
 
         setRecentConversations(conversations.slice(0, 5));
       }
-      // Check for trial expiration and handle choice
-      if (subData?.tier === 'trial' && isTrialExpired(subData.trial_ends_at)) {
-        const choice = subData.post_trial_choice || 'pause';
-        
-        if (choice === 'pause') {
-          // Update status to paused if not already
-          if (subData.status !== 'paused') {
-            await supabase
-              .from('subscriptions')
-              .update({ 
-                status: 'paused',
-                pause_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
-              })
-              .eq('user_id', user.id);
-          }
-        } else {
-          // Redirect to checkout for the chosen plan
-          // router.push(`/pricing?plan=${choice}`); 
-          // Better to show a modal or a clear message, but for now let's just mark it as "needs payment"
-        }
-      }
-
     } catch (error) {
       console.error('Error loading dashboard:', error);
     } finally {

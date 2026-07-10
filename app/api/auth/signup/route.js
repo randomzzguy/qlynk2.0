@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import { rateLimitResponse } from '@/lib/rate-limit';
 import { sendEmail } from '@/lib/email/send';
 import { welcomeEmail } from '@/lib/email/templates/welcome';
+import { verifyHCaptchaToken } from '@/lib/hcaptcha';
 
 export async function POST(request) {
   // Rate limit: 3 requests per 15 minutes per IP
@@ -15,52 +16,57 @@ export async function POST(request) {
     const body = await request.json();
     const { email, password, username, hcaptchaToken, profession = 'Creative Professional' } = body;
 
-    // Verify hCaptcha token
-    const secret = process.env.HCAPTCHA_SECRET_KEY || process.env.HCAPTCHA_SECRET;
-    const isLocalBypass = hcaptchaToken === 'local-bypass';
+    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+    const normalizedUsername = typeof username === 'string' ? username.trim().toLowerCase() : '';
+    const normalizedProfession = typeof profession === 'string' ? profession.trim() : '';
+    const reservedUsernames = new Set([
+      'admin', 'api', 'auth', 'dashboard', 'embed', 'login', 'signup',
+      'account', 'settings', 'support', 'help', 'pricing', 'www',
+    ]);
 
-    if (!isLocalBypass) {
-      if (!secret) {
-        console.warn('hCaptcha secret is missing, but hcaptchaToken provided. Bypassing verification.');
-      } else {
-        const params = new URLSearchParams();
-        params.append('secret', secret);
-        params.append('response', hcaptchaToken);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail) || normalizedEmail.length > 254) {
+      return NextResponse.json({ message: 'Please enter a valid email address.' }, { status: 400 });
+    }
 
-        const hcaptchaResponse = await fetch('https://hcaptcha.com/siteverify', {
-          method: 'POST',
-          body: params,
-        });
+    if (!/^[a-z0-9_-]{3,30}$/.test(normalizedUsername) || reservedUsernames.has(normalizedUsername)) {
+      return NextResponse.json(
+        { message: 'Username must be 3-30 characters, use only letters, numbers, hyphens, or underscores, and cannot be reserved.' },
+        { status: 400 }
+      );
+    }
 
-        const hcaptchaData = await hcaptchaResponse.json();
+    if (typeof password !== 'string' || password.length < 8 || password.length > 128) {
+      return NextResponse.json({ message: 'Password must be between 8 and 128 characters.' }, { status: 400 });
+    }
 
-        if (!hcaptchaData.success) {
-          console.error('hCaptcha verification failed:', hcaptchaData);
-          return NextResponse.json(
-            { message: 'hCaptcha verification failed. Please try again.' },
-            { status: 400 }
-          );
-        }
-      }
+    if (!normalizedProfession || normalizedProfession.length > 100) {
+      return NextResponse.json({ message: 'Profession must be between 1 and 100 characters.' }, { status: 400 });
+    }
+
+    const captchaResult = await verifyHCaptchaToken(hcaptchaToken);
+    if (!captchaResult.ok) {
+      return NextResponse.json(
+        { message: captchaResult.message },
+        { status: captchaResult.status }
+      );
     }
 
     // Proceed with signup
     const cookieStore = await cookies();
     const supabase = createServerClient(cookieStore);
-    console.log('[v0] Attempting signup for:', { email, username });
+    console.info('[Auth] Signup attempt received.');
     
     const { data: signUpData, error } = await supabase.auth.signUp({
-      email,
+      email: normalizedEmail,
       password,
       options: {
         data: {
-          username,
+          username: normalizedUsername,
         },
-        captchaToken: hcaptchaToken === 'local-bypass' ? undefined : hcaptchaToken,
       },
     });
 
-    console.log('[v0] Signup result:', { success: !error, error: error?.message, errorCode: error?.code, user: signUpData?.user?.id });
+    console.info('[Auth] Signup completed:', { success: !error, errorCode: error?.code });
 
     if (error) {
       return NextResponse.json({ message: error.message }, { status: 400 });
@@ -81,7 +87,7 @@ export async function POST(request) {
         .from('profiles')
         .insert({
           id: signUpData.user.id,
-          username: username
+          username: normalizedUsername
         });
 
       if (profileError) {
@@ -107,16 +113,16 @@ export async function POST(request) {
         .from('pages')
         .insert({
           user_id: signUpData.user.id,
-          name: username,
+          name: normalizedUsername,
           tagline: 'Welcome to my qlynk page!',
-          profession: profession || 'Creative Professional',
+          profession: normalizedProfession,
           theme: 'quickpitch',
           theme_category: 'freelancers',
           theme_data: { 
             config_version: 'v1',
-            headline: username,
+            headline: normalizedUsername,
             subhead: 'Welcome to my digital twin.',
-            email: email
+            email: normalizedEmail
           },
           is_published: true
         });
@@ -131,7 +137,7 @@ export async function POST(request) {
         .insert({
           user_id: signUpData.user.id,
           agent_name: 'Your AI',
-          welcome_message: `Hi! I'm ${username}'s AI clone. Ask me anything about their work!`,
+          welcome_message: `Hi! I'm ${normalizedUsername}'s AI clone. Ask me anything about their work!`,
           is_enabled: true,
           primary_color: '#f46530'
         });
@@ -142,7 +148,7 @@ export async function POST(request) {
     }
 
     // Send welcome email (fire-and-forget — don't block signup response)
-    sendEmail({ to: email, ...welcomeEmail({ username }) }).catch((err) =>
+    sendEmail({ to: normalizedEmail, ...welcomeEmail({ username: normalizedUsername }) }).catch((err) =>
       console.error('[Signup] Welcome email failed:', err)
     );
 

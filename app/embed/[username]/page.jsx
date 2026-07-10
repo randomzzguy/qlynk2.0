@@ -5,14 +5,26 @@ import { isAgentLive } from '@/lib/subscriptionHelpers';
 
 export const dynamic = 'force-dynamic';
 
-export default async function EmbedPage({ params }) {
+export default async function EmbedPage({ params, searchParams }) {
   const { username } = await params;
+  const { parentOrigin: requestedParentOrigin } = await searchParams;
+  let parentOrigin = null;
+  if (typeof requestedParentOrigin === 'string') {
+    try {
+      const parsedOrigin = new URL(requestedParentOrigin);
+      if (['http:', 'https:'].includes(parsedOrigin.protocol)) {
+        parentOrigin = parsedOrigin.origin;
+      }
+    } catch {
+      // The widget will fall back to document.referrer when possible.
+    }
+  }
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
   // Fetch page data from Supabase by joining with profiles
   const { data: profile } = await supabase
-    .from('profiles')
+    .from('profiles_public')
     .select('id')
     .eq('username', username)
     .single();
@@ -23,7 +35,7 @@ export default async function EmbedPage({ params }) {
 
   // Fetch agent config
   const { data: agentConfig } = await supabase
-    .from('agent_configs')
+    .from('agent_configs_public')
     .select('*')
     .eq('user_id', profile.id)
     .eq('is_enabled', true)
@@ -42,7 +54,7 @@ export default async function EmbedPage({ params }) {
   }
 
   // Fetch subscription to check for white-labeling
-  const { data: subscription } = await supabase
+  const { data: subscription } = await adminSupabase
     .from('subscriptions')
     .select('tier')
     .eq('user_id', profile.id)
@@ -60,6 +72,7 @@ export default async function EmbedPage({ params }) {
           position={agentConfig.position}
           accessLevel={agentConfig.access_level}
           tier={subscription?.tier}
+          parentOrigin={parentOrigin}
         />
       </div>
     </div>

@@ -7,7 +7,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "verify:migrations": "node scripts/verify-migrations.mjs"
   },
   "dependencies": {
     "@ai-sdk/groq": "^3.0.39",
@@ -15,10 +16,11 @@
     "@hcaptcha/react-hcaptcha": "^1.17.1",
     "@stripe/stripe-js": "^9.4.0",
     "@supabase/auth-helpers-nextjs": "^0.15.0",
-    "@supabase/ssr": "0.5.1",
-    "@supabase/supabase-js": "2.45.0",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.110.2",
     "ai": "^6.0.176",
     "autoprefixer": "^10.4.21",
+    "bcryptjs": "^3.0.3",
     "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -26,9 +28,9 @@
     "hcaptcha": "^0.2.0",
     "lucide-react": "^0.548.0",
     "mammoth": "^1.12.0",
-    "next": "^16.1.0",
+    "next": "^16.2.10",
     "pdf-parse": "^2.4.5",
-    "postcss": "^8.5.6",
+    "postcss": "^8.5.16",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-hot-toast": "^2.6.0",
@@ -41,6 +43,7 @@
     "zod": "^4.2.1"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.4",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

@@ -1,6 +1,41 @@
 -- Master Schema: Create public page infrastructure
 -- This ensures the pages, social_links, and custom_links tables exist and are publicly readable.
 
+-- Core account tables are included here so a fresh migration reset does not
+-- depend on tables that were previously created only through the dashboard.
+CREATE TABLE IF NOT EXISTS public.profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    username TEXT NOT NULL UNIQUE,
+    email TEXT,
+    full_name TEXT,
+    avatar_url TEXT,
+    onboarding_completed BOOLEAN DEFAULT false,
+    onboarding_step TEXT,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.agent_configs (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID NOT NULL UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
+    agent_name TEXT DEFAULT 'Your AI',
+    agent_avatar TEXT,
+    welcome_message TEXT,
+    bio TEXT,
+    skills JSONB DEFAULT '[]'::jsonb,
+    projects JSONB DEFAULT '[]'::jsonb,
+    contact_info JSONB DEFAULT '{}'::jsonb,
+    social_links JSONB DEFAULT '[]'::jsonb,
+    custom_knowledge TEXT,
+    primary_color TEXT DEFAULT '#f46530',
+    position TEXT DEFAULT 'bottom-right',
+    is_enabled BOOLEAN DEFAULT true,
+    is_published BOOLEAN DEFAULT true,
+    tone TEXT DEFAULT 'professional',
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS public.pages (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE,

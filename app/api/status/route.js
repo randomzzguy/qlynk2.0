@@ -1,17 +1,25 @@
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/server';
 import { validateEnvironmentVariables, getEnvironmentInfo } from '@/lib/env-validation';
 import { NextResponse } from 'next/server';
+import { canAccessDetailedDiagnostics, publicHealthResponse } from '@/lib/diagnostics-auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request) {
+  const detailedDiagnosticsAllowed =
+    process.env.NODE_ENV !== 'production' || canAccessDetailedDiagnostics(request);
+
+  if (!detailedDiagnosticsAllowed) {
+    return publicHealthResponse(NextResponse);
+  }
+
   try {
     const envValidation = validateEnvironmentVariables();
     const envInfo = getEnvironmentInfo();
     const startTime = Date.now();
     
     // Database metrics
-    const supabase = createClient();
+    const supabase = createAdminClient();
     let dbMetrics = {};
     
     try {
@@ -179,6 +187,10 @@ export async function GET() {
     });
 
   } catch (error) {
+    if (process.env.NODE_ENV === 'production' && !canAccessDetailedDiagnostics(request)) {
+      return publicHealthResponse(NextResponse);
+    }
+
     return NextResponse.json({
       timestamp: new Date().toISOString(),
       status: 'error',

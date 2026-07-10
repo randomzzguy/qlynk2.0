@@ -1,6 +1,6 @@
 -- Setup agent-documents storage bucket and policies
 INSERT INTO storage.buckets (id, name, public)
-VALUES ('agent-documents', 'agent-documents', true)
+VALUES ('agent-documents', 'agent-documents', false)
 ON CONFLICT (id) DO NOTHING;
 
 -- Allow users to upload their own documents

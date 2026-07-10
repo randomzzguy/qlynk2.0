@@ -15,7 +15,7 @@ export async function generateMetadata({ params }) {
   const supabase = createClient(cookieStore);
 
   const { data: profile } = await supabase
-    .from('profiles')
+    .from('profiles_public')
     .select('id, full_name')
     .ilike('username', username)
     .single();
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }) {
   }
 
   const { data: agentConfig } = await supabase
-    .from('agent_configs')
+    .from('agent_configs_public')
     .select('agent_name, bio, agent_avatar')
     .eq('user_id', profile.id)
     .single();
@@ -62,7 +62,7 @@ export default async function PublicPage({ params }) {
 
   // Fetch page data from Supabase by joining with profiles
   const { data: profile, error: profileError } = await supabase
-    .from('profiles')
+    .from('profiles_public')
     .select('id, username')
     .ilike('username', username)
     .single();
@@ -111,7 +111,7 @@ export default async function PublicPage({ params }) {
 
   // 2. Fetch Agent Config
   const { data: agentConfig } = await supabase
-    .from('agent_configs')
+    .from('agent_configs_public')
     .select('*')
     .eq('user_id', profile.id)
     .single();
@@ -141,11 +141,8 @@ export default async function PublicPage({ params }) {
     );
   }
 
-  const safeAgentConfig = { ...agentConfig };
-  delete safeAgentConfig.access_password;
-
   // 3. Fetch Subscription
-  const { data: subscription } = await supabase
+  const { data: subscription } = await adminSupabase
     .from('subscriptions')
     .select('tier')
     .eq('user_id', profile.id)
@@ -154,7 +151,7 @@ export default async function PublicPage({ params }) {
   return (
     <FullPageChat 
       username={username}
-      agentConfig={safeAgentConfig}
+      agentConfig={agentConfig}
       profile={pageData}
       tier={subscription?.tier}
     />

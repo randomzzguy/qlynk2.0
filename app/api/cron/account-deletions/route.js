@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { deleteAccountData, getDueScheduledAccountDeletions } from '@/lib/accountDeletion';
 import { stripe } from '@/lib/stripe';
+import { authorizeCronRequest } from '@/lib/cron-auth';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -8,13 +9,8 @@ const supabaseAdmin = createClient(
 );
 
 export async function GET(request) {
-  const authHeader = request.headers.get('authorization');
-  const isVercelCron = request.headers.get('x-vercel-cron') === '1';
-  const isValidBearer = authHeader === `Bearer ${process.env.CRON_SECRET}`;
-
-  if (!isVercelCron && !isValidBearer) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const authorization = authorizeCronRequest(request);
+  if (!authorization.ok) return authorization.response;
 
   try {
     const dueDeletions = await getDueScheduledAccountDeletions({

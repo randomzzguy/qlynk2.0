@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { rateLimitResponse } from '@/lib/rate-limit';
+import { verifyHCaptchaToken } from '@/lib/hcaptcha';
 
 export async function POST(request) {
   // Rate limit: 5 requests per 15 minutes per IP
@@ -11,35 +12,13 @@ export async function POST(request) {
   try {
     const body = await request.json();
     const { email, password, hcaptchaToken } = body;
-    console.log('[API] Login attempt received:', { email, hcaptchaToken });
 
-        // Verify hCaptcha token
-        const secret = process.env.HCAPTCHA_SECRET_KEY || process.env.HCAPTCHA_SECRET;
-        const isLocalBypass = hcaptchaToken === 'local-bypass';
-
-        if (!isLocalBypass) {
-            if (!secret) {
-                console.warn('hCaptcha secret is missing, but hcaptchaToken provided. Bypassing verification.');
-            } else {
-                const params = new URLSearchParams();
-                params.append('secret', secret);
-                params.append('response', hcaptchaToken);
-
-                const hcaptchaResponse = await fetch('https://hcaptcha.com/siteverify', {
-                    method: 'POST',
-                    body: params,
-                });
-
-                const hcaptchaData = await hcaptchaResponse.json();
-
-                if (!hcaptchaData.success) {
-                    console.error('hCaptcha verification failed:', hcaptchaData);
-                    return NextResponse.json(
-                        { message: 'hCaptcha verification failed. Please try again.' },
-                        { status: 400 }
-                    );
-                }
-            }
+        const captchaResult = await verifyHCaptchaToken(hcaptchaToken);
+        if (!captchaResult.ok) {
+            return NextResponse.json(
+                { message: captchaResult.message },
+                { status: captchaResult.status }
+            );
         }
 
         // Proceed with login
@@ -48,11 +27,8 @@ export async function POST(request) {
         const { error } = await supabase.auth.signInWithPassword({
             email,
             password,
-            options: {
-                captchaToken: hcaptchaToken === 'local-bypass' ? undefined : hcaptchaToken,
-            },
         });
-        console.log('[API] Supabase login result:', { success: !error, error: error?.message });
+        console.info('[Auth] Login completed:', { success: !error });
 
         if (error) {
             return NextResponse.json({ message: error.message }, { status: 401 });

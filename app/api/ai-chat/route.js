@@ -1,12 +1,107 @@
-import { createAdminClient, createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/server';
 import { buildAgentSystemPrompt, getAgentKnowledge } from '@/lib/agent';
 import { getMessageLimit, isSubscriptionLive, normalizeTier } from '@/lib/plans';
 import { rateLimitResponse } from '@/lib/rate-limit';
-import { cookies } from 'next/headers';
 import { sendEmail } from '@/lib/email/send';
 import { newMessageEmail } from '@/lib/email/templates/new-message';
+import { compare } from 'bcryptjs';
 
 export const maxDuration = 30;
+
+const MAX_REQUEST_CHARS = 64_000;
+const MAX_HISTORY_MESSAGES = 20;
+const MAX_MESSAGE_CHARS = 4_000;
+const MAX_TOTAL_MESSAGE_CHARS = 24_000;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const USERNAME_PATTERN = /^[a-z0-9_-]{3,30}$/i;
+const UNSAFE_CONTROL_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
+
+function jsonError(error, status) {
+  return Response.json({ error }, { status });
+}
+
+async function parseChatRequest(req) {
+  const rawBody = await req.text();
+  if (rawBody.length > MAX_REQUEST_CHARS) {
+    return { error: 'Request body is too large', status: 413 };
+  }
+
+  let body;
+  try {
+    body = JSON.parse(rawBody);
+  } catch {
+    return { error: 'Invalid JSON body', status: 400 };
+  }
+
+  const {
+    messages,
+    username,
+    visitorId,
+    conversationId,
+    visitorName,
+    visitorEmail,
+    accessPassword,
+  } = body || {};
+
+  if (typeof username !== 'string' || !USERNAME_PATTERN.test(username)) {
+    return { error: 'Invalid username', status: 400 };
+  }
+
+  if (typeof visitorId !== 'string' || !UUID_PATTERN.test(visitorId)) {
+    return { error: 'Invalid visitor identifier', status: 400 };
+  }
+
+  if (conversationId != null &&
+      (typeof conversationId !== 'string' || !UUID_PATTERN.test(conversationId))) {
+    return { error: 'Invalid conversation identifier', status: 400 };
+  }
+
+  if (!Array.isArray(messages) || messages.length === 0 || messages.length > MAX_HISTORY_MESSAGES) {
+    return { error: `Messages must contain between 1 and ${MAX_HISTORY_MESSAGES} items`, status: 400 };
+  }
+
+  let totalChars = 0;
+  const sanitizedMessages = [];
+
+  for (const message of messages) {
+    if (!message || !['user', 'assistant'].includes(message.role)) {
+      return { error: 'Only user and assistant message roles are allowed', status: 400 };
+    }
+
+    if (typeof message.content !== 'string') {
+      return { error: 'Each message must contain text content', status: 400 };
+    }
+
+    const content = message.content.replace(UNSAFE_CONTROL_CHARS, '').trim();
+    if (!content || content.length > MAX_MESSAGE_CHARS) {
+      return { error: `Each message must contain 1-${MAX_MESSAGE_CHARS} characters`, status: 400 };
+    }
+
+    totalChars += content.length;
+    if (totalChars > MAX_TOTAL_MESSAGE_CHARS) {
+      return { error: 'Message history is too large', status: 413 };
+    }
+
+    sanitizedMessages.push({ role: message.role, content });
+  }
+
+  const latestMessage = sanitizedMessages[sanitizedMessages.length - 1];
+  if (latestMessage.role !== 'user') {
+    return { error: 'The latest message must be from the user', status: 400 };
+  }
+
+  return {
+    value: {
+      username,
+      visitorId,
+      conversationId: conversationId || null,
+      visitorName: typeof visitorName === 'string' ? visitorName.trim().slice(0, 100) : '',
+      visitorEmail: typeof visitorEmail === 'string' ? visitorEmail.trim().slice(0, 254) : '',
+      accessPassword: typeof accessPassword === 'string' ? accessPassword.slice(0, 200) : '',
+      latestMessage,
+    },
+  };
+}
 
 function isValidEmail(email) {
   return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -69,7 +164,7 @@ async function analyzeAndSaveSentiment(conversationId, supabase) {
   }
 }
 
-function createAssistantPersistenceStream(conversationId, supabase, adminSupabase) {
+function createAssistantPersistenceStream(conversationId, adminSupabase) {
   const decoder = new TextDecoder();
   let buffer = '';
   let assistantContent = '';
@@ -103,7 +198,7 @@ function createAssistantPersistenceStream(conversationId, supabase, adminSupabas
 
       if (!conversationId || !assistantContent.trim()) return;
 
-      const { error } = await supabase.from('agent_messages').insert({
+      const { error } = await adminSupabase.from('agent_messages').insert({
         conversation_id: conversationId,
         role: 'assistant',
         content: assistantContent,
@@ -127,48 +222,47 @@ export async function POST(req) {
   if (rateLimit) return rateLimit;
 
   try {
+    const parsedRequest = await parseChatRequest(req);
+    if (parsedRequest.error) {
+      return jsonError(parsedRequest.error, parsedRequest.status);
+    }
+
     const {
-      messages,
       username,
       visitorId,
       conversationId,
       visitorName,
       visitorEmail,
       accessPassword,
-    } = await req.json();
-
-    if (!username) {
-      return new Response(JSON.stringify({ error: 'Username is required' }), { status: 400 });
-    }
+      latestMessage,
+    } = parsedRequest.value;
 
     if (!process.env.GROQ_API_KEY) {
-      return new Response(JSON.stringify({ error: 'AI service is not configured' }), { status: 500 });
+      return jsonError('AI service is not configured', 503);
     }
 
-    const cookieStore = await cookies();
-    const supabase = createClient(cookieStore);
     const adminSupabase = createAdminClient();
 
     // Get the profile
-    const { data: profile } = await supabase
+    const { data: profile } = await adminSupabase
       .from('profiles')
       .select('id')
       .ilike('username', username)
       .single();
 
     if (!profile) {
-      return new Response(JSON.stringify({ error: 'User not found' }), { status: 404 });
+      return jsonError('User not found', 404);
     }
 
     // Get agent config
-    const { data: config } = await supabase
+    const { data: config } = await adminSupabase
       .from('agent_configs')
       .select('*')
       .eq('user_id', profile.id)
       .single();
 
     if (!config || !config.is_enabled) {
-      return new Response(JSON.stringify({ error: 'Agent not available' }), { status: 404 });
+      return jsonError('Agent not available', 404);
     }
 
     const { data: subscription, error: subscriptionError } = await adminSupabase
@@ -178,38 +272,87 @@ export async function POST(req) {
       .single();
 
     if (subscriptionError || !subscription) {
-      return new Response(JSON.stringify({ error: 'Agent subscription not found' }), { status: 403 });
+      return jsonError('Agent subscription not found', 403);
     }
 
     const tier = normalizeTier(subscription.tier);
 
     if (!isSubscriptionLive(subscription)) {
-      return new Response(JSON.stringify({ error: 'Agent is not active on the current plan' }), { status: 403 });
+      return jsonError('Agent is not active on the current plan', 403);
     }
 
     const messageLimit = getMessageLimit(tier);
     if ((subscription.messages_used || 0) >= messageLimit) {
-      return new Response(JSON.stringify({ error: 'This agent has reached its monthly message limit' }), { status: 429 });
+      return jsonError('This agent has reached its monthly message limit', 429);
     }
 
     const accessLevel = config.access_level || 'public';
-    if (accessLevel === 'password' && accessPassword !== config.access_password) {
-      return new Response(JSON.stringify({ error: 'Incorrect access password' }), { status: 403 });
+    if (accessLevel === 'password') {
+      const { data: credential, error: credentialError } = await adminSupabase
+        .from('agent_access_credentials')
+        .select('password_hash')
+        .eq('user_id', profile.id)
+        .maybeSingle();
+
+      const passwordMatches = credential?.password_hash &&
+        await compare(accessPassword, credential.password_hash);
+
+      if (credentialError || !passwordMatches) {
+        return jsonError('Incorrect access password', 403);
+      }
     }
 
     if (accessLevel === 'email' && !isValidEmail(visitorEmail)) {
-      return new Response(JSON.stringify({ error: 'A valid email is required to chat with this agent' }), { status: 403 });
+      return jsonError('A valid email is required to chat with this agent', 403);
     }
 
     // Handle knowledge base and prompt
-    const { knowledge: documents } = await getAgentKnowledge(profile.id, supabase);
+    const { knowledge: documents } = await getAgentKnowledge(profile.id, adminSupabase);
     const systemPrompt = buildAgentSystemPrompt(config, documents);
 
     // 1. CONVERSATION TRACKING
     let activeConversationId = conversationId;
+    let trustedHistory = [];
 
-    if (!activeConversationId && visitorId) {
-      const { data: newConv } = await supabase
+    if (activeConversationId) {
+      const { data: existingConversation, error: conversationError } = await adminSupabase
+        .from('agent_conversations')
+        .select('id, agent_owner_id, visitor_id')
+        .eq('id', activeConversationId)
+        .maybeSingle();
+
+      if (conversationError || !existingConversation) {
+        return jsonError('Conversation not found', 404);
+      }
+
+      if (existingConversation.agent_owner_id !== profile.id ||
+          existingConversation.visitor_id !== visitorId) {
+        return jsonError('Conversation does not belong to this visitor and agent', 403);
+      }
+
+      const { data: storedMessages, error: historyError } = await adminSupabase
+        .from('agent_messages')
+        .select('role, content')
+        .eq('conversation_id', activeConversationId)
+        .in('role', ['user', 'assistant'])
+        .order('created_at', { ascending: false })
+        .limit(MAX_HISTORY_MESSAGES - 1);
+
+      if (historyError) {
+        console.error('[AI Chat] Failed to load conversation history:', historyError.message);
+        return jsonError('Unable to load conversation history', 500);
+      }
+
+      trustedHistory = (storedMessages || [])
+        .reverse()
+        .map((message) => ({
+          role: message.role,
+          content: String(message.content || '').slice(0, MAX_MESSAGE_CHARS),
+        }));
+    }
+
+    if (!activeConversationId) {
+      const { data: newConv, error: newConversationError } = await adminSupabase
         .from('agent_conversations')
         .insert({
           agent_owner_id: profile.id,
@@ -219,6 +362,12 @@ export async function POST(req) {
         })
         .select('id')
         .single();
+
+      if (newConversationError || !newConv) {
+        console.error('[AI Chat] Failed to create conversation:', newConversationError?.message);
+        return jsonError('Unable to start a conversation', 500);
+      }
+
       activeConversationId = newConv?.id;
 
       // Notify the agent owner of the new conversation (fire-and-forget)
@@ -227,13 +376,12 @@ export async function POST(req) {
         const ownerEmail = ownerAuthUser?.user?.email;
         const ownerNotifEnabled = ownerAuthUser?.user?.user_metadata?.notif_new_message !== false;
         if (ownerEmail && ownerNotifEnabled) {
-          const firstUserMessage = messages[messages.length - 1]?.content;
           sendEmail({
             to: ownerEmail,
             ...newMessageEmail({
               visitorName: visitorName || null,
               visitorEmail: visitorEmail || null,
-              messagePreview: firstUserMessage || null,
+              messagePreview: latestMessage.content,
               conversationsUrl: `https://qlynk.site/dashboard/conversations`,
             }),
           }).then(() => {
@@ -249,13 +397,17 @@ export async function POST(req) {
     }
 
     // 2. SAVE USER MESSAGE
-    if (activeConversationId && messages.length > 0) {
-      const lastMessage = messages[messages.length - 1];
-      await supabase.from('agent_messages').insert({
+    if (activeConversationId) {
+      const { error: userMessageError } = await adminSupabase.from('agent_messages').insert({
         conversation_id: activeConversationId,
         role: 'user',
-        content: lastMessage.content
+        content: latestMessage.content
       });
+
+      if (userMessageError) {
+        console.error('[AI Chat] Failed to save user message:', userMessageError.message);
+        return jsonError('Unable to save the message', 500);
+      }
     }
 
     // TALK DIRECTLY TO GROQ
@@ -269,7 +421,8 @@ export async function POST(req) {
         model: 'llama-3.3-70b-versatile',
         messages: [
           { role: 'system', content: systemPrompt },
-          ...messages.map(m => ({ role: m.role, content: m.content }))
+          ...trustedHistory,
+          latestMessage,
         ],
         stream: true,
       }),
@@ -281,7 +434,7 @@ export async function POST(req) {
     }
 
     const responseBody = activeConversationId
-      ? groqResponse.body.pipeThrough(createAssistantPersistenceStream(activeConversationId, supabase, adminSupabase))
+      ? groqResponse.body.pipeThrough(createAssistantPersistenceStream(activeConversationId, adminSupabase))
       : groqResponse.body;
 
     // Pass the stream back to the browser with the conversation ID in headers
@@ -295,6 +448,6 @@ export async function POST(req) {
     });
   } catch (error) {
     console.error('[Library-Free-Chat] Error:', error);
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return jsonError('Unable to process the chat request', 500);
   }
 }

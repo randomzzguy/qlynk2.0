@@ -1,11 +1,18 @@
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/server';
 import { validateEnvironmentVariables, getEnvironmentInfo } from '@/lib/env-validation';
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+import { canAccessDetailedDiagnostics, publicHealthResponse } from '@/lib/diagnostics-auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request) {
+  const detailedDiagnosticsAllowed =
+    process.env.NODE_ENV !== 'production' || canAccessDetailedDiagnostics(request);
+
+  if (!detailedDiagnosticsAllowed) {
+    return publicHealthResponse(NextResponse);
+  }
+
   try {
     const startTime = Date.now();
     const envValidation = validateEnvironmentVariables();
@@ -29,8 +36,7 @@ export async function GET() {
 
     // Test database connection
     try {
-      const cookieStore = await cookies();
-      const supabase = createClient(cookieStore);
+      const supabase = createAdminClient();
       const { error } = await supabase
         .from('profiles')
         .select('id')
@@ -111,6 +117,10 @@ export async function GET() {
     });
 
   } catch (error) {
+    if (process.env.NODE_ENV === 'production' && !canAccessDetailedDiagnostics(request)) {
+      return publicHealthResponse(NextResponse);
+    }
+
     return NextResponse.json({
       status: 'unhealthy',
       timestamp: new Date().toISOString(),

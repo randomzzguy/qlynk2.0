@@ -89,30 +89,26 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const { createClient } = await import('@/utils/supabase/client');
-      const supabase = createClient();
-
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          hcaptchaToken: hcaptchaToken || (isLocalhost ? 'local-bypass' : null),
+        }),
       });
 
-      if (signInError) {
-        throw new Error(signInError.message);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Unable to log in. Please try again.');
       }
 
-      // Check onboarding status
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('onboarding_completed')
-        .eq('id', data.user.id)
-        .single();
-
-      if (!profile?.onboarding_completed) {
-        router.push('/onboarding');
-      } else {
-        router.push('/dashboard');
-      }
+      router.push(data.redirectTo || '/dashboard');
+      router.refresh();
     } catch (error) {
       setError(error.message);
       if (captchaRef.current) {

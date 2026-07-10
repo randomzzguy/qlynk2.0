@@ -188,12 +188,12 @@ export default function PricingPage() {
 
   const priceIds = {
     monthly: {
-      creator: process.env.NEXT_PUBLIC_STRIPE_PRICE_CREATOR_MONTHLY || (process.env.NODE_ENV !== 'production' ? 'price_1TaOnWD25s8DA4MkNYoCscvq' : ''),
-      agency: process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY_MONTHLY || (process.env.NODE_ENV !== 'production' ? 'price_1TaQsRD25s8DA4MkiTMr40Bi' : ''),
+      creator: process.env.NEXT_PUBLIC_STRIPE_PRICE_CREATOR_MONTHLY || '',
+      agency: process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY_MONTHLY || '',
     },
     annual: {
-      creator: process.env.NEXT_PUBLIC_STRIPE_PRICE_CREATOR_ANNUAL || (process.env.NODE_ENV !== 'production' ? 'price_1TaOqsD25s8DA4MkbdiPqRRm' : ''),
-      agency: process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY_ANNUAL || (process.env.NODE_ENV !== 'production' ? 'price_1TaQv0D25s8DA4MkAmMlJFF5' : ''),
+      creator: process.env.NEXT_PUBLIC_STRIPE_PRICE_CREATOR_ANNUAL || '',
+      agency: process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY_ANNUAL || '',
     }
   };
 

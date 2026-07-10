@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient, createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 
 const STRIPE_PRICE_PLAN_MAP = Object.fromEntries([
@@ -8,14 +8,6 @@ const STRIPE_PRICE_PLAN_MAP = Object.fromEntries([
   [process.env.NEXT_PUBLIC_STRIPE_PRICE_CREATOR_ANNUAL, 'creator'],
   [process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY_MONTHLY, 'agency'],
   [process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY_ANNUAL, 'agency'],
-  ...(process.env.NODE_ENV !== 'production'
-    ? [
-        ['price_1TaOnWD25s8DA4MkNYoCscvq', 'creator'],
-        ['price_1TaOqsD25s8DA4MkbdiPqRRm', 'creator'],
-        ['price_1TaQsRD25s8DA4MkiTMr40Bi', 'agency'],
-        ['price_1TaQv0D25s8DA4MkAmMlJFF5', 'agency'],
-      ]
-    : []),
 ].filter(([priceId]) => Boolean(priceId)));
 
 export async function POST(req) {
@@ -40,8 +32,10 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const adminSupabase = createAdminClient();
+
     // Get or create Stripe customer
-    const { data: existingSubscription } = await supabase
+    const { data: existingSubscription } = await adminSupabase
       .from('subscriptions')
       .select('stripe_customer_id, trial_ends_at, tier')
       .eq('user_id', user.id)
@@ -59,7 +53,7 @@ export async function POST(req) {
       customerId = customer.id;
 
       // Save customer ID immediately
-      await supabase
+      await adminSupabase
         .from('subscriptions')
         .update({ stripe_customer_id: customerId })
         .eq('user_id', user.id);

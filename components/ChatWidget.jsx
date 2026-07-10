@@ -12,7 +12,8 @@ export default function ChatWidget({
   primaryColor = '#f46530',
   position = 'bottom-right',
   accessLevel = 'public',
-  tier
+  tier,
+  parentOrigin
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
@@ -20,11 +21,13 @@ export default function ChatWidget({
   const [gatekeeperError, setGatekeeperError] = useState('');
   const [isAuthorized, setIsAuthorized] = useState(accessLevel === 'public');
   const [accessPassword, setAccessPassword] = useState('');
-  const [visitorId] = useState(() => 
-    typeof window !== 'undefined' 
-      ? localStorage.getItem('qlynk_visitor_id') || crypto.randomUUID()
-      : crypto.randomUUID()
-  );
+  const [visitorId] = useState(() => {
+    const storedId = typeof window !== 'undefined'
+      ? localStorage.getItem('qlynk_visitor_id')
+      : null;
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(storedId || '');
+    return isUuid ? storedId : crypto.randomUUID();
+  });
   const [conversationId, setConversationId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -41,10 +44,20 @@ export default function ChatWidget({
   // Handle iframe communication
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      let targetOrigin = parentOrigin;
+      if (!targetOrigin && document.referrer) {
+        try {
+          targetOrigin = new URL(document.referrer).origin;
+        } catch {
+          return;
+        }
+      }
+      if (!targetOrigin) return;
+
       const msg = isOpen ? 'qlynk_chat_open' : 'qlynk_chat_closed';
-      window.parent.postMessage(msg, '*');
+      window.parent.postMessage(msg, targetOrigin);
     }
-  }, [isOpen]);
+  }, [isOpen, parentOrigin]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {

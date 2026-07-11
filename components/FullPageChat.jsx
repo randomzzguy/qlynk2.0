@@ -482,6 +482,9 @@ export default function FullPageChat({
                     Cancel
                   </button>
                 </form>
+                <p className="mt-2 text-center text-[11px] text-gray-500">
+                  Messages are processed by AI and shared with the agent owner. <a href="/privacy" target="_blank" rel="noreferrer" className="underline hover:text-gray-300">Privacy</a>
+                </p>
               </div>
             </div>
           </motion.div>
@@ -612,6 +615,9 @@ export default function FullPageChat({
                     <Send size={24} className="text-white" />
                   </button>
                 </form>
+                <p className="mt-2 text-center text-[11px] text-gray-500">
+                  Messages are processed by AI and shared with the agent owner. <a href="/privacy" target="_blank" rel="noreferrer" className="underline hover:text-gray-300">Privacy</a>
+                </p>
               </div>
             </div>
           </motion.main>

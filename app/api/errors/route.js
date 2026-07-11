@@ -6,7 +6,7 @@ import { canAccessDetailedDiagnostics } from '@/lib/diagnostics-auth';
 export const dynamic = 'force-dynamic';
 
 export async function POST(req) {
-  const rateLimit = rateLimitResponse(req, 'client-errors', 10, 60 * 1000);
+  const rateLimit = await rateLimitResponse(req, 'client-errors', 10, 60 * 1000);
   if (rateLimit) return rateLimit;
 
   try {

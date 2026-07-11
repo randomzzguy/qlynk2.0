@@ -8,6 +8,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "node --test tests/*.test.mjs",
+    "verify:env": "node --env-file=.env.local scripts/verify-production-env.mjs",
+    "verify:production-isolation": "node --env-file=.env.local scripts/verify-production-isolation.mjs",
+    "verify:http": "node scripts/verify-http-smoke.mjs",
+    "verify:integrations": "node --env-file=.env.local scripts/verify-production-integrations.mjs",
     "verify:migrations": "node scripts/verify-migrations.mjs"
   },
   "dependencies": {

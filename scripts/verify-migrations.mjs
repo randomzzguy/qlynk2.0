@@ -35,13 +35,16 @@ const bootstrapSql = `
   CREATE TABLE storage.buckets (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
-    public BOOLEAN NOT NULL DEFAULT false
+    public BOOLEAN NOT NULL DEFAULT false,
+    file_size_limit BIGINT,
+    allowed_mime_types TEXT[]
   );
   CREATE TABLE storage.objects (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     bucket_id TEXT NOT NULL,
     name TEXT NOT NULL,
-    owner UUID
+    owner UUID,
+    metadata JSONB
   );
   ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
   CREATE FUNCTION storage.foldername(object_name TEXT)
@@ -50,6 +53,13 @@ const bootstrapSql = `
   IMMUTABLE
   AS $$
     SELECT regexp_split_to_array(object_name, '/')
+  $$;
+  CREATE FUNCTION storage.extension(object_name TEXT)
+  RETURNS TEXT
+  LANGUAGE sql
+  IMMUTABLE
+  AS $$
+    SELECT nullif(regexp_replace(object_name, '^.*\.', ''), object_name)
   $$;
 
   ALTER DEFAULT PRIVILEGES IN SCHEMA public
@@ -119,6 +129,15 @@ const plaintextWasCleared = await scalar(`
 `);
 assert(plaintextWasCleared === true, 'Plaintext access password was not cleared.');
 
+const deprecatedAgentPublishedStateIsDocumented = await scalar(`
+  SELECT col_description('public.agent_configs'::regclass, attnum) LIKE 'Deprecated compatibility column.%' AS value
+  FROM pg_attribute
+  WHERE attrelid = 'public.agent_configs'::regclass
+    AND attname = 'is_published'
+    AND NOT attisdropped
+`);
+assert(deprecatedAgentPublishedStateIsDocumented === true, 'Legacy agent is_published state is not documented as deprecated.');
+
 const agentPublicColumns = await db.query(`
   SELECT column_name
   FROM information_schema.columns
@@ -139,12 +158,62 @@ assert(
   'Public profile view exposes account deletion fields.'
 );
 
+const privateProfilePolicyCount = await scalar(`
+  SELECT count(*)::int AS value
+  FROM pg_policies
+  WHERE schemaname = 'public' AND tablename = 'profiles'
+`);
+assert(privateProfilePolicyCount === 1, 'Private profiles table does not have exactly one owner policy.');
+
+const privateProfilePolicyIsOwnerOnly = await scalar(`
+  SELECT (
+    cmd = 'ALL'
+    AND 'authenticated' = ANY(roles)
+    AND qual LIKE '%auth.uid() = id%'
+    AND with_check LIKE '%auth.uid() = id%'
+  ) AS value
+  FROM pg_policies
+  WHERE schemaname = 'public' AND tablename = 'profiles'
+`);
+assert(privateProfilePolicyIsOwnerOnly === true, 'Private profile policy is not owner-only.');
+
+for (const [table, expectedPolicyCount] of Object.entries({
+  agent_configs: 1,
+  agent_knowledge: 1,
+  agent_documents: 1,
+  agent_conversations: 1,
+  agent_messages: 1,
+  page_views: 1,
+  subscriptions: 2,
+})) {
+  const policyCount = await scalar(`
+    SELECT count(*)::int AS value
+    FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = '${table}'
+  `);
+  assert(policyCount === expectedPolicyCount, `${table} has unexpected or drifted RLS policies.`);
+}
+
 const bucketIsPrivate = await scalar(`
   SELECT public = false AS value
   FROM storage.buckets
   WHERE id = 'agent-documents'
 `);
 assert(bucketIsPrivate === true, 'agent-documents bucket is not private.');
+
+const bucketLimitsAreSafe = await scalar(`
+  SELECT (
+    file_size_limit = 3145728
+    AND allowed_mime_types <@ ARRAY[
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain'
+    ]::text[]
+  ) AS value
+  FROM storage.buckets
+  WHERE id = 'agent-documents'
+`);
+assert(bucketLimitsAreSafe === true, 'agent-documents bucket size or MIME limits are unsafe.');
 
 const rlsTables = [
   'agent_configs',
@@ -154,6 +223,8 @@ const rlsTables = [
   'agent_access_credentials',
   'profiles',
   'subscriptions',
+  'stripe_webhook_events',
+  'api_rate_limits',
 ];
 const enabledRlsCount = await scalar(`
   SELECT count(*)::int AS value
@@ -166,7 +237,7 @@ const enabledRlsCount = await scalar(`
 assert(enabledRlsCount === rlsTables.length, 'RLS is not enabled on every sensitive table.');
 
 await db.exec('SET ROLE anon;');
-for (const table of ['agent_configs', 'agent_knowledge', 'profiles', 'subscriptions']) {
+for (const table of ['agent_configs', 'agent_knowledge', 'profiles', 'subscriptions', 'stripe_webhook_events', 'api_rate_limits']) {
   let count = 0;
   try {
     count = await scalar(`SELECT count(*)::int AS value FROM public.${table}`);
@@ -201,6 +272,19 @@ for (const statement of [
   assert(rejected, 'An anonymous tracking write was accepted.');
 }
 
+await db.exec('RESET ROLE;');
+assert(
+  await scalar(`SELECT has_function_privilege('anon', 'public.check_api_rate_limit(text,text,integer,integer)', 'EXECUTE') AS value`) === false,
+  'Anonymous role can execute the shared rate limiter.'
+);
+await db.exec('SET ROLE service_role;');
+const limiterKey = 'a'.repeat(64);
+const firstLimit = await db.query(`SELECT * FROM public.check_api_rate_limit('verification', '${limiterKey}', 2, 60)`);
+const secondLimit = await db.query(`SELECT * FROM public.check_api_rate_limit('verification', '${limiterKey}', 2, 60)`);
+const thirdLimit = await db.query(`SELECT * FROM public.check_api_rate_limit('verification', '${limiterKey}', 2, 60)`);
+assert(firstLimit.rows[0]?.allowed === true && firstLimit.rows[0]?.remaining === 1, 'First shared rate-limit request is incorrect.');
+assert(secondLimit.rows[0]?.allowed === true && secondLimit.rows[0]?.remaining === 0, 'Second shared rate-limit request is incorrect.');
+assert(thirdLimit.rows[0]?.allowed === false && thirdLimit.rows[0]?.remaining === 0, 'Shared rate limiter did not block excess traffic.');
 await db.exec('RESET ROLE;');
 assert(
   await scalar(`SELECT has_table_privilege('authenticated', 'public.subscriptions', 'SELECT') AS value`) === true,

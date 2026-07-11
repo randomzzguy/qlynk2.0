@@ -22,8 +22,10 @@ const nextConfig: NextConfig = {
   async headers() {
     const contentSecurityPolicy = (frameAncestors: string) => [
       "default-src 'self'",
-      // unsafe-eval required by Next.js (webpack/runtime), unsafe-inline for inline scripts/styles
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://hcaptcha.com https://*.hcaptcha.com",
+      // React/Next require unsafe-eval only for development debugging. Keeping
+      // unsafe-inline preserves static rendering; removing it would require
+      // converting every route to dynamic nonce-based rendering.
+      `script-src 'self' 'unsafe-inline'${isProd ? "" : " 'unsafe-eval'"} https://js.stripe.com https://hcaptcha.com https://*.hcaptcha.com`,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https://*.supabase.co https://api.dicebear.com https://www.qlynk.site",
       "font-src 'self'",
@@ -32,7 +34,9 @@ const nextConfig: NextConfig = {
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
+      "worker-src 'self' blob:",
       `frame-ancestors ${frameAncestors}`,
+      ...(isProd ? ["upgrade-insecure-requests"] : []),
     ].join("; ");
 
     const commonHeaders = (frameAncestors: string) => [

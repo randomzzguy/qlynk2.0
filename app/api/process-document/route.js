@@ -1,13 +1,19 @@
 import { createAdminClient, createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import { createRequire } from 'module';
+import { sanitizeExtractedText, validateDocumentFile } from '@/lib/document-validation';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60; // Allow 60 seconds for large PDFs
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export async function POST(req) {
+  let documentId = null;
+  let adminSupabase = null;
   try {
-    const { documentId } = await req.json();
+    const body = await req.json();
+    documentId = body?.documentId;
 
     // Polyfill for pdf-parse browser-dep issues
     if (typeof global.DOMMatrix === 'undefined') {
@@ -20,7 +26,7 @@ export async function POST(req) {
     const require = createRequire(import.meta.url);
     const pdf = require('pdf-parse');
 
-    if (!documentId) {
+    if (!UUID_PATTERN.test(documentId || '')) {
       return new Response(JSON.stringify({ error: 'documentId is required' }), { status: 400 });
     }
 
@@ -33,12 +39,12 @@ export async function POST(req) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }
 
-    const adminSupabase = createAdminClient();
+    adminSupabase = createAdminClient();
 
     // 1. Fetch the document record
     const { data: doc, error: fetchError } = await adminSupabase
       .from('agent_documents')
-      .select('*')
+      .select('id, user_id, filename, file_type, file_size, storage_path, is_processed, processing_status')
       .eq('id', documentId)
       .single();
 
@@ -50,6 +56,32 @@ export async function POST(req) {
     // 2. Verify ownership
     if (doc.user_id !== user.id) {
       return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
+    }
+    if (typeof doc.storage_path !== 'string' || !doc.storage_path.startsWith(`${user.id}/`)) {
+      throw new Error('Document storage path does not belong to its owner');
+    }
+
+    if (doc.is_processed || doc.processing_status === 'complete') {
+      if (doc.processing_status !== 'complete') {
+        await adminSupabase
+          .from('agent_documents')
+          .update({ processing_status: 'complete', processing_error: null })
+          .eq('id', documentId)
+          .eq('user_id', user.id);
+      }
+      return Response.json({ success: true, status: 'complete' });
+    }
+
+    const { data: processingRows, error: processingError } = await adminSupabase
+      .from('agent_documents')
+      .update({ processing_status: 'processing', processing_error: null, is_processed: false })
+      .eq('id', documentId)
+      .eq('user_id', user.id)
+      .in('processing_status', ['pending', 'failed'])
+      .select('id');
+    if (processingError) throw processingError;
+    if (!processingRows?.length) {
+      return Response.json({ success: true, status: 'processing' }, { status: 202 });
     }
 
     // 3. Download the file from storage
@@ -66,28 +98,20 @@ export async function POST(req) {
     // 4. Extract text based on file type
     let extractedText = '';
     const buffer = Buffer.from(await fileData.arrayBuffer());
+    const extension = validateDocumentFile(doc, fileData, buffer);
 
-    if (doc.filename.toLowerCase().endsWith('.pdf')) {
-      try {
-        const data = await pdf(buffer);
-        extractedText = data.text;
-      } catch (pdfError) {
-        console.error('PDF parsing error:', pdfError);
-        extractedText = 'Error extracting text from PDF.';
-      }
-    } else if (doc.filename.toLowerCase().endsWith('.docx')) {
-      try {
-        const mammoth = require('mammoth');
-        const result = await mammoth.extractRawText({ buffer });
-        extractedText = result.value;
-      } catch (docxError) {
-        console.error('DOCX parsing error:', docxError);
-        extractedText = 'Error extracting text from DOCX.';
-      }
+    if (extension === 'pdf') {
+      const data = await pdf(buffer);
+      extractedText = data.text;
+    } else if (extension === 'docx') {
+      const mammoth = require('mammoth');
+      const result = await mammoth.extractRawText({ buffer });
+      extractedText = result.value;
     } else {
-      // Treat as plain text
       extractedText = buffer.toString('utf-8');
     }
+
+    extractedText = sanitizeExtractedText(extractedText);
 
     // 5. Update the record
     const { error: updateError } = await adminSupabase
@@ -95,6 +119,8 @@ export async function POST(req) {
       .update({
         extracted_text: extractedText,
         is_processed: true,
+        processing_status: 'complete',
+        processing_error: null,
         updated_at: new Date().toISOString()
       })
       .eq('id', documentId);
@@ -104,10 +130,22 @@ export async function POST(req) {
       return new Response(JSON.stringify({ error: `Failed to update document status: ${updateError.message}` }), { status: 500 });
     }
 
-    return new Response(JSON.stringify({ success: true }), { status: 200 });
+    return Response.json({ success: true, status: 'complete' });
 
   } catch (error) {
     console.error('[Process-Document] Fatal Error:', error);
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    if (adminSupabase && documentId) {
+      await adminSupabase
+        .from('agent_documents')
+        .update({
+          is_processed: false,
+          processing_status: 'failed',
+          processing_error: 'This document could not be processed. Check its format and size, then try again.',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', documentId)
+        .eq('processing_status', 'processing');
+    }
+    return Response.json({ error: 'Document processing failed' }, { status: 500 });
   }
 }

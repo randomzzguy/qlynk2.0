@@ -13,7 +13,7 @@ const VISITOR_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9
  * No authentication required — this is public tracking.
  */
 export async function POST(request) {
-  const rateLimit = rateLimitResponse(request, 'track-view', 20, 60 * 1000);
+  const rateLimit = await rateLimitResponse(request, 'track-view', 20, 60 * 1000);
   if (rateLimit) return rateLimit;
 
   try {

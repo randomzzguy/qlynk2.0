@@ -1,6 +1,12 @@
 export default function sitemap() {
   return [
     {
+      url: 'https://www.qlynk.site/blog',
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    {
       url: 'https://www.qlynk.site',
       lastModified: new Date(),
       changeFrequency: 'weekly',
@@ -49,10 +55,28 @@ export default function sitemap() {
       priority: 0.6,
     },
     {
+      url: 'https://www.qlynk.site/for-job-seekers',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    {
       url: 'https://www.qlynk.site/faq',
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.6,
+    },
+    {
+      url: 'https://www.qlynk.site/privacy',
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
+    {
+      url: 'https://www.qlynk.site/terms',
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.3,
     },
   ]
 }

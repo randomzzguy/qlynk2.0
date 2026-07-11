@@ -218,7 +218,7 @@ function createAssistantPersistenceStream(conversationId, adminSupabase) {
 
 export async function POST(req) {
   // Rate limit: 20 requests per minute per IP
-  const rateLimit = rateLimitResponse(req, 'ai-chat', 20, 60 * 1000);
+  const rateLimit = await rateLimitResponse(req, 'ai-chat', 20, 60 * 1000);
   if (rateLimit) return rateLimit;
 
   try {

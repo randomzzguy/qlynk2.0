@@ -3,6 +3,7 @@ import { stripe } from '@/lib/stripe';
 import { createClient } from '@supabase/supabase-js';
 import { createClient as createSupabaseClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
+import { getPaidSubscriptionUpdate } from '@/lib/stripe-subscriptions';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -43,34 +44,20 @@ export async function POST(req) {
     }
 
     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-    
-    const userId = session.metadata?.supabase_user_id || subscription.metadata?.supabase_user_id;
-    const planName = session.metadata?.plan_name || subscription.metadata?.plan_name || 'creator';
-
-    if (!userId) {
-      console.warn(`[Checkout Confirm] No user ID resolved in metadata for session ${session_id}`);
-      return NextResponse.json({ error: 'User ID not found in metadata' }, { status: 400 });
-    }
+    const { userId, update } = getPaidSubscriptionUpdate({ session, subscription });
 
     if (userId !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const tier = planName.toLowerCase();
-    console.log(`[Checkout Confirm] Activating paid plan for user: ${userId} → ${tier}`);
+    console.log(`[Checkout Confirm] Reconciling paid plan for user ${userId}`);
 
     // Update database synchronously.
     // status is forced to 'active' and trial_ends_at is cleared —
     // the user has paid so their trial is done regardless of Stripe's subscription state.
     const { data, error } = await supabaseAdmin
       .from('subscriptions')
-      .update({
-        stripe_customer_id: session.customer,
-        stripe_subscription_id: subscriptionId,
-        tier,
-        status: 'active',
-        trial_ends_at: null,
-      })
+      .update(update)
       .eq('user_id', userId)
       .select();
 
@@ -79,12 +66,10 @@ export async function POST(req) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    console.log(`[Checkout Confirm] DB Update Success:`, data);
-
     return NextResponse.json({
       success: true,
-      tier,
-      status: 'active',
+      tier: update.tier,
+      status: update.status,
       updated: true,
       data: data?.[0]
     });

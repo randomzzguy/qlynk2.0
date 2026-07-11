@@ -34,26 +34,20 @@ export async function GET(request) {
       throw fetchError;
     }
 
-    // For each expired trial, mark agents as offline, flip tier to 'expired', and send email
+    // Flip expired trial subscriptions to a non-live tier. Agent availability is
+    // derived from subscription eligibility plus the owner's is_enabled switch.
     let updated = 0;
     let emailsSent = 0;
     for (const trial of expiredTrials || []) {
-      const { error: updateError } = await supabase
-        .from('agent_configs')
-        .update({ is_published: false })
-        .eq('user_id', trial.user_id);
-
-      if (updateError) {
-        console.error(`Error updating agent for user ${trial.user_id}:`, updateError);
-      } else {
-        updated++;
-      }
-
-      // Flip tier to 'expired' so this user is never picked up by this cron again
-      await supabase
+      const { data: updatedSubscriptions, error: updateError } = await supabase
         .from('subscriptions')
         .update({ tier: 'expired' })
-        .eq('user_id', trial.user_id);
+        .eq('user_id', trial.user_id)
+        .eq('tier', 'trial')
+        .select('user_id');
+      if (updateError) throw updateError;
+      if (!updatedSubscriptions?.length) continue;
+      updated++;
 
       // Send trial expired email
       const { data: authUser } = await supabase.auth.admin.getUserById(trial.user_id);

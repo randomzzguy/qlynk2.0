@@ -2,13 +2,7 @@ import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { createAdminClient, createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
-
-const STRIPE_PRICE_PLAN_MAP = Object.fromEntries([
-  [process.env.NEXT_PUBLIC_STRIPE_PRICE_CREATOR_MONTHLY, 'creator'],
-  [process.env.NEXT_PUBLIC_STRIPE_PRICE_CREATOR_ANNUAL, 'creator'],
-  [process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY_MONTHLY, 'agency'],
-  [process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY_ANNUAL, 'agency'],
-].filter(([priceId]) => Boolean(priceId)));
+import { STRIPE_PRICE_PLAN_MAP } from '@/lib/stripe-subscriptions';
 
 export async function POST(req) {
   try {

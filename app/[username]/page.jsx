@@ -5,6 +5,7 @@ import { Sparkles, ArrowRight, Lock } from 'lucide-react';
 import QlynkBackground from '@/components/QlynkBackground';
 import FullPageChat from '@/components/FullPageChat';
 import { isAgentLive } from '@/lib/subscriptionHelpers';
+import { notFound } from 'next/navigation';
 
 // This tells Next.js to generate pages dynamically
 export const dynamic = 'force-dynamic';
@@ -57,6 +58,7 @@ export async function generateMetadata({ params }) {
 
 export default async function PublicPage({ params }) {
   const { username } = await params;
+  if (username.toLowerCase() === 'todos') notFound();
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 

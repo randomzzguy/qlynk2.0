@@ -6,7 +6,7 @@ import { verifyHCaptchaToken } from '@/lib/hcaptcha';
 
 export async function POST(request) {
   // Rate limit: 5 requests per 15 minutes per IP
-  const rateLimit = rateLimitResponse(request, 'auth-login', 5, 15 * 60 * 1000);
+  const rateLimit = await rateLimitResponse(request, 'auth-login', 5, 15 * 60 * 1000);
   if (rateLimit) return rateLimit;
 
   try {

@@ -33,7 +33,7 @@ cp .env.local.example .env.local
 
 # Run dev server
 npm run dev
-``
+```
 
 Open [http://localhost:3000](http://localhost:3000)
 
@@ -65,6 +65,27 @@ HCAPTCHA_SECRET_KEY=
 ## Deployment
 
 See [docs/DEPLOYMENT_CHECKLIST.md](./docs/DEPLOYMENT_CHECKLIST.md) for production deployment steps.
+
+## Verification
+
+Run the same quality gates used by CI before deployment:
+
+```bash
+npm test
+npm run lint
+npm run verify:migrations
+npm run verify:env
+npm run build
+npm run verify:http # while npm start is running; set SMOKE_BASE_URL if not port 3100
+npm run verify:integrations # read-only production provider connectivity/domain checks
+npm audit --omit=dev --audit-level=high
+```
+
+`npm test` contains focused regression coverage for safe URL scraping, document validation, Stripe plan activation, Stripe webhook idempotency, and trusted client-IP selection. `verify:migrations` executes every migration in embedded Postgres and verifies RLS, privileges, private views/storage, webhook isolation, and the shared rate limiter.
+
+`npm run verify:env` validates `.env.local` as production configuration without printing secret values. Run the equivalent check against the deployment environment before promoting a release.
+
+Authenticated browser smoke tests still require a configured Supabase/Stripe test environment; follow `LAUNCHREADY.md` before a production launch.
 
 ## Project Structure
 

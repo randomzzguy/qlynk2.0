@@ -4,6 +4,7 @@ import ToasterClient from '../components/ToasterClient'
 import QlynkBackground from '../components/QlynkBackground'
 
 export const metadata = {
+  metadataBase: new URL('https://www.qlynk.site'),
   title: 'Qlynk – Create Your AI Clone in Minutes | Personal AI Agent',
   description: 'Build a personal AI agent that represents you 24/7. Upload your bio, resume & expertise — Qlynk creates an AI clone that answers questions, shares your work, and books meetings while you sleep. Free 14-day trial.',
   keywords: 'AI clone, personal AI agent, digital twin, AI assistant, AI avatar, personal AI, create AI clone, AI agent builder, digital identity, AI presence',
@@ -46,14 +47,9 @@ export default function RootLayout({ children }) {
     "@type": "Organization",
     "name": "Qlynk",
     "url": "https://www.qlynk.site",
-    "logo": "https://www.qlynk.site/logo.png",
+    "logo": "https://www.qlynk.site/assets/favicon/android-chrome-512x512.png",
     "description": "Create your AI clone in minutes. Qlynk lets you build a personal AI agent that represents you 24/7 — answering questions, sharing your expertise, and engaging visitors.",
     "foundingDate": "2026",
-    "sameAs": [
-      "https://twitter.com/qlynk",
-      "https://linkedin.com/company/qlynk",
-      "https://producthunt.com/products/qlynk"
-    ],
     "contactPoint": {
       "@type": "ContactPoint",
       "contactType": "customer service",
@@ -74,11 +70,6 @@ export default function RootLayout({ children }) {
       "price": "0",
       "priceCurrency": "USD",
       "description": "14-day free trial, no charge today"
-    },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "ratingCount": "50"
     }
   };
 
@@ -87,12 +78,7 @@ export default function RootLayout({ children }) {
     "@type": "WebSite",
     "name": "Qlynk",
     "url": "https://www.qlynk.site",
-    "description": "Create your AI clone in a blink. Personal AI agent that represents you 24/7.",
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": "https://www.qlynk.site/search?q={search_term_string}",
-      "query-input": "required name=search_term_string"
-    }
+    "description": "Create your AI clone in a blink. Personal AI agent that represents you 24/7."
   };
 
   return (

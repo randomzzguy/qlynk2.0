@@ -100,7 +100,7 @@ export default function KnowledgeDashboard() {
 
   // Neural Polling: Refresh data every 5s if any document is still processing
   useEffect(() => {
-    const hasUnprocessed = documents.some(d => !d.is_processed);
+    const hasUnprocessed = documents.some(d => !d.is_processed && ['pending', 'processing'].includes(d.processing_status || 'pending'));
     if (hasUnprocessed) {
       const timer = setTimeout(() => {
         fetchAllData();
@@ -202,7 +202,8 @@ export default function KnowledgeDashboard() {
           file_type: file.type,
           file_size: file.size,
           storage_path: fileName,
-          is_processed: false // Will be updated by neural processor
+          is_processed: false,
+          processing_status: 'pending'
         })
         .select();
 
@@ -217,7 +218,13 @@ export default function KnowledgeDashboard() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ documentId: newDocId })
-        }).catch(err => console.error('Processing trigger failed:', err));
+        }).then(async (response) => {
+          if (!response.ok) throw new Error('Document processing failed');
+          fetchAllData();
+        }).catch(err => {
+          console.error('Processing trigger failed:', err);
+          fetchAllData();
+        });
       }
 
       toast.success('File uploaded to Neural Engine');
@@ -465,7 +472,7 @@ export default function KnowledgeDashboard() {
                   id="neural-upload" 
                   className="hidden" 
                   onChange={handleFileUpload}
-                  accept=".pdf,.doc,.docx,.txt"
+                  accept=".pdf,.docx,.txt"
                   disabled={uploading}
                 />
                 <label 
@@ -510,13 +517,13 @@ export default function KnowledgeDashboard() {
                     <div className="mt-6">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-[10px] font-black text-purple-400 uppercase tracking-widest">Status</span>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${doc.is_processed ? 'bg-green-500/10 text-green-400' : 'bg-orange-500/10 text-orange-400'}`}>
-                          {doc.is_processed ? 'Neural Sync Ready' : 'Processing...'}
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${doc.is_processed ? 'bg-green-500/10 text-green-400' : doc.processing_status === 'failed' ? 'bg-red-500/10 text-red-400' : 'bg-orange-500/10 text-orange-400'}`}>
+                          {doc.is_processed ? 'Neural Sync Ready' : doc.processing_status === 'failed' ? 'Processing failed' : 'Processing...'}
                         </span>
                       </div>
                       <div className="h-1.5 w-full bg-black/40 rounded-full overflow-hidden">
                         <div 
-                          className={`h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-1000 ${doc.is_processed ? 'w-full' : 'w-1/3 animate-pulse'}`}
+                          className={`h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-1000 ${doc.is_processed ? 'w-full' : doc.processing_status === 'failed' ? 'w-full bg-red-500' : 'w-1/3 animate-pulse'}`}
                         />
                       </div>
                     </div>

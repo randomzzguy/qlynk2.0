@@ -8,7 +8,7 @@ import QlynkBackground from '@/components/QlynkBackground';
 import Footer from '@/components/Footer';
 
 export default function TermsPage() {
-  const lastUpdated = "May 11, 2026";
+  const lastUpdated = "July 11, 2026";
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-gray-300">
@@ -87,7 +87,21 @@ export default function TermsPage() {
               </section>
 
               <section>
-                <h2 className="text-2xl font-bold text-white mb-4">7. Modifications to the Service</h2>
+                <h2 className="text-2xl font-bold text-white mb-4">7. AI Outputs and Responsibility</h2>
+                <p className="leading-relaxed">
+                  Qlynk Agent responses are generated automatically and may be incomplete, inaccurate, or inappropriate. They are not professional legal, medical, financial, or other regulated advice. You are responsible for the content and instructions supplied to your agent, for having the rights and permissions needed to process that content, and for how you use or rely on generated responses. You must not configure an agent to impersonate another person deceptively or make decisions that require qualified human judgment.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-2xl font-bold text-white mb-4">8. Visitor Information</h2>
+                <p className="leading-relaxed">
+                  Agent owners may receive messages and contact information submitted by visitors. If you operate an agent, you must handle that information lawfully, provide any notices required for your use case, and use it only for appropriate purposes. Qlynk&apos;s Privacy Policy explains the platform&apos;s processing and service providers.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-2xl font-bold text-white mb-4">9. Modifications to the Service</h2>
                 <p className="leading-relaxed">
                   Qlynk reserves the right at any time to modify or discontinue, temporarily or permanently, the Service (or any part thereof) with or without notice.
                 </p>

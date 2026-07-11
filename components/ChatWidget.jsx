@@ -402,6 +402,9 @@ export default function ChatWidget({
                 <Send size={18} />
               </button>
             </div>
+            <p className="text-[10px] text-gray-400 text-center mt-2">
+              AI processed; shared with the agent owner. <a href="https://www.qlynk.site/privacy" target="_blank" rel="noreferrer" className="underline">Privacy</a>
+            </p>
             {tier?.toLowerCase() !== 'agency' && tier?.toLowerCase() !== 'business' && (
               <p className="text-xs text-gray-400 text-center mt-2">
                 Powered by <span className="font-medium">qlynk</span>

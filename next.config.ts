@@ -78,6 +78,22 @@ const nextConfig: NextConfig = {
 
     return [
       {
+        source: "/auth/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
+      {
+        source: "/dashboard/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
+      {
+        source: "/api/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
+      ...["/create", "/onboarding", "/premium-themes", "/preview/:path*", "/embed/:path*"].map((source) => ({
+        source,
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      })),
+      {
         source: "/((?!embed(?:/|$)).*)",
         headers: securityHeaders,
       },

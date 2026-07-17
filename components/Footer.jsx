@@ -11,14 +11,14 @@ export default function Footer() {
             <Link href="/" className="inline-block mb-6 group">
               <Image
                 src="/logoWhite.svg"
-                alt="qlynk logo"
+                alt="Qlynk AI logo"
                 width={120}
                 height={48}
                 className="group-hover:opacity-80 transition-opacity"
               />
             </Link>
             <p className="text-sm leading-relaxed mb-6">
-              Create your personal AI clone in a blink. Scale your presence and engage visitors 24/7.
+              Qlynk AI helps you create a personal AI agent trained on your knowledge, ready to represent your work online 24/7.
             </p>
           </div>
 
@@ -26,6 +26,9 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-4">Product</h4>
             <ul className="space-y-3 text-sm">
+              <li><Link href="/ai-agent" className="hover:text-[#f46530] transition-colors">Personal AI Agent</Link></li>
+              <li><Link href="/ai-clone" className="hover:text-[#f46530] transition-colors">AI Clone</Link></li>
+              <li><Link href="/personal-ai" className="hover:text-[#f46530] transition-colors">Personal AI</Link></li>
               <li><Link href="/pricing" className="hover:text-[#f46530] transition-colors">Pricing</Link></li>
               <li><Link href="/faq" className="hover:text-[#f46530] transition-colors">FAQ</Link></li>
               <li><Link href="/auth/login" className="hover:text-[#f46530] transition-colors">Log In</Link></li>
@@ -39,6 +42,7 @@ export default function Footer() {
               <li><Link href="/for-freelancers" className="hover:text-[#f46530] transition-colors">For Freelancers</Link></li>
               <li><Link href="/for-founders" className="hover:text-[#f46530] transition-colors">For Founders</Link></li>
               <li><Link href="/for-creators" className="hover:text-[#f46530] transition-colors">For Creators</Link></li>
+              <li><Link href="/for-business" className="hover:text-[#f46530] transition-colors">For Business</Link></li>
               <li><Link href="/for-job-seekers" className="hover:text-[#f46530] transition-colors">For Job Seekers</Link></li>
             </ul>
           </div>
@@ -46,9 +50,11 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-4">Resources</h4>
             <ul className="space-y-3 text-sm">
+              <li><Link href="/blog" className="hover:text-[#f46530] transition-colors">All Resources</Link></li>
               <li><Link href="/blog/what-is-an-ai-clone" className="hover:text-[#f46530] transition-colors">What is an AI Clone?</Link></li>
               <li><Link href="/blog/how-to-create-ai-clone" className="hover:text-[#f46530] transition-colors">How to Create an AI Clone</Link></li>
               <li><Link href="/blog/ai-clone-vs-chatbot" className="hover:text-[#f46530] transition-colors">AI Clone vs Chatbot</Link></li>
+              <li><Link href="/blog/ai-clone-vs-chatgpt" className="hover:text-[#f46530] transition-colors">AI Clone vs ChatGPT</Link></li>
             </ul>
           </div>
         </div>
@@ -56,6 +62,8 @@ export default function Footer() {
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
           <p>&copy; {new Date().getFullYear()} qlynk. All rights reserved.</p>
           <div className="flex gap-6">
+            <Link href="/about" className="hover:text-white transition-colors">About</Link>
+            <Link href="/press" className="hover:text-white transition-colors">Press Kit</Link>
             <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
           </div>

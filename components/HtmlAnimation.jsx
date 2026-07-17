@@ -260,7 +260,7 @@ export default function HtmlAnimation() {
         
 
         <div className="magic-wand-cursor">
-          <Image src="/assets/icon.svg" alt="" width={36} height={36} className="wand-icon" />
+          <Image src="/assets/iconWhite.svg" alt="" width={36} height={36} className="wand-icon" />
         </div>
       </main>
     </div>

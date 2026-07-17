@@ -1,14 +1,29 @@
 import Link from 'next/link';
 import Footer from '@/components/Footer';
+import JsonLd from '@/components/JsonLd';
+import { breadcrumbSchema, createMetadata, SITE_URL } from '@/lib/seo';
 
-export const metadata = {
+export const metadata = createMetadata({
   title: 'What Is an AI Clone? The Complete Guide (2026)',
   description: 'Learn what an AI clone is, how it works, who it\'s for, and how to build your own personal AI agent in 5 minutes.',
-};
+  path: '/blog/what-is-an-ai-clone',
+  type: 'article',
+});
 
 export default function WhatIsAIClone() {
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: 'What Is an AI Clone? The Complete Guide (2026)',
+        description: metadata.description,
+        mainEntityOfPage: `${SITE_URL}/blog/what-is-an-ai-clone`,
+        publisher: { '@id': `${SITE_URL}/#organization` },
+        image: `${SITE_URL}/og-image.png`,
+        inLanguage: 'en',
+      }} />
+      <JsonLd data={breadcrumbSchema([{ name: 'Home', path: '/' }, { name: 'Blog', path: '/blog' }, { name: 'What Is an AI Clone?', path: '/blog/what-is-an-ai-clone' }])} />
       {/* Background gradients */}
       <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute top-[40%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px] pointer-events-none" />

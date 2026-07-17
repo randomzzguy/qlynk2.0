@@ -304,7 +304,7 @@ export default function OnboardingPage() {
       {/* Header */}
       <div className="relative z-10 px-6 py-4 flex items-center justify-between">
         <Link href="/">
-          <Image width={120} height={40} src="/logoWhite.svg" alt="qlynk logo" priority />
+          <Image width={120} height={40} src="/logoWhite.svg" alt="Qlynk AI logo" priority />
         </Link>
         <button 
           onClick={handleSkip}
@@ -605,7 +605,7 @@ export default function OnboardingPage() {
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <Image src="/assets/iconWhite.svg" alt="qlynk" width={12} height={12} />
+                            <Image src="/assets/iconWhite.svg" alt="" width={12} height={12} />
                             <span className="text-[10px] font-black text-orange uppercase tracking-widest">{formData.agent_name}</span>
                           </div>
                           <div className="bg-white/5 border border-white/10 p-4 rounded-2xl rounded-tl-none shadow-2xl">

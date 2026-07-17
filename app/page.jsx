@@ -106,7 +106,7 @@ const AgentDemoHero = () => {
             transition={{ duration: 0.5 }}
           >
             <div className="w-5 h-5 flex-shrink-0">
-              <Image src="/assets/iconWhite.svg" alt="qlynk" width={20} height={20} />
+              <Image src="/assets/iconWhite.svg" alt="" width={20} height={20} />
             </div>
             <span className="text-xs font-black tracking-[0.2em] text-orange uppercase">
               The Future of Personal Presence
@@ -120,7 +120,7 @@ const AgentDemoHero = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             Your Personal <br />
-            <span className="bg-gradient-to-r from-orange via-[#f46530] to-[#c14f22] bg-clip-text text-transparent">AI Ambassador</span>
+            <span className="bg-gradient-to-r from-orange via-[#f46530] to-[#c14f22] bg-clip-text text-transparent">AI Agent</span>
           </motion.h1>
 
           <motion.p
@@ -129,7 +129,7 @@ const AgentDemoHero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            Create an AI agent that knows everything about you. Let visitors chat with your digital twin 24/7 while you focus on what matters.
+            Qlynk AI creates a personal AI clone trained on the knowledge you provide. Let visitors explore your expertise 24/7 while you focus on what matters.
           </motion.p>
         </div>
 
@@ -283,7 +283,7 @@ const AgentDemoHero = () => {
                       >
                         <div className="bg-orange/10 border border-orange/20 text-white px-5 py-3.5 rounded-2xl rounded-tl-sm max-w-[90%] shadow-xl">
                           <div className="flex items-center gap-2 mb-2">
-                            <Image src="/assets/iconWhite.svg" alt="qlynk" width={14} height={14} />
+                            <Image src="/assets/iconWhite.svg" alt="" width={14} height={14} />
                             <span className="text-[11px] font-black text-orange uppercase tracking-[0.1em]">Qlynk Agent response</span>
                           </div>
                           <p className="text-sm leading-relaxed text-gray-100">
@@ -376,8 +376,11 @@ const AboutUs = () => {
               Pioneering the future of <span className="text-orange">personal AI</span>
             </h2>
             <p className="text-xl text-gray-300 leading-relaxed">
-              qlynk started with a vision: what if you could clone your expertise into an AI that works for you around the clock? We made it real with Qlynk Agent - your intelligent digital ambassador.
+              Qlynk is an AI platform that lets professionals, creators, founders, and businesses create personalized AI agents trained on their knowledge to answer questions and represent them online.
             </p>
+            <Link href="/about" className="inline-flex items-center gap-2 text-orange font-bold hover:underline">
+              Learn more about Qlynk AI <ArrowRight size={18} />
+            </Link>
             <div className="grid sm:grid-cols-3 gap-6 pt-4">
               <div className="text-center p-4 rounded-2xl bg-gray-800/40 border border-gray-700">
                 <div className="text-3xl font-black text-orange mb-1">AI</div>
@@ -550,10 +553,10 @@ export default function App() {
   }, [text, isDeleting, loopNum]);
 
   const features = [
-    { icon: Brain, title: "Train Your Knowledge", desc: "Upload your bio, resume, projects, and expertise. Your Qlynk Agent learns everything about you instantly." },
-    { icon: MessageSquare, title: "Smart Conversations", desc: "Powered by advanced AI, your agent answers questions naturally and accurately about you." },
-    { icon: Shield, title: "Your Brand, Your Rules", desc: "Customize your agent's personality, responses, and appearance to match your personal brand." },
-    { icon: BarChart3, title: "Actionable Insights", desc: "See what visitors ask, track engagement, and understand what people want to know about you." }
+    { icon: Brain, title: "Train Your Knowledge", href: "/features/ai-training", desc: "Upload your bio, resume, projects, and expertise. Your Qlynk Agent learns everything about you instantly." },
+    { icon: MessageSquare, title: "Smart Conversations", href: "/features/knowledge-base", desc: "Powered by advanced AI, your agent answers questions naturally and accurately about you." },
+    { icon: Shield, title: "Your Brand, Your Rules", href: "/features/security", desc: "Customize your agent's personality, responses, and appearance to match your personal brand." },
+    { icon: BarChart3, title: "Actionable Insights", href: "/features/analytics", desc: "See what visitors ask, track engagement, and understand what people want to know about you." }
   ];
 
   const steps = [
@@ -588,7 +591,7 @@ export default function App() {
               <Link href="/" className="flex items-center justify-center h-16 group">
                 <Image
                   src="/logoWhite.svg"
-                  alt="qlynk logo"
+                  alt="Qlynk AI logo"
                   width={125}
                   height={50}
                   priority
@@ -598,7 +601,10 @@ export default function App() {
             </div>
 
             <div className="hidden md:flex items-center gap-5">
+              <Link href="/ai-agent" className="text-gray-300 hover:text-orange font-medium transition-colors">Product</Link>
               <Link href="/pricing" className="text-gray-300 hover:text-orange font-medium transition-colors">Pricing</Link>
+              <Link href="/blog" className="text-gray-300 hover:text-orange font-medium transition-colors">Resources</Link>
+              <Link href="/faq" className="text-gray-300 hover:text-orange font-medium transition-colors">FAQ</Link>
               {user ? (
                 <div className="relative" ref={dropdownRef}>
                   <button
@@ -683,7 +689,10 @@ export default function App() {
               transition={{ duration: 0.3 }}
             >
               <div className="px-4 py-4 space-y-2">
+                <Link href="/ai-agent" className="block px-3 py-2 text-gray-300 font-medium rounded-lg hover:bg-gray-700/50 transition-colors">Product</Link>
                 <Link href="/pricing" className="block px-3 py-2 text-gray-300 font-medium rounded-lg hover:bg-gray-700/50 transition-colors">Pricing</Link>
+                <Link href="/blog" className="block px-3 py-2 text-gray-300 font-medium rounded-lg hover:bg-gray-700/50 transition-colors">Resources</Link>
+                <Link href="/faq" className="block px-3 py-2 text-gray-300 font-medium rounded-lg hover:bg-gray-700/50 transition-colors">FAQ</Link>
                 {user ? (
                   <>
                     <div className="flex items-center gap-3 px-3 py-3 rounded-lg bg-gray-700/40 border border-gray-700">
@@ -724,13 +733,14 @@ export default function App() {
         </AnimatePresence>
       </motion.nav>
 
+      <main>
       {/* Hero Section - AI Agent Demo */}
       <section className="min-h-screen pt-24 pb-20 relative z-10 flex items-center">
         <AgentDemoHero />
       </section>
 
       {/* Features Section */}
-      <section className="py-24 bg-gray-900/50 relative z-10">
+      <section id="features" className="py-24 bg-gray-900/50 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             className="text-center mb-20"
@@ -755,7 +765,9 @@ export default function App() {
                 <div className="w-14 h-14 rounded-xl bg-[#f46530]/10 flex items-center justify-center mb-6 text-[#f46530] group-hover:bg-[#f46530]/20 group-hover:text-[#f46530] transition-colors">
                   <feature.icon size={28} />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-[#f46530] transition-colors">{feature.title}</h3>
+                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-[#f46530] transition-colors">
+                  <Link href={feature.href}>{feature.title}</Link>
+                </h3>
                 <p className="text-gray-400 leading-relaxed">{feature.desc}</p>
               </motion.div>
             ))}
@@ -842,6 +854,7 @@ export default function App() {
           </p>
         </div>
       </section>
+      </main>
 
       {/* Footer */}
       <Footer />

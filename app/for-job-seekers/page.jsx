@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import Footer from '@/components/Footer';
+import { createMetadata } from '@/lib/seo';
 
-export const metadata = {
+export const metadata = createMetadata({
   title: 'Stand Out — Let Recruiters Talk to Your AI | Qlynk',
   description: 'Create an interactive AI resume that answers recruiter questions and showcases why you are the right fit.',
-};
+  path: '/for-job-seekers',
+});
 
 export default function ForJobSeekers() {
   return (

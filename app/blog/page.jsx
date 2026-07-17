@@ -1,12 +1,14 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import Footer from '@/components/Footer';
-import { ArrowRight, BookOpen, Lightbulb, HelpCircle } from 'lucide-react';
+import { ArrowRight, BookOpen, Lightbulb, HelpCircle, MessagesSquare } from 'lucide-react';
+import { createMetadata } from '@/lib/seo';
 
-export const metadata = {
+export const metadata = createMetadata({
   title: 'Qlynk Resources & Blog | AI Clone Guides & Insights',
   description: 'Learn about AI clones, how to create them, and why they\'re the future of personal professional presence.',
-};
+  path: '/blog',
+});
 
 const resources = [
   {
@@ -36,6 +38,15 @@ const resources = [
     readTime: '4 min read',
     color: 'orange',
   },
+  {
+    slug: 'ai-clone-vs-chatgpt',
+    title: 'AI Clone vs ChatGPT',
+    description: 'When to use a personal AI clone and when a general-purpose AI assistant is the better fit.',
+    icon: MessagesSquare,
+    category: 'Comparison',
+    readTime: '5 min read',
+    color: 'blue',
+  },
 ];
 
 export default function BlogIndex() {
@@ -50,7 +61,7 @@ export default function BlogIndex() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center group">
-              <Image src="/logoWhite.svg" alt="qlynk logo" width={100} height={40} priority />
+              <Image src="/logoWhite.svg" alt="Qlynk AI logo" width={100} height={40} priority />
             </Link>
             <Link href="/" className="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-white transition-colors">
               <ArrowRight size={16} className="rotate-180" />

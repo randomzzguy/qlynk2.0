@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import Footer from '@/components/Footer';
+import { createMetadata } from '@/lib/seo';
 
-export const metadata = {
+export const metadata = createMetadata({
   title: 'AI Clone for Freelancers — Capture Leads While You Sleep | Qlynk',
   description: 'Create a personal AI agent that showcases your services, answers client questions, and books consultations 24/7.',
-};
+  path: '/for-freelancers',
+});
 
 export default function ForFreelancers() {
   return (

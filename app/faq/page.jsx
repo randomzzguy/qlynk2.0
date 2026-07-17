@@ -1,111 +1,128 @@
 import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
 import Footer from '@/components/Footer';
+import JsonLd from '@/components/JsonLd';
+import { breadcrumbSchema, createMetadata } from '@/lib/seo';
 
-export const metadata = {
-  title: 'FAQ - Qlynk | Frequently Asked Questions',
-  description: 'Find answers to common questions about Qlynk, the personal AI agent platform. Learn how to create your AI clone, customize responses, and pricing.',
-};
+export const metadata = createMetadata({
+  title: 'Qlynk AI FAQ | Personal AI Agent Questions',
+  description: 'Get clear answers about Qlynk AI, personal AI agents, AI clones, training data, availability, customization, privacy, and pricing.',
+  path: '/faq',
+});
+
+const faqs = [
+  {
+    category: "General",
+    items: [
+      {
+        q: "What is Qlynk?",
+        a: "Qlynk AI is a personal AI agent platform. It lets you create an AI clone trained on the professional knowledge you choose to provide, so visitors can learn about you, ask questions, and find the right next step at your personal qlynk.site/username link."
+      },
+      {
+        q: "How does Qlynk work?",
+        a: "Claim your qlynk.site/username address, add your bio, experience, projects, FAQs, links, and supported documents, then publish and share your Qlynk AI agent. You can update its knowledge and settings from the dashboard."
+      },
+      {
+        q: "Who is Qlynk for?",
+        a: "Qlynk AI is built for freelancers, consultants, founders, creators, job seekers, professionals, and expert-led businesses that want a conversational way to explain their work online."
+      },
+      {
+        q: "Is Qlynk an AI chatbot?",
+        a: "Qlynk uses conversational AI, but it is designed as a personal AI agent rather than a generic scripted chatbot. It represents the knowledge and professional context its owner provides."
+      },
+      {
+        q: "How is Qlynk different from ChatGPT?",
+        a: "ChatGPT is a general-purpose AI assistant. A Qlynk Agent is a published, branded personal AI experience focused on one person or business, using owner-provided knowledge, links, instructions, and visitor insights."
+      },
+      {
+        q: "Can my AI answer questions while I am offline?",
+        a: "Yes. Once your Qlynk Agent is published and active, visitors can use it while you are away from your computer. Qlynk is a web service, so visitors still need an internet connection and your agent must remain enabled."
+      },
+      {
+        q: "What data can I train my AI with?",
+        a: "You can add structured profile information, a bio, skills, projects, social and booking links, FAQs, additional instructions, and supported documents. Only provide information you have the right to use and want the agent to know."
+      },
+      {
+        q: "How much does Qlynk cost?",
+        a: "Qlynk offers a 14-day free trial with no charge today. After the trial, you can choose a plan based on your message, document, branding, analytics, and agent needs. Current details are available on the Pricing page."
+      },
+      {
+        q: "How long does setup take?",
+        a: "The initial setup is designed to take only a few minutes. The time needed to fully train your AI clone depends on how much professional knowledge and supporting material you add."
+      }
+    ]
+  },
+  {
+    category: "Features",
+    items: [
+      {
+        q: "Can I customize my AI agent's responses?",
+        a: "Yes. You can manage its knowledge, additional instructions, welcome message, identity, appearance, and supporting links. You remain responsible for reviewing the information you provide and how the agent is used."
+      },
+      {
+        q: "What can visitors do with my AI clone?",
+        a: "Visitors can ask about your work, skills, experience, services, products, and projects; follow relevant links; and use the contact or booking paths you provide."
+      },
+      {
+        q: "Can I see what people are asking?",
+        a: "Yes. Qlynk provides conversation and engagement insights so you can understand popular questions and improve the information available to visitors."
+      },
+      {
+        q: "Can I update my AI agent's knowledge?",
+        a: "Yes. You can add, edit, or remove knowledge from your dashboard as your work and priorities change."
+      }
+    ]
+  },
+  {
+    category: "Privacy & Security",
+    items: [
+      {
+        q: "How do I keep private information out of my agent?",
+        a: "Only add information that you want the agent to use, review documents before uploading them, and remove knowledge that should no longer be available. Do not upload secrets or information you are not authorized to process."
+      },
+      {
+        q: "Can I control whether my AI clone is live?",
+        a: "Yes. Agent owners can manage their agent configuration and availability from the authenticated dashboard."
+      }
+    ]
+  },
+  {
+    category: "Sharing & Access",
+    items: [
+      {
+        q: "Does Qlynk work on mobile?",
+        a: "Yes. Public Qlynk Agent pages are designed to work on desktop, tablet, and mobile browsers."
+      },
+      {
+        q: "Can I share my Qlynk link on social media?",
+        a: "Yes. Your qlynk.site/username link can be added to social profiles, portfolios, email signatures, and other places where people discover your work."
+      },
+      {
+        q: "Can I use my own domain?",
+        a: "Custom domain support is included in the Agency plan. See the Pricing page for the current plan details."
+      }
+    ]
+  }
+];
 
 export default function FAQPage() {
-  const faqs = [
-    {
-      category: "General",
-      items: [
-        {
-          q: "What is Qlynk?",
-          a: "Qlynk lets you create a personal AI agent (an \"AI clone\") trained on your knowledge and expertise. Visitors can chat with your AI to learn about you, ask questions, and book meetings — available 24/7 at your personal qlynk.site/username link."
-        },
-        {
-          q: "How does Qlynk work?",
-          a: "Three simple steps:\n1. Sign up and claim your unique qlynk.site/username URL\n2. Train your agent by uploading your bio, resume, projects, and documents\n3. Share your link — visitors chat with your AI while you sleep, work, or play"
-        },
-        {
-          q: "How much does Qlynk cost?",
-          a: "Qlynk offers a 14-day free trial with no charge today. After the trial, choose from flexible plans based on your needs."
-        },
-        {
-          q: "How long does setup take?",
-          a: "Most users have their AI clone live in under 5 minutes. Just sign up, upload your content, and share your link."
-        }
-      ]
-    },
-    {
-      category: "Features",
-      items: [
-        {
-          q: "Can I customize my AI agent's responses?",
-          a: "Yes! You can customize your agent's personality, responses, and appearance to match your personal brand. You control what it knows and how it responds."
-        },
-        {
-          q: "What can visitors do with my AI clone?",
-          a: "Visitors can:\n• Ask questions about your work, skills, and experience\n• Learn about your services or products\n• Request information about specific projects\n• Book meetings or consultations\n• Get instant answers 24/7"
-        },
-        {
-          q: "Can I see what people are asking?",
-          a: "Yes. Qlynk provides a dashboard with conversation insights, popular topics, and engagement metrics. You'll know exactly what visitors are interested in."
-        },
-        {
-          q: "Can I update my AI agent's knowledge?",
-          a: "Absolutely. You can add, edit, or remove content at any time. Your AI agent learns from every update."
-        }
-      ]
-    },
-    {
-      category: "Privacy & Security",
-      items: [
-        {
-          q: "Is my data safe?",
-          a: "Yes. You control exactly what information your AI agent has access to. You upload only what you want it to know, and you can update or remove content at any time."
-        },
-        {
-          q: "Can I control what my AI clone says?",
-          a: "Yes. You set the boundaries for your AI agent's responses. It only shares information you've provided and can be configured to redirect certain topics to you directly."
-        },
-        {
-          q: "Will my AI clone share private information?",
-          a: "No. Your AI agent only has access to information you explicitly provide. It won't share anything you haven't approved."
-        }
-      ]
-    },
-    {
-      category: "Use Cases",
-      items: [
-        {
-          q: "Who is Qlynk for?",
-          a: "Qlynk is built for:\n• Freelancers — showcase services and capture leads 24/7\n• Founders — answer investor and customer questions automatically\n• Creators — engage your audience with personalized interactions\n• Job seekers — stand out with an interactive resume\n• Professionals — let your AI handle initial inquiries"
-        },
-        {
-          q: "Can I use Qlynk for my business?",
-          a: "Qlynk is designed for personal branding and individual professionals. For team or enterprise use, contact us for custom solutions."
-        },
-        {
-          q: "Can I share my Qlynk link on social media?",
-          a: "Absolutely. Your qlynk.site/username link works everywhere — Twitter, LinkedIn, Instagram, email signatures, business cards, and more."
-        }
-      ]
-    },
-    {
-      category: "Technical",
-      items: [
-        {
-          q: "Does Qlynk work on mobile?",
-          a: "Yes. Your AI clone works perfectly on any device — desktop, tablet, or mobile."
-        },
-        {
-          q: "What languages does Qlynk support?",
-          a: "Qlynk supports multiple languages. Your AI agent can communicate in the language your visitors prefer."
-        },
-        {
-          q: "Can I use my own domain?",
-          a: "Custom domain support is available on premium plans. You can use your own domain instead of qlynk.site/username."
-        }
-      ]
-    }
-  ];
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.flatMap((section) => section.items).map((item) => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.a,
+      },
+    })),
+  };
 
   return (
     <div className="min-h-screen bg-black text-white py-24 px-6 relative overflow-hidden">
+      <JsonLd data={faqSchema} />
+      <JsonLd data={breadcrumbSchema([{ name: 'Home', path: '/' }, { name: 'FAQ', path: '/faq' }])} />
       {/* Background glowing effects */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/20 rounded-full blur-[120px] pointer-events-none" />

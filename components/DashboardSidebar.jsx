@@ -128,7 +128,7 @@ export default function DashboardSidebar({ onSignOut, isOpen, onClose, username,
               </div>
               <Image 
                 src="/logoWhite.svg" 
-                alt="qlynk logo" 
+                alt="Qlynk AI logo"
                 width={90} 
                 height={26} 
                 priority

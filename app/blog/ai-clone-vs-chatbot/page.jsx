@@ -1,14 +1,29 @@
 import Link from 'next/link';
 import Footer from '@/components/Footer';
+import JsonLd from '@/components/JsonLd';
+import { breadcrumbSchema, createMetadata, SITE_URL } from '@/lib/seo';
 
-export const metadata = {
+export const metadata = createMetadata({
   title: 'AI Clone vs Chatbot: What\'s the Difference? | Qlynk',
   description: 'Understand the key differences between AI clones and chatbots. Learn why personal AI agents are revolutionizing how professionals engage with their audience.',
-};
+  path: '/blog/ai-clone-vs-chatbot',
+  type: 'article',
+});
 
 export default function AICloneVsChatbot() {
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: "AI Clone vs Chatbot: What's the Difference?",
+        description: metadata.description,
+        mainEntityOfPage: `${SITE_URL}/blog/ai-clone-vs-chatbot`,
+        publisher: { '@id': `${SITE_URL}/#organization` },
+        image: `${SITE_URL}/og-image.png`,
+        inLanguage: 'en',
+      }} />
+      <JsonLd data={breadcrumbSchema([{ name: 'Home', path: '/' }, { name: 'Blog', path: '/blog' }, { name: 'AI Clone vs Chatbot', path: '/blog/ai-clone-vs-chatbot' }])} />
       {/* Background gradients */}
       <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] bg-orange-500/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-teal-500/10 rounded-full blur-[120px] pointer-events-none" />

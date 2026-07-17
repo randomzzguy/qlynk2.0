@@ -307,7 +307,7 @@ export default function SettingsPage() {
             <div className="relative group">
               <div className="w-32 h-32 rounded-3xl bg-white/5 border-2 border-white/10 overflow-hidden flex items-center justify-center relative shadow-2xl group-hover:border-[#f46530]/50 transition-all">
                 {avatarUrl ? (
-                  <Image src={avatarUrl} alt="Profile" width={128} height={128} className="w-full h-full object-cover" />
+                  <Image src={avatarUrl} alt="User profile avatar" width={128} height={128} className="w-full h-full object-cover" />
                 ) : (
                   <User size={48} className="text-gray-700" />
                 )}

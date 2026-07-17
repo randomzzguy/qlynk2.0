@@ -20,7 +20,7 @@ function VerifyEmailContent() {
         <Link href="/" className="flex items-center justify-center mb-8 group">
           <Image
             src="/logoWhite.svg"
-            alt="qlynk logo"
+            alt="Qlynk AI logo"
             width={125}
             height={50}
             priority

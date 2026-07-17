@@ -3,7 +3,17 @@ export default function robots() {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/auth/', '/api/', '/dashboard/', '/admin/'],
+      disallow: [
+        '/auth/',
+        '/api/',
+        '/dashboard/',
+        '/admin/',
+        '/create',
+        '/onboarding',
+        '/premium-themes',
+        '/preview/',
+        '/embed/',
+      ],
     },
     sitemap: 'https://www.qlynk.site/sitemap.xml',
   }

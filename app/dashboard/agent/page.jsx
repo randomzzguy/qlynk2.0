@@ -630,7 +630,7 @@ export function AgentConfigPage({ sectionOverride = null }) {
                     {config.agent_avatar ? (
                       <Image
                         src={config.agent_avatar}
-                        alt="Avatar"
+                        alt="AI agent avatar preview"
                         fill
                         className="object-cover"
                         sizes="64px"

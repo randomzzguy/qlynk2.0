@@ -19,7 +19,7 @@ export default function PrivacyPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center group">
-              <Image src="/logoWhite.svg" alt="qlynk logo" width={100} height={40} priority />
+              <Image src="/logoWhite.svg" alt="Qlynk AI logo" width={100} height={40} priority />
             </Link>
             <Link href="/" className="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-white transition-colors">
               <ArrowLeft size={16} />

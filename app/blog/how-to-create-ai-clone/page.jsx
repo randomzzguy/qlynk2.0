@@ -1,14 +1,34 @@
 import Link from 'next/link';
 import Footer from '@/components/Footer';
+import JsonLd from '@/components/JsonLd';
+import { breadcrumbSchema, createMetadata, SITE_URL } from '@/lib/seo';
 
-export const metadata = {
+export const metadata = createMetadata({
   title: 'How to Create Your AI Clone in 5 Minutes | Qlynk',
   description: 'Step-by-step guide to creating your personal AI agent. Learn how to train your AI clone, customize its personality, and share it with the world.',
-};
+  path: '/blog/how-to-create-ai-clone',
+  type: 'article',
+});
 
 export default function HowToCreateAIClone() {
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'HowTo',
+        name: 'How to Create Your AI Clone',
+        description: metadata.description,
+        image: `${SITE_URL}/og-image.png`,
+        totalTime: 'PT5M',
+        step: [
+          { '@type': 'HowToStep', position: 1, name: 'Sign up and claim your URL', url: `${SITE_URL}/blog/how-to-create-ai-clone#step-1` },
+          { '@type': 'HowToStep', position: 2, name: 'Upload your knowledge', url: `${SITE_URL}/blog/how-to-create-ai-clone#step-2` },
+          { '@type': 'HowToStep', position: 3, name: "Customize your AI's personality", url: `${SITE_URL}/blog/how-to-create-ai-clone#step-3` },
+          { '@type': 'HowToStep', position: 4, name: 'Test your AI clone', url: `${SITE_URL}/blog/how-to-create-ai-clone#step-4` },
+          { '@type': 'HowToStep', position: 5, name: 'Share your link', url: `${SITE_URL}/blog/how-to-create-ai-clone#step-5` },
+        ],
+      }} />
+      <JsonLd data={breadcrumbSchema([{ name: 'Home', path: '/' }, { name: 'Blog', path: '/blog' }, { name: 'How to Create an AI Clone', path: '/blog/how-to-create-ai-clone' }])} />
       {/* Background gradients */}
       <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px] pointer-events-none" />
@@ -55,7 +75,7 @@ export default function HowToCreateAIClone() {
               <p className="mt-6 text-gray-400 italic">Don't have everything perfectly organized? That's fine. You can always add more content later.</p>
             </div>
 
-            <h2 className="text-3xl font-semibold text-white mt-12 mb-6">Step 1: Sign Up and Claim Your URL</h2>
+            <h2 id="step-1" className="text-3xl font-semibold text-white mt-12 mb-6">Step 1: Sign Up and Claim Your URL</h2>
             <p>
               Go to <Link href="/" className="text-blue-400 hover:text-blue-300 underline">qlynk.site</Link> and create your account.
             </p>
@@ -66,7 +86,7 @@ export default function HowToCreateAIClone() {
               This is the link you'll share everywhere — social media, email signatures, business cards. Choose something professional and memorable. Your name is usually the best choice.
             </p>
 
-            <h2 className="text-3xl font-semibold text-white mt-12 mb-6">Step 2: Upload Your Knowledge</h2>
+            <h2 id="step-2" className="text-3xl font-semibold text-white mt-12 mb-6">Step 2: Upload Your Knowledge</h2>
             <p>This is where the magic happens. Your AI agent learns from the content you provide.</p>
             
             <div className="grid md:grid-cols-2 gap-6 mt-6">
@@ -92,7 +112,7 @@ export default function HowToCreateAIClone() {
               <strong>Pro tip:</strong> Quality matters more than quantity. A well-written bio is worth more than a dump of random documents. Focus on the information you'd want your AI to share with visitors.
             </p>
 
-            <h2 className="text-3xl font-semibold text-white mt-12 mb-6">Step 3: Customize Your AI's Personality</h2>
+            <h2 id="step-3" className="text-3xl font-semibold text-white mt-12 mb-6">Step 3: Customize Your AI's Personality</h2>
             <p>Your AI clone should feel like <em>you</em>, not a generic chatbot.</p>
             <ul className="space-y-4 list-none pl-0">
               <li className="flex gap-4"><span className="text-2xl">🎭</span> <div><strong className="text-white">Tone:</strong> Professional? Casual? Friendly? Technical?</div></li>
@@ -100,7 +120,7 @@ export default function HowToCreateAIClone() {
               <li className="flex gap-4"><span className="text-2xl">🛡️</span> <div><strong className="text-white">Boundaries:</strong> What should it redirect to you? What topics are off-limits?</div></li>
             </ul>
 
-            <h2 className="text-3xl font-semibold text-white mt-12 mb-6">Step 4: Test Your AI Clone</h2>
+            <h2 id="step-4" className="text-3xl font-semibold text-white mt-12 mb-6">Step 4: Test Your AI Clone</h2>
             <p>Before going live, have a conversation with your own AI clone. Ask it:</p>
             <div className="bg-black border border-white/10 rounded-xl p-6 font-mono text-sm text-gray-300">
               <p className="mb-2">&gt; "What do you do?"</p>
@@ -110,7 +130,7 @@ export default function HowToCreateAIClone() {
             </div>
             <p className="mt-4">See how it responds. If something feels off, go back and adjust your training content. This is an iterative process.</p>
 
-            <h2 className="text-3xl font-semibold text-white mt-12 mb-6">Step 5: Share Your Link</h2>
+            <h2 id="step-5" className="text-3xl font-semibold text-white mt-12 mb-6">Step 5: Share Your Link</h2>
             <p>Your AI clone is live. Now get it in front of people. Drop the link in your Twitter bio, LinkedIn featured section, email signature, and portfolio.</p>
 
             <h2 className="text-3xl font-semibold text-white mt-12 mb-6">After Launch: How to Improve Your AI Clone</h2>

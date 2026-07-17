@@ -128,7 +128,7 @@ export default function DashboardLayout({ children }) {
         <Link href="/" className="group py-2">
           <Image 
             src="/logoWhite.svg" 
-            alt="qlynk logo" 
+            alt="Qlynk AI logo"
             width={100} 
             height={30} 
             priority

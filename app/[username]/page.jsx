@@ -17,7 +17,7 @@ export async function generateMetadata({ params }) {
 
   const { data: profile } = await supabase
     .from('profiles_public')
-    .select('id, full_name')
+    .select('id, username, full_name')
     .ilike('username', username)
     .single();
 
@@ -25,27 +25,41 @@ export async function generateMetadata({ params }) {
     return {
       title: `${username} | Qlynk`,
       description: 'Create your own digital twin and AI representative.',
+      robots: { index: false, follow: false },
     };
   }
 
   const { data: agentConfig } = await supabase
     .from('agent_configs_public')
-    .select('agent_name, bio, agent_avatar')
+    .select('agent_name, bio, agent_avatar, access_level')
     .eq('user_id', profile.id)
     .single();
+
+  const isPublicAndLive =
+    (!agentConfig?.access_level || agentConfig.access_level === 'public') &&
+    await isAgentLive(profile.id, createAdminClient());
 
   const title = `${profile.full_name || username} | Qlynk AI`;
   const description = agentConfig?.bio || `Chat with the digital twin of ${username}. Learn about their work, background, and expertise.`;
   const image = agentConfig?.agent_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`;
+  const canonicalUsername = profile.username || username;
 
   return {
     title,
     description,
+    robots: isPublicAndLive
+      ? { index: true, follow: true }
+      : { index: false, follow: false },
+    alternates: {
+      canonical: `https://www.qlynk.site/${encodeURIComponent(canonicalUsername)}`,
+    },
     openGraph: {
       title,
       description,
       images: [{ url: image }],
       type: 'website',
+      url: `https://www.qlynk.site/${encodeURIComponent(canonicalUsername)}`,
+      siteName: 'Qlynk AI',
     },
     twitter: {
       card: 'summary_large_image',

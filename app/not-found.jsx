@@ -24,7 +24,7 @@ export default function NotFound() {
           <Link href="/" className="inline-block mb-12">
             <Image 
               src="/logoWhite.svg" 
-              alt="qlynk logo" 
+              alt="Qlynk AI logo"
               width={140} 
               height={50} 
               priority 

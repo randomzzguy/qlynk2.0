@@ -1,10 +1,18 @@
 import { createAdminClient } from '@/utils/supabase/server';
+import { createHash } from 'node:crypto';
 import { buildAgentSystemPrompt, getAgentKnowledge } from '@/lib/agent';
 import { getMessageLimit, isSubscriptionLive, normalizeTier } from '@/lib/plans';
-import { rateLimitResponse } from '@/lib/rate-limit';
+import { checkRateLimitKey, rateLimitResponse, rateLimitResponseForKey } from '@/lib/rate-limit';
 import { sendEmail } from '@/lib/email/send';
 import { newMessageEmail } from '@/lib/email/templates/new-message';
 import { compare } from 'bcryptjs';
+import {
+  buildScopeClassifierPrompt,
+  detectDirectPolicyAttack,
+  getScopeRefusalMessage,
+  parseScopeDecision,
+} from '@/lib/agent-prompt';
+import { normalizeAgentRules } from '@/lib/agent-rules';
 
 export const maxDuration = 30;
 
@@ -12,12 +20,84 @@ const MAX_REQUEST_CHARS = 64_000;
 const MAX_HISTORY_MESSAGES = 20;
 const MAX_MESSAGE_CHARS = 4_000;
 const MAX_TOTAL_MESSAGE_CHARS = 24_000;
+const MAX_OUTPUT_TOKENS = 800;
+const VISITOR_REQUESTS_PER_MINUTE = 10;
+const VISITOR_REQUESTS_PER_DAY = 100;
+const AGENT_REQUESTS_PER_MINUTE = 120;
+const POLICY_BLOCKS_PER_HOUR = 5;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const USERNAME_PATTERN = /^[a-z0-9_-]{3,30}$/i;
 const UNSAFE_CONTROL_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
 
 function jsonError(error, status) {
   return Response.json({ error }, { status });
+}
+
+function hashSecurityIdentifier(value) {
+  return createHash('sha256').update(value).digest('hex');
+}
+
+async function classifyRequestScope({ config, rules, latestMessage, trustedHistory }) {
+  const classifierPrompt = buildScopeClassifierPrompt({
+    config,
+    rules,
+    message: latestMessage.content,
+    recentUserMessages: trustedHistory
+      .filter((message) => message.role === 'user')
+      .slice(-3)
+      .map((message) => message.content),
+  });
+
+  try {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'llama-3.1-8b-instant',
+        messages: [{ role: 'system', content: classifierPrompt }],
+        temperature: 0,
+        max_tokens: 10,
+      }),
+    });
+
+    if (!response.ok) throw new Error(`Scope classifier returned ${response.status}`);
+    const data = await response.json();
+    return parseScopeDecision(data.choices?.[0]?.message?.content, rules.scope_mode);
+  } catch (error) {
+    console.error('[AI Chat] Scope classifier unavailable:', error.message);
+    return rules.scope_mode === 'strict' ? 'BLOCK_SCOPE' : 'ALLOW';
+  }
+}
+
+async function createStaticAssistantResponse({ content, conversationId, adminSupabase }) {
+  const { error } = await adminSupabase.from('agent_messages').insert({
+    conversation_id: conversationId,
+    role: 'assistant',
+    content,
+  });
+
+  if (error) console.error('[AI Chat] Failed to save scoped refusal:', error.message);
+
+  const encoder = new TextEncoder();
+  const body = new ReadableStream({
+    start(controller) {
+      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ choices: [{ delta: { content } }] })}\n\n`));
+      controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+      controller.close();
+    },
+  });
+
+  return new Response(body, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'x-conversation-id': conversationId || '',
+    },
+  });
 }
 
 async function parseChatRequest(req) {
@@ -282,9 +362,6 @@ export async function POST(req) {
     }
 
     const messageLimit = getMessageLimit(tier);
-    if ((subscription.messages_used || 0) >= messageLimit) {
-      return jsonError('This agent has reached its monthly message limit', 429);
-    }
 
     const accessLevel = config.access_level || 'public';
     if (accessLevel === 'password') {
@@ -306,9 +383,51 @@ export async function POST(req) {
       return jsonError('A valid email is required to chat with this agent', 403);
     }
 
-    // Handle knowledge base and prompt
-    const { knowledge: documents } = await getAgentKnowledge(profile.id, adminSupabase);
-    const systemPrompt = buildAgentSystemPrompt(config, documents);
+    const { data: ownerRules, error: ownerRulesError } = await adminSupabase
+      .from('agent_rule_configs')
+      .select('purpose, audience, allowed_topics, blocked_topics, behavior_rules, forbidden_behaviors, uncertainty_message, escalation_message, custom_instructions, response_length, scope_mode, daily_message_limit, prompt_version')
+      .eq('user_id', profile.id)
+      .maybeSingle();
+
+    if (ownerRulesError) {
+      console.error('[AI Chat] Failed to load private agent rules:', ownerRulesError.message);
+      return jsonError('Agent rules are temporarily unavailable', 503);
+    }
+    const effectiveRules = normalizeAgentRules(ownerRules || {}, config.agent_type || 'personal');
+
+    const agentBurstLimit = await rateLimitResponseForKey(
+      profile.id,
+      'ai-chat-agent-minute',
+      AGENT_REQUESTS_PER_MINUTE,
+      60 * 1000
+    );
+    if (agentBurstLimit) return agentBurstLimit;
+
+    const visitorMinuteLimit = await rateLimitResponseForKey(
+      `${profile.id}:${visitorId}`,
+      'ai-chat-visitor-minute',
+      VISITOR_REQUESTS_PER_MINUTE,
+      60 * 1000
+    );
+    if (visitorMinuteLimit) return visitorMinuteLimit;
+
+    const visitorDailyLimit = await rateLimitResponseForKey(
+      `${profile.id}:${visitorId}`,
+      'ai-chat-visitor-day',
+      VISITOR_REQUESTS_PER_DAY,
+      24 * 60 * 60 * 1000
+    );
+    if (visitorDailyLimit) return visitorDailyLimit;
+
+    if (effectiveRules.daily_message_limit) {
+      const agentDailyLimit = await rateLimitResponseForKey(
+        profile.id,
+        'ai-chat-agent-day',
+        Math.min(effectiveRules.daily_message_limit, messageLimit),
+        24 * 60 * 60 * 1000
+      );
+      if (agentDailyLimit) return agentDailyLimit;
+    }
 
     // 1. CONVERSATION TRACKING
     let activeConversationId = conversationId;
@@ -349,6 +468,19 @@ export async function POST(req) {
           role: message.role,
           content: String(message.content || '').slice(0, MAX_MESSAGE_CHARS),
         }));
+    }
+
+    const { data: creditRows, error: creditError } = await adminSupabase.rpc('consume_agent_message_credit', {
+      p_owner_id: profile.id,
+      p_message_limit: messageLimit,
+    });
+    const credit = creditRows?.[0];
+    if (creditError || !credit) {
+      console.error('[AI Chat] Unable to reserve message credit:', creditError?.message || 'No result');
+      return jsonError('Unable to verify agent usage right now', 503);
+    }
+    if (!credit.allowed) {
+      return jsonError('This agent has reached its monthly message limit', 429);
     }
 
     if (!activeConversationId) {
@@ -410,6 +542,55 @@ export async function POST(req) {
       }
     }
 
+    const scopeDecision = detectDirectPolicyAttack(latestMessage.content)
+      || await classifyRequestScope({
+        config,
+        rules: effectiveRules,
+        latestMessage,
+        trustedHistory,
+      });
+
+    if (scopeDecision !== 'ALLOW') {
+      const directAttack = Boolean(detectDirectPolicyAttack(latestMessage.content));
+      const eventType = scopeDecision === 'BLOCK_SAFETY'
+        ? 'safety'
+        : directAttack ? 'prompt_injection' : 'off_topic';
+      const visitorSecurityKey = `${profile.id}:${visitorId}`;
+      const blockLimit = await checkRateLimitKey(
+        visitorSecurityKey,
+        'ai-chat-policy-blocks',
+        POLICY_BLOCKS_PER_HOUR,
+        60 * 60 * 1000
+      );
+
+      adminSupabase.from('agent_security_events').insert({
+        agent_owner_id: profile.id,
+        event_type: eventType,
+        visitor_key_hash: hashSecurityIdentifier(visitorSecurityKey),
+        metadata: {
+          agent_type: config.agent_type || 'personal',
+          prompt_version: ownerRules?.prompt_version || 0,
+        },
+      }).then(() => {}).catch((error) => {
+        console.error('[AI Chat] Failed to record security event:', error.message);
+      });
+
+      return createStaticAssistantResponse({
+        content: blockLimit.allowed
+          ? getScopeRefusalMessage(effectiveRules, scopeDecision)
+          : 'This visitor has made too many blocked requests. Please wait before trying again or contact the agent owner.',
+        conversationId: activeConversationId,
+        adminSupabase,
+      });
+    }
+
+    const knowledgeQuery = [
+      ...trustedHistory.filter((message) => message.role === 'user').slice(-2).map((message) => message.content),
+      latestMessage.content,
+    ].join('\n');
+    const { knowledge: documents } = await getAgentKnowledge(profile.id, adminSupabase, knowledgeQuery);
+    const systemPrompt = buildAgentSystemPrompt(config, documents, effectiveRules);
+
     // TALK DIRECTLY TO GROQ
     const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -424,6 +605,8 @@ export async function POST(req) {
           ...trustedHistory,
           latestMessage,
         ],
+        temperature: 0.35,
+        max_tokens: MAX_OUTPUT_TOKENS,
         stream: true,
       }),
     });

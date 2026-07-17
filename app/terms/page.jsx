@@ -91,6 +91,9 @@ export default function TermsPage() {
                 <p className="leading-relaxed">
                   Qlynk Agent responses are generated automatically and may be incomplete, inaccurate, or inappropriate. They are not professional legal, medical, financial, or other regulated advice. You are responsible for the content and instructions supplied to your agent, for having the rights and permissions needed to process that content, and for how you use or rely on generated responses. You must not configure an agent to impersonate another person deceptively or make decisions that require qualified human judgment.
                 </p>
+                <p className="leading-relaxed mt-4">
+                  Agent type and rule customization cannot override Qlynk&apos;s platform safeguards, access controls, usage limits, or prohibited-use requirements. We may refuse, rate-limit, or record privacy-minimized security events for attempts to bypass those controls or use a scoped agent as an unrestricted AI service.
+                </p>
               </section>
 
               <section>

@@ -40,6 +40,24 @@ async function createFixture(fixture) {
 
   await requireResult(admin.from('profiles').upsert({ id: fixture.id, username: fixture.username, full_name: `Smoke ${fixture.label}` }), `profile ${fixture.label}`);
   await requireResult(admin.from('agent_configs').upsert({ user_id: fixture.id, agent_name: `Smoke Agent ${fixture.label}`, is_enabled: true }), `agent ${fixture.label}`);
+  await requireResult(admin.rpc('save_agent_rule_config', {
+    p_owner_id: fixture.id,
+    p_agent_type: 'operations',
+    p_rules: {
+      purpose: `Private operations purpose ${fixture.label}`,
+      audience: `Private audience ${fixture.label}`,
+      allowed_topics: ['smoke testing'],
+      blocked_topics: ['private data'],
+      behavior_rules: ['Use verified information'],
+      forbidden_behaviors: ['Do not guess'],
+      uncertainty_message: 'Escalate this question.',
+      escalation_message: 'Contact the owner.',
+      custom_instructions: `private-rule-${fixture.label}-${suffix}`,
+      response_length: 'balanced',
+      scope_mode: 'strict',
+      daily_message_limit: 50,
+    },
+  }), `private agent rules ${fixture.label}`);
   await requireResult(admin.from('subscriptions').upsert({
     user_id: fixture.id,
     tier: 'trial',
@@ -136,14 +154,23 @@ async function assertStorageIsolation(clientA, clientB, fixtureA) {
   assert(Boolean(foreignDownload.error) && !foreignDownload.data, 'B can download A storage object');
 }
 
+async function assertPrivateRuleIsolation(client, fixture) {
+  for (const [table, ownerColumn] of [['agent_rule_configs', 'user_id'], ['agent_rule_config_versions', 'user_id'], ['agent_security_events', 'agent_owner_id']]) {
+    const { data, error } = await client.from(table).select('*').eq(ownerColumn, fixture.id);
+    assert(Boolean(error) && !data, `${fixture.label} can access service-managed ${table} directly`);
+  }
+}
+
 let clients = [];
 try {
   for (const fixture of fixtures) await createFixture(fixture);
   clients = await Promise.all(fixtures.map(authenticatedClient));
   await assertOwnerIsolation(clients[0], fixtures[0], fixtures[1]);
   await assertOwnerIsolation(clients[1], fixtures[1], fixtures[0]);
+  await assertPrivateRuleIsolation(clients[0], fixtures[0]);
+  await assertPrivateRuleIsolation(clients[1], fixtures[1]);
   await assertStorageIsolation(clients[0], clients[1], fixtures[0]);
-  console.log('Production two-account isolation passed for profiles/deletion state, agents, knowledge, documents, subscriptions, conversations, messages, analytics, writes, and private Storage.');
+  console.log('Production two-account isolation passed for profiles/deletion state, agents, private rules/history, knowledge, documents, subscriptions, conversations, messages, analytics, writes, and private Storage.');
 } finally {
   for (const fixture of fixtures) {
     if (!fixture.id) continue;

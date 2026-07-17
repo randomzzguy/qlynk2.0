@@ -147,6 +147,14 @@ assert(
   !agentPublicColumns.rows.some((row) => row.column_name === 'access_password'),
   'Public agent view exposes access_password.'
 );
+assert(
+  agentPublicColumns.rows.some((row) => row.column_name === 'agent_type'),
+  'Public agent view does not expose the safe agent type label.'
+);
+assert(
+  !agentPublicColumns.rows.some((row) => ['custom_instructions', 'allowed_topics', 'blocked_topics'].includes(row.column_name)),
+  'Public agent view exposes private owner rules.'
+);
 
 const profilePublicColumns = await db.query(`
   SELECT column_name
@@ -225,6 +233,9 @@ const rlsTables = [
   'subscriptions',
   'stripe_webhook_events',
   'api_rate_limits',
+  'agent_rule_configs',
+  'agent_rule_config_versions',
+  'agent_security_events',
 ];
 const enabledRlsCount = await scalar(`
   SELECT count(*)::int AS value
@@ -237,7 +248,7 @@ const enabledRlsCount = await scalar(`
 assert(enabledRlsCount === rlsTables.length, 'RLS is not enabled on every sensitive table.');
 
 await db.exec('SET ROLE anon;');
-for (const table of ['agent_configs', 'agent_knowledge', 'profiles', 'subscriptions', 'stripe_webhook_events', 'api_rate_limits']) {
+for (const table of ['agent_configs', 'agent_knowledge', 'profiles', 'subscriptions', 'stripe_webhook_events', 'api_rate_limits', 'agent_rule_configs', 'agent_rule_config_versions', 'agent_security_events']) {
   let count = 0;
   try {
     count = await scalar(`SELECT count(*)::int AS value FROM public.${table}`);
@@ -277,6 +288,14 @@ assert(
   await scalar(`SELECT has_function_privilege('anon', 'public.check_api_rate_limit(text,text,integer,integer)', 'EXECUTE') AS value`) === false,
   'Anonymous role can execute the shared rate limiter.'
 );
+assert(
+  await scalar(`SELECT has_function_privilege('authenticated', 'public.save_agent_rule_config(uuid,text,jsonb)', 'EXECUTE') AS value`) === false,
+  'Authenticated clients can bypass the validated agent-rules API.'
+);
+assert(
+  await scalar(`SELECT has_function_privilege('authenticated', 'public.consume_agent_message_credit(uuid,integer)', 'EXECUTE') AS value`) === false,
+  'Authenticated clients can reserve or manipulate message credits.'
+);
 await db.exec('SET ROLE service_role;');
 const limiterKey = 'a'.repeat(64);
 const firstLimit = await db.query(`SELECT * FROM public.check_api_rate_limit('verification', '${limiterKey}', 2, 60)`);
@@ -285,6 +304,42 @@ const thirdLimit = await db.query(`SELECT * FROM public.check_api_rate_limit('ve
 assert(firstLimit.rows[0]?.allowed === true && firstLimit.rows[0]?.remaining === 1, 'First shared rate-limit request is incorrect.');
 assert(secondLimit.rows[0]?.allowed === true && secondLimit.rows[0]?.remaining === 0, 'Second shared rate-limit request is incorrect.');
 assert(thirdLimit.rows[0]?.allowed === false && thirdLimit.rows[0]?.remaining === 0, 'Shared rate limiter did not block excess traffic.');
+const savedPromptVersion = await scalar(`
+  SELECT public.save_agent_rule_config(
+    '${fixtureUserId}',
+    'property',
+    '{
+      "purpose":"Guide approved workers around the property.",
+      "audience":"Workers",
+      "allowed_topics":["chores","equipment"],
+      "blocked_topics":["access codes"],
+      "behavior_rules":["Use numbered steps"],
+      "forbidden_behaviors":["Do not guess"],
+      "uncertainty_message":"Ask the property manager.",
+      "escalation_message":"Contact the property manager.",
+      "custom_instructions":"Use room names exactly.",
+      "response_length":"balanced",
+      "scope_mode":"strict",
+      "daily_message_limit":50
+    }'::jsonb
+  ) AS value
+`);
+assert(savedPromptVersion === 1, 'Initial agent rule version was not created atomically.');
+assert(
+  await scalar(`SELECT agent_type = 'property' AS value FROM public.agent_configs WHERE user_id = '${fixtureUserId}'`) === true,
+  'Agent type was not updated with the private rules.'
+);
+assert(
+  await scalar(`SELECT count(*)::int AS value FROM public.agent_rule_config_versions WHERE user_id = '${fixtureUserId}'`) === 1,
+  'Agent rule version snapshot was not recorded.'
+);
+await db.exec(`UPDATE public.subscriptions SET messages_used = 0 WHERE user_id = '${fixtureUserId}'`);
+const firstCredit = await db.query(`SELECT * FROM public.consume_agent_message_credit('${fixtureUserId}', 2)`);
+const secondCredit = await db.query(`SELECT * FROM public.consume_agent_message_credit('${fixtureUserId}', 2)`);
+const thirdCredit = await db.query(`SELECT * FROM public.consume_agent_message_credit('${fixtureUserId}', 2)`);
+assert(firstCredit.rows[0]?.allowed === true && firstCredit.rows[0]?.messages_used === 1, 'First message credit reservation failed.');
+assert(secondCredit.rows[0]?.allowed === true && secondCredit.rows[0]?.messages_used === 2, 'Second message credit reservation failed.');
+assert(thirdCredit.rows[0]?.allowed === false && thirdCredit.rows[0]?.messages_used === 2, 'Atomic message quota allowed an excess request.');
 await db.exec('RESET ROLE;');
 assert(
   await scalar(`SELECT has_table_privilege('authenticated', 'public.subscriptions', 'SELECT') AS value`) === true,
@@ -327,6 +382,18 @@ assert(
 assert(
   await scalar(`SELECT has_table_privilege('authenticated', 'public.agent_access_credentials', 'SELECT') AS value`) === false,
   'Authenticated role can read password hashes.'
+);
+assert(
+  await scalar(`SELECT has_table_privilege('authenticated', 'public.agent_rule_configs', 'SELECT') AS value`) === false,
+  'Authenticated clients can read private agent rules directly.'
+);
+assert(
+  await scalar(`SELECT has_table_privilege('authenticated', 'public.agent_rule_config_versions', 'SELECT') AS value`) === false,
+  'Authenticated clients can read private rule history directly.'
+);
+assert(
+  await scalar(`SELECT has_table_privilege('authenticated', 'public.agent_security_events', 'SELECT') AS value`) === false,
+  'Authenticated clients can read private security events directly.'
 );
 
 await db.close();

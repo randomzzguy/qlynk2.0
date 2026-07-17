@@ -7,6 +7,7 @@ AI-powered agent platform that lets creators build personalized chatbots for the
 - **AI Chat Widget** - Embeddable chat agent that answers questions based on user knowledge
 - **Customizable Themes** - Dark tech aesthetic with color, position, and branding options
 - **Knowledge Base** - Upload documents, add custom facts, or scrape URLs
+- **Agent Types & Rules** - Personal, business, property, operations, product, support, and custom guides with structured scope controls
 - **Analytics Dashboard** - Track conversations, sentiment, and engagement
 - **Free Trial** - 14-day trial with automatic subscription management
 - **Stripe Integration** - Subscription billing with webhook support
@@ -82,6 +83,8 @@ npm audit --omit=dev --audit-level=high
 ```
 
 `npm test` contains focused regression coverage for safe URL scraping, document validation, Stripe plan activation, Stripe webhook idempotency, and trusted client-IP selection. `verify:migrations` executes every migration in embedded Postgres and verifies RLS, privileges, private views/storage, webhook isolation, and the shared rate limiter.
+
+Agent behavior is composed server-side in a fixed priority order: immutable Qlynk policy, approved agent-type template, validated owner rules, bounded relevant knowledge, and untrusted visitor messages. Owner rules and version history are service-managed private data and are never returned by the public agent view. Chat requests also use atomic monthly credit reservation, per-IP, per-agent, and per-visitor limits, optional owner daily caps, direct jailbreak detection, scope classification, and a fixed output-token ceiling.
 
 `npm run verify:env` validates `.env.local` as production configuration without printing secret values. Run the equivalent check against the deployment environment before promoting a release.
 

@@ -6,6 +6,7 @@ import QlynkBackground from '@/components/QlynkBackground';
 import FullPageChat from '@/components/FullPageChat';
 import { isAgentLive } from '@/lib/subscriptionHelpers';
 import { notFound } from 'next/navigation';
+import { getAgentTypeDefinition } from '@/lib/agent-type-catalog';
 
 // This tells Next.js to generate pages dynamically
 export const dynamic = 'force-dynamic';
@@ -31,7 +32,7 @@ export async function generateMetadata({ params }) {
 
   const { data: agentConfig } = await supabase
     .from('agent_configs_public')
-    .select('agent_name, bio, agent_avatar, access_level')
+    .select('agent_name, bio, agent_avatar, access_level, agent_type')
     .eq('user_id', profile.id)
     .single();
 
@@ -40,7 +41,10 @@ export async function generateMetadata({ params }) {
     await isAgentLive(profile.id, createAdminClient());
 
   const title = `${profile.full_name || username} | Qlynk AI`;
-  const description = agentConfig?.bio || `Chat with the digital twin of ${username}. Learn about their work, background, and expertise.`;
+  const typeDefinition = getAgentTypeDefinition(agentConfig?.agent_type);
+  const description = agentConfig?.bio || (typeDefinition.id === 'personal'
+    ? `Chat with the approved AI representative for ${username}. Learn about their work, background, and expertise.`
+    : `Chat with this ${typeDefinition.label.toLowerCase()} and explore its approved knowledge.`);
   const image = agentConfig?.agent_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`;
   const canonicalUsername = profile.username || username;
 

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { MessageCircle, X, Send, Bot, User, Loader2 } from 'lucide-react';
 import AgentResponseIndicator from '@/components/AgentResponseIndicator';
+import { getAgentTypeDefinition } from '@/lib/agent-type-catalog';
 
 export default function ChatWidget({ 
   username, 
@@ -13,9 +14,11 @@ export default function ChatWidget({
   primaryColor = '#f46530',
   position = 'bottom-right',
   accessLevel = 'public',
+  agentType = 'personal',
   tier,
   parentOrigin
 }) {
+  const agentTypeDefinition = getAgentTypeDefinition(agentType);
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [gatekeeperForm, setGatekeeperForm] = useState({ name: '', email: '', password: '' });
@@ -253,7 +256,7 @@ export default function ChatWidget({
                     ? 'Preparing response...'
                     : responsePhase === 'typing'
                       ? 'Typing...'
-                      : 'Online'}
+                      : `${agentTypeDefinition.shortLabel} agent online`}
                 </p>
               </div>
             </div>

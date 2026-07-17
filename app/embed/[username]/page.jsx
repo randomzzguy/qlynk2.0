@@ -71,6 +71,7 @@ export default async function EmbedPage({ params, searchParams }) {
           primaryColor={agentConfig.primary_color}
           position={agentConfig.position}
           accessLevel={agentConfig.access_level}
+          agentType={agentConfig.agent_type}
           tier={subscription?.tier}
           parentOrigin={parentOrigin}
         />

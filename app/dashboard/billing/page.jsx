@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { getCurrentUser, getCurrentProfile } from '@/lib/supabase';
-import { CreditCard, Zap, Check, ArrowRight, Loader2, Clock, FileText, Download, Receipt } from 'lucide-react';
+import { CreditCard, Zap, Check, ArrowRight, Loader2, Clock, FileText, Download, Receipt, AlertTriangle } from 'lucide-react';
 import { getTrialDaysRemaining, PLAN_LIMITS } from '@/lib/subscriptionHelpers';
 
 export default function BillingPage() {
@@ -179,6 +179,22 @@ export default function BillingPage() {
             <p className="text-sm text-gray-400">
               Resetting in {30 - new Date().getDate()} days
             </p>
+            {usagePercent >= 80 && (
+              <div className={`mt-5 p-4 rounded-2xl border flex items-start gap-3 ${usagePercent >= 100
+                ? 'bg-red-500/10 border-red-500/25'
+                : 'bg-amber-500/10 border-amber-500/25'}`}
+              >
+                <AlertTriangle className={usagePercent >= 100 ? 'text-red-400' : 'text-amber-400'} size={20} />
+                <div className="text-xs">
+                  <p className="text-white font-bold">
+                    {usagePercent >= 100 ? 'Monthly message limit reached' : `${Math.round(usagePercent)}% of monthly messages used`}
+                  </p>
+                  <p className="text-gray-400 mt-1">
+                    Review agent traffic and your Agent Rules daily cap before promoting the public link further.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {isTrial && (

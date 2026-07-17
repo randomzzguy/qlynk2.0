@@ -9,6 +9,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { createClient } from '@/utils/supabase/client';
 import { getCurrentUser } from '@/lib/supabase';
 import QlynkBackground from '@/components/QlynkBackground';
+import { AGENT_TYPE_CATALOG, DEFAULT_AGENT_TYPE, getAgentTypeDefinition } from '@/lib/agent-type-catalog';
+import { normalizeAgentRules } from '@/lib/agent-rules';
 import { 
   ArrowRight, 
   ArrowLeft, 
@@ -42,6 +44,7 @@ export default function OnboardingPage() {
   // Form state
   const [formData, setFormData] = useState({
     // Profile
+    agent_type: DEFAULT_AGENT_TYPE,
     full_name: '',
     bio: '',
     // Knowledge
@@ -98,6 +101,7 @@ export default function OnboardingPage() {
       if (agentConfig) {
         setFormData(prev => ({
           ...prev,
+          agent_type: agentConfig.agent_type || DEFAULT_AGENT_TYPE,
           bio: agentConfig.bio || '',
           skills: agentConfig.skills || [],
           projects: agentConfig.projects || [],
@@ -143,6 +147,7 @@ export default function OnboardingPage() {
       .from('agent_configs')
       .upsert({
         user_id: userId,
+        agent_type: formData.agent_type || DEFAULT_AGENT_TYPE,
         bio: formData.bio,
         skills: formData.skills,
         projects: formData.projects,
@@ -155,6 +160,24 @@ export default function OnboardingPage() {
       }, { onConflict: 'user_id' });
 
     setSaving(false);
+  };
+
+  const saveAgentRules = async () => {
+    const agentType = formData.agent_type || DEFAULT_AGENT_TYPE;
+    const response = await fetch('/api/agent/rules', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        agent_type: agentType,
+        rules: normalizeAgentRules({
+          purpose: getAgentTypeDefinition(agentType).defaultPurpose,
+        }, agentType),
+      }),
+    });
+    if (!response.ok) {
+      const result = await response.json().catch(() => ({}));
+      throw new Error(result.error || 'Unable to save agent type');
+    }
   };
 
   const savePageData = async () => {
@@ -186,6 +209,7 @@ export default function OnboardingPage() {
     
     // Save final config
     await saveAgentConfig();
+    await saveAgentRules();
     await savePageData();
     
     // Mark onboarding complete
@@ -214,6 +238,7 @@ export default function OnboardingPage() {
       .eq('id', userId);
 
     // Ensure a page exists even on skip
+    await saveAgentRules();
     await savePageData();
 
     router.push('/dashboard');
@@ -418,12 +443,28 @@ export default function OnboardingPage() {
             {/* Step 1: Profile */}
             {currentStep === 1 && (
               <div>
-                <h2 className="text-3xl font-black text-white mb-2 text-center">Tell us about yourself</h2>
-                <p className="text-gray-400 mb-8 text-center">This helps your Qlynk Agent introduce you to visitors.</p>
+                <h2 className="text-3xl font-black text-white mb-2 text-center">What should your agent represent?</h2>
+                <p className="text-gray-400 mb-8 text-center">Choose a type, then provide the identity or place behind it.</p>
                 
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-white font-semibold mb-2">Full Name</label>
+                    <label className="block text-white font-semibold mb-2">Agent Type</label>
+                    <select
+                      value={formData.agent_type}
+                      onChange={(e) => setFormData(prev => ({ ...prev, agent_type: e.target.value }))}
+                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:border-orange-500 focus:outline-none"
+                    >
+                      {AGENT_TYPE_CATALOG.map((type) => (
+                        <option key={type.id} value={type.id}>{type.label}</option>
+                      ))}
+                    </select>
+                    <p className="text-gray-500 text-sm mt-2">
+                      {getAgentTypeDefinition(formData.agent_type).description} You can customize detailed rules later.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-white font-semibold mb-2">Owner or Display Name</label>
                     <input
                       type="text"
                       value={formData.full_name}
@@ -434,7 +475,7 @@ export default function OnboardingPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-white font-semibold mb-2">Bio / About You</label>
+                    <label className="block text-white font-semibold mb-2">Description / Background</label>
                     <textarea
                       value={formData.bio}
                       onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
@@ -442,7 +483,7 @@ export default function OnboardingPage() {
                       rows={4}
                       className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none resize-none"
                     />
-                    <p className="text-gray-500 text-sm mt-2">This will be the foundation of your agent&apos;s knowledge about you.</p>
+                    <p className="text-gray-500 text-sm mt-2">This becomes part of the approved context for your agent.</p>
                   </div>
                 </div>
               </div>
@@ -452,12 +493,12 @@ export default function OnboardingPage() {
             {currentStep === 2 && (
               <div>
                 <h2 className="text-3xl font-black text-white mb-2 text-center">Train Your Agent</h2>
-                <p className="text-gray-400 mb-8 text-center">Add your skills and projects so visitors can learn about your work.</p>
+                <p className="text-gray-400 mb-8 text-center">Add capabilities, examples, and knowledge relevant to this agent.</p>
                 
                 <div className="space-y-8">
                   {/* Skills */}
                   <div>
-                    <label className="block text-white font-semibold mb-3">Skills</label>
+                    <label className="block text-white font-semibold mb-3">Skills or Capabilities</label>
                     <div className="flex gap-2 mb-3">
                       <input
                         type="text"
@@ -488,7 +529,7 @@ export default function OnboardingPage() {
 
                   {/* Projects */}
                   <div>
-                    <label className="block text-white font-semibold mb-3">Projects</label>
+                    <label className="block text-white font-semibold mb-3">Projects or Examples</label>
                     <div className="space-y-3 mb-3">
                       <input
                         type="text"

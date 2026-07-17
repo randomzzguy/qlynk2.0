@@ -52,6 +52,9 @@ export default function PrivacyPage() {
                 <p className="leading-relaxed mt-4">
                   When someone visits or chats with an agent, we may collect a visitor identifier, name and email if provided or required by the agent owner, conversation messages, timestamps, referring page, and technical request information such as IP address and browser details. The agent owner can view the conversation, supplied contact details, and generated conversation insights such as sentiment.
                 </p>
+                <p className="leading-relaxed mt-4">
+                  Qlynk may classify requests to enforce an agent&apos;s approved scope and detect prompt-injection, off-topic, or safety abuse. Security-event records use a one-way hashed visitor key, event category, agent type, and prompt version; they intentionally do not duplicate the raw visitor message. The original conversation message may still be retained in the agent conversation as described above.
+                </p>
               </section>
 
               <section>
@@ -72,7 +75,7 @@ export default function PrivacyPage() {
               <section>
                 <h2 className="text-2xl font-bold text-white mb-4">3. AI Training and Data</h2>
                 <p className="leading-relaxed">
-                  Agent instructions, knowledge, and relevant conversation history are sent to Groq to generate AI responses. Conversation messages may also be sent to Groq to classify general conversation sentiment. AI providers process this information on Qlynk&apos;s behalf; Qlynk does not use visitor conversations or private agent knowledge to train a Qlynk-owned general-purpose AI model. Do not upload or submit information you are not authorized to process.
+                  Agent instructions, knowledge, and relevant conversation history are sent to Groq to generate AI responses. Conversation messages may also be sent to Groq for scope, safety, and general sentiment classification. AI providers process this information on Qlynk&apos;s behalf; Qlynk does not use visitor conversations or private agent knowledge to train a Qlynk-owned general-purpose AI model. Do not upload or submit information you are not authorized to process.
                 </p>
                 <p className="leading-relaxed mt-4">
                   AI responses are generated automatically and may be inaccurate. Agent owners are responsible for the knowledge and instructions they provide and for reviewing the suitability of their agent for its intended use.

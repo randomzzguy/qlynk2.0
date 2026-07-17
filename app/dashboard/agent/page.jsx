@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
+import AgentRulesEditor from '@/components/AgentRulesEditor';
+import { DEFAULT_AGENT_TYPE, getAgentTypeDefinition } from '@/lib/agent-type-catalog';
+import { DEFAULT_AGENT_RULES, normalizeAgentRules } from '@/lib/agent-rules';
 import { getCurrentUser } from '@/lib/supabase';
 import { 
   Bot, 
@@ -116,6 +119,7 @@ export function AgentConfigPage({ sectionOverride = null }) {
     position: 'bottom-right',
     is_enabled: true,
     tone: 'professional',
+    agent_type: DEFAULT_AGENT_TYPE,
     access_level: 'public',
     // Visual customization
     chat_bg_color: '#0a0a0f',
@@ -135,9 +139,21 @@ export function AgentConfigPage({ sectionOverride = null }) {
   const [newSocialLink, setNewSocialLink] = useState({ platform: '', url: '' });
   const [accessPassword, setAccessPassword] = useState('');
   const [passwordIsSet, setPasswordIsSet] = useState(false);
+  const [agentRules, setAgentRules] = useState({ ...DEFAULT_AGENT_RULES });
+  const [promptVersion, setPromptVersion] = useState(0);
+  const [ruleVersions, setRuleVersions] = useState([]);
+  const [securitySummary, setSecuritySummary] = useState({ total: 0, prompt_injection: 0, off_topic: 0, safety: 0, last_event_at: null });
+  const [restoringRules, setRestoringRules] = useState(false);
   const savedConfigRef = useRef(null);
+  const savedRulesRef = useRef(null);
   const isDirty = savedConfigRef.current !== null
-    && (JSON.stringify(config) !== savedConfigRef.current || Boolean(accessPassword));
+    && (
+      JSON.stringify(config) !== savedConfigRef.current
+      || (savedRulesRef.current !== null && JSON.stringify(agentRules) !== savedRulesRef.current)
+      || Boolean(accessPassword)
+    );
+  const selectedAgentType = getAgentTypeDefinition(config.agent_type || DEFAULT_AGENT_TYPE);
+  const isPersonalAgent = selectedAgentType.id === 'personal';
 
   useEffect(() => {
     const loadConfig = async () => {
@@ -175,6 +191,7 @@ export function AgentConfigPage({ sectionOverride = null }) {
             const loadedConfig = {
               ...current,
               ...existingConfig,
+              agent_type: existingConfig.agent_type || DEFAULT_AGENT_TYPE,
               skills: existingConfig.skills || [],
               projects: existingConfig.projects || [],
               contact_info: existingConfig.contact_info || {},
@@ -196,6 +213,28 @@ export function AgentConfigPage({ sectionOverride = null }) {
         if (passwordStatusResponse.ok) {
           const passwordStatus = await passwordStatusResponse.json();
           setPasswordIsSet(Boolean(passwordStatus.passwordSet));
+        }
+
+        const rulesResponse = await fetch('/api/agent/rules', { cache: 'no-store' });
+        if (rulesResponse.ok) {
+          const rulesData = await rulesResponse.json();
+          const loadedRules = normalizeAgentRules(rulesData.rules || {}, rulesData.agent_type || DEFAULT_AGENT_TYPE);
+          setAgentRules(loadedRules);
+          savedRulesRef.current = JSON.stringify(loadedRules);
+          setPromptVersion(rulesData.prompt_version || 0);
+          setRuleVersions(rulesData.versions || []);
+          setSecuritySummary(rulesData.security_summary || { total: 0, prompt_injection: 0, off_topic: 0, safety: 0, last_event_at: null });
+          setConfig((current) => {
+            const next = { ...current, agent_type: rulesData.agent_type || current.agent_type || DEFAULT_AGENT_TYPE };
+            savedConfigRef.current = JSON.stringify(next);
+            return next;
+          });
+        } else {
+          setAgentRules((current) => {
+            const next = normalizeAgentRules(current, existingConfig?.agent_type || DEFAULT_AGENT_TYPE);
+            savedRulesRef.current = JSON.stringify(next);
+            return next;
+          });
         }
 
         setLoading(false);
@@ -244,6 +283,19 @@ export function AgentConfigPage({ sectionOverride = null }) {
 
       if (error) throw error;
 
+      const rulesResponse = await fetch('/api/agent/rules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agent_type: config.agent_type || DEFAULT_AGENT_TYPE,
+          rules: agentRules,
+        }),
+      });
+      const rulesResult = await rulesResponse.json();
+      if (!rulesResponse.ok) {
+        throw new Error(rulesResult.error || 'Unable to save agent rules');
+      }
+
       if (config.access_level === 'password' && accessPassword) {
         const passwordResponse = await fetch('/api/agent/access-password', {
           method: 'POST',
@@ -259,6 +311,16 @@ export function AgentConfigPage({ sectionOverride = null }) {
       }
 
       savedConfigRef.current = JSON.stringify(config);
+      savedRulesRef.current = JSON.stringify(rulesResult.rules);
+      setAgentRules(rulesResult.rules);
+      setPromptVersion(rulesResult.prompt_version || promptVersion);
+      if (rulesResult.prompt_version) {
+        setRuleVersions((current) => [{
+          version: rulesResult.prompt_version,
+          agent_type: rulesResult.agent_type,
+          created_at: new Date().toISOString(),
+        }, ...current.filter((version) => version.version !== rulesResult.prompt_version)].slice(0, 10));
+      }
       
       setSaveStatus('success');
       setTimeout(() => setSaveStatus(null), 3000);
@@ -268,6 +330,54 @@ export function AgentConfigPage({ sectionOverride = null }) {
       setTimeout(() => setSaveStatus(null), 3000);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleAgentTypeChange = (nextType) => {
+    const currentType = config.agent_type || DEFAULT_AGENT_TYPE;
+    const currentDefaultPurpose = getAgentTypeDefinition(currentType).defaultPurpose;
+    const nextDefaultPurpose = getAgentTypeDefinition(nextType).defaultPurpose;
+    setConfig((current) => ({ ...current, agent_type: nextType }));
+    setAgentRules((current) => ({
+      ...current,
+      purpose: !current.purpose || current.purpose === currentDefaultPurpose
+        ? nextDefaultPurpose
+        : current.purpose,
+    }));
+  };
+
+  const restoreRuleVersion = async (version) => {
+    setRestoringRules(true);
+    setSaveStatus(null);
+    try {
+      const response = await fetch('/api/agent/rules', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ version }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Unable to restore this version');
+
+      const restoredRules = normalizeAgentRules(result.rules || {}, result.agent_type || DEFAULT_AGENT_TYPE);
+      const nextConfig = { ...config, agent_type: result.agent_type || DEFAULT_AGENT_TYPE };
+      setConfig(nextConfig);
+      setAgentRules(restoredRules);
+      setPromptVersion(result.prompt_version || promptVersion);
+      savedConfigRef.current = JSON.stringify(nextConfig);
+      savedRulesRef.current = JSON.stringify(restoredRules);
+
+      const refreshed = await fetch('/api/agent/rules', { cache: 'no-store' });
+      if (refreshed.ok) {
+        const data = await refreshed.json();
+        setRuleVersions(data.versions || []);
+      }
+      setSaveStatus('success');
+    } catch (error) {
+      console.error('Error restoring agent rules:', error);
+      setSaveStatus('error');
+    } finally {
+      setRestoringRules(false);
+      setTimeout(() => setSaveStatus(null), 3000);
     }
   };
 
@@ -384,15 +494,15 @@ export function AgentConfigPage({ sectionOverride = null }) {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
         <div>
           <h1 className="text-3xl font-black text-white mb-2 flex items-center gap-3">
-            {section === 'visual' ? 'Visual Style' : section === 'profile' ? 'Profile Knowledge' : 'Agent Setup'}
+            {section === 'visual' ? 'Visual Style' : section === 'profile' ? 'Agent Knowledge' : 'Agent Setup'}
             <Sparkles size={20} className="text-[#f46530]" />
           </h1>
           <p className="text-lg text-gray-400">
             {section === 'visual'
-              ? 'Customize the appearance of your AI clone'
+              ? 'Customize the appearance of your Qlynk Agent'
               : section === 'profile'
-                ? 'Teach your AI clone about you, your work, and how visitors can reach you'
-                : 'Manage your AI clone status, access, and branding'}
+                ? `Teach your ${selectedAgentType.shortLabel.toLowerCase()} agent the context and knowledge it may use`
+                : 'Manage your Qlynk Agent type, rules, status, access, and branding'}
           </p>
         </div>
             
@@ -485,6 +595,18 @@ export function AgentConfigPage({ sectionOverride = null }) {
             </div>
           </div>
 
+          <AgentRulesEditor
+            agentType={config.agent_type || DEFAULT_AGENT_TYPE}
+            onAgentTypeChange={handleAgentTypeChange}
+            rules={agentRules}
+            onRulesChange={setAgentRules}
+            promptVersion={promptVersion}
+            versions={ruleVersions}
+            securitySummary={securitySummary}
+            onRestoreVersion={restoreRuleVersion}
+            restoring={restoringRules}
+          />
+
           {/* Access Control */}
           <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mb-8 hover:border-[#f46530]/20 transition-all">
             <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
@@ -527,8 +649,8 @@ export function AgentConfigPage({ sectionOverride = null }) {
                   />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-white font-medium">Email Required</span>
-                  <span className="text-sm text-gray-400">Visitors must enter a valid email address before they can chat.</span>
+                  <span className="text-white font-medium">Email Capture</span>
+                  <span className="text-sm text-gray-400">Collects a valid-looking email before chat; it does not verify ownership. Use a password for restricted access.</span>
                 </div>
               </label>
 
@@ -594,7 +716,7 @@ export function AgentConfigPage({ sectionOverride = null }) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Profession / Title</label>
+                <label className="block text-sm font-medium text-gray-400 mb-2">Role / Display Title</label>
                 <input
                   type="text"
                   value={config.profession || ''}
@@ -847,7 +969,7 @@ export function AgentConfigPage({ sectionOverride = null }) {
               <div className="w-8 h-8 bg-cyan-500/10 rounded flex items-center justify-center">
                 <User size={18} className="text-cyan-400" />
               </div>
-              About You
+              {isPersonalAgent ? 'About You' : 'About This Agent'}
             </h2>
             
             <div>
@@ -868,7 +990,7 @@ export function AgentConfigPage({ sectionOverride = null }) {
               <div className="w-8 h-8 bg-green-500/10 rounded flex items-center justify-center">
                 <Briefcase size={18} className="text-green-400" />
               </div>
-              Skills & Expertise
+              {isPersonalAgent ? 'Skills & Expertise' : 'Capabilities & Key Topics'}
             </h2>
             
             {/* Existing skills */}
@@ -920,7 +1042,7 @@ export function AgentConfigPage({ sectionOverride = null }) {
               <div className="w-8 h-8 bg-purple-500/10 rounded flex items-center justify-center">
                 <FileText size={18} className="text-purple-400" />
               </div>
-              Projects & Work
+              {isPersonalAgent ? 'Projects & Work' : 'Examples & Important Information'}
             </h2>
             
             {/* Existing projects */}

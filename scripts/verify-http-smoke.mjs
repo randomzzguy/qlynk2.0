@@ -38,6 +38,9 @@ for (const path of ['/api/status', '/api/errors']) {
   }
 }
 
+const privateRules = await request('/api/agent/rules');
+assert(privateRules.response.status === 401, '/api/agent/rules did not require owner authentication');
+
 const homepage = await request('/');
 const csp = homepage.response.headers.get('content-security-policy') || '';
 assert(csp.includes("frame-ancestors 'none'"), 'Homepage CSP does not deny framing');

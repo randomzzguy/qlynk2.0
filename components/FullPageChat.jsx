@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import QlynkBackground from '@/components/QlynkBackground';
 import AgentResponseIndicator from '@/components/AgentResponseIndicator';
+import { getAgentTypeDefinition } from '@/lib/agent-type-catalog';
 import ReactMarkdown from 'react-markdown';
 
 export default function FullPageChat({ 
@@ -57,6 +58,11 @@ export default function FullPageChat({
   const ctaTextColor = agentConfig.cta_text_color || '#ffffff';
   const preChatTextColor = agentConfig.pre_chat_text_color || '#9ca3af';
   const gatekeeperTextColor = agentConfig.gatekeeper_text_color || '#9ca3af';
+  const agentType = getAgentTypeDefinition(agentConfig.agent_type);
+  const isPersonalAgent = agentType.id === 'personal';
+  const displayRole = !isPersonalAgent && (!agentConfig.profession || agentConfig.profession === 'Digital Creator')
+    ? agentType.label
+    : (agentConfig.profession || agentType.label);
 
   // Load Google Font dynamically
   useEffect(() => {
@@ -321,11 +327,13 @@ export default function FullPageChat({
                 </h1>
                 <p className="font-bold uppercase tracking-widest text-xs mb-6 px-4 py-1.5 rounded-full border"
                    style={{ color: ctaBtnColor, background: `${ctaBtnColor}1a`, borderColor: `${ctaBtnColor}33` }}>
-                  {agentConfig.profession || 'Digital Creator'}
+                  {displayRole}
                 </p>
                 
                 <p className="text-lg leading-relaxed mb-10 max-w-md mx-auto font-medium" style={{ color: preChatTextColor }}>
-                  {agentConfig.bio || `I'm ${agentConfig.agent_name}, the official digital twin of ${username}. Ask me anything about my work or background.`}
+                  {agentConfig.bio || (isPersonalAgent
+                    ? `I'm ${agentConfig.agent_name}, the approved AI representative for ${username}. Ask me about their work or background.`
+                    : `${agentConfig.agent_name} is a ${agentType.label.toLowerCase()} configured to help with its approved purpose and knowledge.`)}
                 </p>
 
                 {/* Social Links - Use agentConfig links first, fallback to profile table */}
@@ -372,7 +380,7 @@ export default function FullPageChat({
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
                   <MessageSquare className="w-6 h-6" />
-                  Chat with AI Clone
+                  Chat with {isPersonalAgent ? 'AI Agent' : `${agentType.shortLabel} Guide`}
                   <ChevronRight className="w-6 h-6 group-hover/btn:translate-x-1 transition-transform" />
                 </button>
               </div>
@@ -546,7 +554,7 @@ export default function FullPageChat({
                       ? 'Preparing Response'
                       : responsePhase === 'typing'
                         ? 'Typing Response'
-                        : 'AI Clone Active'}
+                        : `${agentType.shortLabel} Agent Active`}
                   </p>
                 </div>
               </div>

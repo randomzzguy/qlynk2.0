@@ -19,6 +19,7 @@ import {
   Globe
 } from 'lucide-react';
 import QlynkBackground from '@/components/QlynkBackground';
+import AgentResponseIndicator from '@/components/AgentResponseIndicator';
 import ReactMarkdown from 'react-markdown';
 
 export default function FullPageChat({ 
@@ -42,6 +43,7 @@ export default function FullPageChat({
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [responsePhase, setResponsePhase] = useState('idle');
   const [conversationId, setConversationId] = useState(null);
   const [accessPassword, setAccessPassword] = useState('');
   const scrollRef = useRef(null);
@@ -177,6 +179,7 @@ export default function FullPageChat({
     setMessages(updatedMessages);
     setInput('');
     setIsLoading(true);
+    setResponsePhase('preparing');
 
     try {
       const response = await fetch('/api/ai-chat', {
@@ -228,6 +231,7 @@ export default function FullPageChat({
               const data = JSON.parse(trimmedLine.substring(6));
               const content = data.choices[0]?.delta?.content || '';
               if (content) {
+                if (!assistantContent) setResponsePhase('typing');
                 assistantContent += content;
                 setMessages(prev => prev.map(msg => 
                   msg.id === assistantId ? { ...msg, content: assistantContent } : msg
@@ -256,6 +260,7 @@ export default function FullPageChat({
       ]);
     } finally {
       setIsLoading(false);
+      setResponsePhase('idle');
     }
   };
 
@@ -293,13 +298,20 @@ export default function FullPageChat({
                 {/* Avatar */}
                 <div className="relative mb-8">
                   <div className="w-32 h-32 rounded-3xl overflow-hidden border-2 border-white/20 shadow-2xl transform -rotate-3 group-hover:rotate-0 transition-transform duration-500">
-                    <Image 
-                      src={agentConfig.agent_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`} 
-                      alt={profile?.name} 
-                      width={128}
-                      height={128}
-                      className="w-full h-full object-cover" 
-                    />
+                    {agentConfig.agent_avatar ? (
+                      <Image
+                        src={agentConfig.agent_avatar}
+                        alt={profile?.name || agentConfig.agent_name || username}
+                        width={128}
+                        height={128}
+                        className="w-full h-full object-cover"
+                        priority
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500/20 to-[#f46530]/20">
+                        <Bot className="w-16 h-16 text-blue-300" aria-hidden="true" />
+                      </div>
+                    )}
                   </div>
                   <div className="absolute -bottom-2 -right-2 bg-green-500 w-6 h-6 rounded-full border-4 border-[#0a0a0f] shadow-lg" />
                 </div>
@@ -505,15 +517,36 @@ export default function FullPageChat({
                 </button>
                 <div className="relative">
                   <div className="w-10 h-10 rounded-xl overflow-hidden bg-white/10 flex items-center justify-center border border-white/20">
-                    <Image src={agentConfig.agent_avatar} alt={agentConfig.agent_name || 'Agent'} width={40} height={40} className="w-full h-full object-cover" />
+                    {agentConfig.agent_avatar ? (
+                      <Image src={agentConfig.agent_avatar} alt={agentConfig.agent_name || 'Agent'} width={40} height={40} className="w-full h-full object-cover" />
+                    ) : (
+                      <Bot className="w-5 h-5 text-blue-400" aria-hidden="true" />
+                    )}
                   </div>
                   <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-[#0a0a0f]" />
                 </div>
                 <div>
                   <h1 className="font-bold text-lg leading-tight">{agentConfig.agent_name}</h1>
-                  <p className="text-[10px] text-gray-400 flex items-center gap-1 uppercase tracking-widest font-black">
-                    <Sparkles className="w-3 h-3 text-amber-400" />
-                    AI Clone Active
+                  <p
+                    className="text-[10px] text-gray-400 flex items-center gap-1.5 uppercase tracking-widest font-black"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    {responsePhase === 'preparing' ? (
+                      <Loader2 className="w-3 h-3 animate-spin" style={{ color: ctaBtnColor }} />
+                    ) : responsePhase === 'typing' ? (
+                      <span className="relative flex h-2.5 w-2.5" aria-hidden="true">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-50 motion-reduce:animate-none" style={{ backgroundColor: ctaBtnColor }} />
+                        <span className="relative inline-flex h-2.5 w-2.5 rounded-full" style={{ backgroundColor: ctaBtnColor }} />
+                      </span>
+                    ) : (
+                      <Sparkles className="w-3 h-3 text-amber-400" />
+                    )}
+                    {responsePhase === 'preparing'
+                      ? 'Preparing Response'
+                      : responsePhase === 'typing'
+                        ? 'Typing Response'
+                        : 'AI Clone Active'}
                   </p>
                 </div>
               </div>
@@ -523,9 +556,11 @@ export default function FullPageChat({
             <div 
               ref={scrollRef}
               className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 scroll-smooth"
+              aria-live="polite"
+              aria-busy={isLoading}
             >
               <div className="max-w-3xl mx-auto space-y-8 pb-32">
-                {messages.map((m) => (
+                {messages.map((m) => (m.role === 'assistant' && !m.content && isLoading ? null : (
                   <motion.div
                     key={m.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -576,18 +611,19 @@ export default function FullPageChat({
                       </div>
                     </div>
                   </motion.div>
-                ))}
+                )))}
 
-                {isLoading && !messages[messages.length-1].content && (
+                {responsePhase === 'preparing' && (
                   <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
                     className="flex justify-start"
                   >
-                    <div className="flex gap-4 items-center bg-white/5 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/10">
-                      <Loader2 className="w-5 h-5 animate-spin" style={{ color: ctaBtnColor }} />
-                      <span className="text-sm font-bold text-gray-400 uppercase tracking-widest">Thinking...</span>
-                    </div>
+                    <AgentResponseIndicator
+                      agentName={agentConfig.agent_name || 'The agent'}
+                      accentColor={ctaBtnColor}
+                    />
                   </motion.div>
                 )}
               </div>
@@ -603,7 +639,7 @@ export default function FullPageChat({
                   <input
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    placeholder={`Ask anything...`}
+                    placeholder={isLoading ? 'The agent is responding...' : 'Ask anything...'}
                     className="w-full bg-white/10 backdrop-blur-3xl border border-white/20 rounded-2xl py-5 pl-6 pr-16 text-lg focus:outline-none focus:ring-2 focus:ring-[#f46530]/50 transition-all placeholder:text-gray-500 shadow-2xl relative z-10"
                   />
                   <button
@@ -612,7 +648,9 @@ export default function FullPageChat({
                     className="absolute right-3 p-3 rounded-xl transition-all disabled:opacity-50 disabled:grayscale hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center z-20 cursor-pointer"
                     style={{ backgroundColor: ctaBtnColor }}
                   >
-                    <Send size={24} className="text-white" />
+                    {isLoading
+                      ? <Loader2 size={24} className="animate-spin text-white" />
+                      : <Send size={24} className="text-white" />}
                   </button>
                 </form>
                 <p className="mt-2 text-center text-[11px] text-gray-500">

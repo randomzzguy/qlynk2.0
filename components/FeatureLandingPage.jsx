@@ -34,7 +34,7 @@ export default function FeatureLandingPage({ feature, slug }) {
           <h2 className="text-3xl font-black mb-5">Put this feature to work</h2>
           <div className="flex flex-wrap justify-center gap-4">
             <Link href="/auth/signup" className="bg-orange text-white rounded-xl px-7 py-4 font-bold">Create Your Qlynk Agent</Link>
-            <Link href="/ai-agent" className="border border-white/20 rounded-xl px-7 py-4 font-bold">Explore Personal AI Agents</Link>
+            <Link href="/ai-agent" className="border border-white/20 rounded-xl px-7 py-4 font-bold">Explore the AI Agent Platform</Link>
           </div>
         </section>
       </main>

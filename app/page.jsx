@@ -13,22 +13,22 @@ import { getCurrentUser, getCurrentProfile, signOut } from '@/lib/supabase';
 
 const DEMO_CONVERSATIONS = [
   {
-    question: "What does Sarah specialize in?",
-    answer: "Sarah is a full-stack developer with 5+ years of experience in React, Node.js, and cloud architecture. She's particularly passionate about building scalable SaaS products.",
-    name: "Sarah Chen",
-    role: "Full-Stack Developer"
+    question: "Which service is best for a new product launch?",
+    answer: "Northstar Studio's launch package covers positioning, campaign design, and a rollout plan. Would you like a quick comparison with the smaller strategy package?",
+    name: "Northstar Studio",
+    role: "Business Guide"
   },
   {
-    question: "Can I book a consultation with Alex?",
-    answer: "Absolutely! Alex offers free 30-minute discovery calls. You can book directly at calendly.com/alex-design or I can share his availability for this week.",
-    name: "Alex Rivera",
-    role: "UX Designer"
+    question: "Where are fresh bath towels stored?",
+    answer: "Fresh bath towels are kept in the upstairs linen closet, on the shelves labeled Guest Rooms. Are you preparing one room or doing a full turnover?",
+    name: "Harbor House",
+    role: "Property Guide"
   },
   {
-    question: "What projects has Jordan worked on?",
-    answer: "Jordan has led development on 3 successful startups, including a fintech app with 50k+ users and an AI-powered analytics platform. Check out the portfolio section for case studies!",
-    name: "Jordan Kim",
-    role: "Startup Founder"
+    question: "How do I invite a teammate to a project?",
+    answer: "Open the project, choose Members, then select Invite teammate and enter their work email. Want the steps for changing their access level too?",
+    name: "Orbit Console",
+    role: "Product Guide"
   }
 ];
 
@@ -109,7 +109,7 @@ const AgentDemoHero = () => {
               <Image src="/assets/iconWhite.svg" alt="" width={20} height={20} />
             </div>
             <span className="text-xs font-black tracking-[0.2em] text-orange uppercase">
-              The Future of Personal Presence
+              One Platform. Many Focused Agents.
             </span>
           </motion.div>
 
@@ -119,8 +119,8 @@ const AgentDemoHero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            Your Personal <br />
-            <span className="bg-gradient-to-r from-orange via-[#f46530] to-[#c14f22] bg-clip-text text-transparent">AI Agent</span>
+            Turn Your Knowledge Into <br />
+            <span className="bg-gradient-to-r from-orange via-[#f46530] to-[#c14f22] bg-clip-text text-transparent">an AI Agent</span>
           </motion.h1>
 
           <motion.p
@@ -129,7 +129,7 @@ const AgentDemoHero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            Qlynk AI creates a personal AI clone trained on the knowledge you provide. Let visitors explore your expertise 24/7 while you focus on what matters.
+            Build a personal AI, business guide, property assistant, operations trainer, product guide, support agent, or something custom. Give it approved knowledge, clear boundaries, and a link people can use 24/7.
           </motion.p>
         </div>
 
@@ -144,18 +144,18 @@ const AgentDemoHero = () => {
               {[
                 {
                   icon: Brain,
-                  title: "Train Your Agent",
-                  desc: "Upload your bio, resume, projects, and expertise. Your Qlynk Agent learns everything about you."
+                  title: "Choose Its Role",
+                  desc: "Start with a personal, business, property, operations, product, support, or custom agent."
                 },
                 {
                   icon: MessageSquare,
-                  title: "24/7 Conversations",
-                  desc: "Visitors can ask questions, request info, or book meetings - your agent handles it all."
+                  title: "Add Trusted Knowledge",
+                  desc: "Give it profile context, facts, FAQs, documents, links, and the information it is approved to use."
                 },
                 {
                   icon: BarChart3,
-                  title: "Track Everything",
-                  desc: "See what visitors ask, popular topics, and conversation insights in your dashboard."
+                  title: "Set Rules and Boundaries",
+                  desc: "Define its purpose, audience, allowed topics, blocked topics, behavior, uncertainty, and human handoff."
                 }
               ].map((feature, i) => (
                 <motion.div
@@ -322,8 +322,8 @@ const AgentDemoHero = () => {
             whileHover={{ y: -5 }}
           >
             <div className="text-3xl mb-3 text-[#f46530]"><Bot /></div>
-            <div className="font-bold mb-2 text-white">Freelancers</div>
-            <div className="text-sm text-gray-400">Let clients learn about your services 24/7</div>
+            <div className="font-bold mb-2 text-white">People & Experts</div>
+            <div className="text-sm text-gray-400">Share experience, services, projects, and approved professional knowledge</div>
           </motion.div>
 
           <motion.div
@@ -331,8 +331,8 @@ const AgentDemoHero = () => {
             whileHover={{ y: -5 }}
           >
             <div className="text-3xl mb-3 text-[#f46530]"><Users /></div>
-            <div className="font-bold mb-2 text-white">Founders</div>
-            <div className="text-sm text-gray-400">Answer investor and customer questions automatically</div>
+            <div className="font-bold mb-2 text-white">Businesses & Products</div>
+            <div className="text-sm text-gray-400">Explain offerings, answer FAQs, guide setup, and route people to the next step</div>
           </motion.div>
 
           <motion.div
@@ -340,8 +340,8 @@ const AgentDemoHero = () => {
             whileHover={{ y: -5 }}
           >
             <div className="text-3xl mb-3 text-[#f46530]"><Sparkles /></div>
-            <div className="font-bold mb-2 text-white">Creators</div>
-            <div className="text-sm text-gray-400">Engage your audience with personalized AI interactions</div>
+            <div className="font-bold mb-2 text-white">Places & Operations</div>
+            <div className="text-sm text-gray-400">Guide guests or teams through locations, procedures, training, and routine work</div>
           </motion.div>
         </motion.div>
       </div>
@@ -352,9 +352,9 @@ const AgentDemoHero = () => {
 // ====== About Us Section ======
 const AboutUs = () => {
   const values = [
-    { icon: Users, title: "Our Community", desc: "Built for creators, founders, and professionals who want to scale their personal presence." },
-    { icon: Heart, title: "Our Passion", desc: "We believe everyone deserves an AI that represents them authentically online." },
-    { icon: Target, title: "Our Mission", desc: "To give everyone the power of 24/7 personal representation through intelligent AI agents." }
+    { icon: Users, title: "Built for real use", desc: "From personal expertise and customer questions to property guidance, product help, and team operations." },
+    { icon: Heart, title: "Knowledge with boundaries", desc: "Owners choose what the agent knows, what it may discuss, and when it should hand off to a person." },
+    { icon: Target, title: "A focused purpose", desc: "Each Qlynk Agent is configured for a defined job instead of acting like an unrestricted general assistant." }
   ];
 
   return (
@@ -373,10 +373,10 @@ const AboutUs = () => {
               WHO WE ARE
             </div>
             <h2 className="text-4xl md:text-5xl font-black text-white leading-tight">
-              Pioneering the future of <span className="text-orange">personal AI</span>
+              Focused AI agents built around <span className="text-orange">your knowledge</span>
             </h2>
             <p className="text-xl text-gray-300 leading-relaxed">
-              Qlynk is an AI platform that lets professionals, creators, founders, and businesses create personalized AI agents trained on their knowledge to answer questions and represent them online.
+              Qlynk is a no-code platform for building a governed AI guide around a person, business, place, operation, product, support workflow, or custom purpose.
             </p>
             <Link href="/about" className="inline-flex items-center gap-2 text-orange font-bold hover:underline">
               Learn more about Qlynk AI <ArrowRight size={18} />
@@ -553,16 +553,16 @@ export default function App() {
   }, [text, isDeleting, loopNum]);
 
   const features = [
-    { icon: Brain, title: "Train Your Knowledge", href: "/features/ai-training", desc: "Upload your bio, resume, projects, and expertise. Your Qlynk Agent learns everything about you instantly." },
-    { icon: MessageSquare, title: "Smart Conversations", href: "/features/knowledge-base", desc: "Powered by advanced AI, your agent answers questions naturally and accurately about you." },
-    { icon: Shield, title: "Your Brand, Your Rules", href: "/features/security", desc: "Customize your agent's personality, responses, and appearance to match your personal brand." },
-    { icon: BarChart3, title: "Actionable Insights", href: "/features/analytics", desc: "See what visitors ask, track engagement, and understand what people want to know about you." }
+    { icon: Shield, title: "Purpose & Boundaries", href: "/features/security", desc: "Choose the agent's role, audience, scope, response behavior, blocked topics, and human escalation path." },
+    { icon: Brain, title: "Knowledge You Control", href: "/features/knowledge-base", desc: "Organize profile context, facts, FAQs, documents, links, and custom knowledge in one dashboard." },
+    { icon: MessageSquare, title: "A Branded Conversation", href: "/features/ai-training", desc: "Give visitors a focused, natural chat experience with your chosen identity, tone, welcome message, and visual style." },
+    { icon: BarChart3, title: "Conversations & Insights", href: "/features/analytics", desc: "Review conversations, visitor activity, popular questions, and signals that show where knowledge needs improvement." }
   ];
 
   const steps = [
-    { num: "1", title: "Create Your Agent", desc: "Sign up and claim your unique qlynk.site/username URL in seconds." },
-    { num: "2", title: "Train Your Qlynk Agent", desc: "Add your bio, skills, projects, and upload documents. Your AI learns it all." },
-    { num: "3", title: "Share & Engage", desc: "Drop your link anywhere. Visitors chat with your AI while you sleep, work, or play." }
+    { num: "1", title: "Choose Its Purpose", desc: "Pick the kind of agent you need, define its audience, and give it a clear job." },
+    { num: "2", title: "Add Knowledge & Rules", desc: "Provide approved information, set boundaries, and decide how it should respond or escalate." },
+    { num: "3", title: "Publish & Improve", desc: "Share your qlynk.site/username link, review real questions, and keep its knowledge current." }
   ];
 
   return (
@@ -748,8 +748,8 @@ export default function App() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-4xl md:text-5xl font-black text-white mb-4">Your AI. Your Rules. Your Growth.</h2>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">Everything you need to create your intelligent digital presence.</p>
+            <h2 className="text-4xl md:text-5xl font-black text-white mb-4">A Clear Job. Trusted Knowledge. Your Rules.</h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">Everything you need to build a useful agent that stays focused on the purpose you configured.</p>
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -780,7 +780,7 @@ export default function App() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-black text-white mb-4">How It Works</h2>
-            <p className="text-xl text-gray-400">Three simple steps to your personal AI agent</p>
+            <p className="text-xl text-gray-400">Three steps from an idea to a focused, shareable Qlynk Agent</p>
           </div>
 
           <div className="relative">
@@ -821,7 +821,7 @@ export default function App() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            Ready to Clone Yourself?
+            What Should Your Agent Help People With?
           </motion.h2>
           <motion.p
             className="text-xl text-[#ffecd9] mb-10 max-w-2xl mx-auto"
@@ -830,7 +830,7 @@ export default function App() {
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
           >
-            Join professionals, creators, and founders who use Qlynk Agent to engage visitors 24/7 while focusing on what matters most.
+            Create a focused AI guide for your expertise, business, property, operations, product, support workflow, or custom use case.
           </motion.p>
 
           <motion.div

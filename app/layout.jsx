@@ -15,6 +15,11 @@ export const metadata = {
       'AI clone',
       'personal AI',
       'AI agent builder',
+      'business AI agent',
+      'property guide AI',
+      'operations AI assistant',
+      'product guide AI',
+      'customer support AI agent',
       'digital twin',
       'AI assistant',
     ],
@@ -48,7 +53,7 @@ export default function RootLayout({ children }) {
           "width": 512,
           "height": 512
         },
-        "description": "Qlynk AI is a personal AI agent platform for professionals, creators, founders, and businesses.",
+        "description": "Qlynk AI is a platform for building focused AI agents from approved knowledge, owner-defined rules, and a clear purpose.",
         "foundingDate": "2026"
       },
       {
@@ -67,21 +72,22 @@ export default function RootLayout({ children }) {
         "name": "Qlynk AI",
         "alternateName": ["Qlynk Personal AI", "Qlynk AI Clone", "Qlynk AI Agent"],
         "applicationCategory": "BusinessApplication",
-        "applicationSubCategory": "Personal AI agent platform",
+        "applicationSubCategory": "No-code AI agent platform",
         "operatingSystem": "Web",
         "url": SITE_URL,
         "description": HOME_DESCRIPTION,
         "publisher": { "@id": `${SITE_URL}/#organization` },
         "featureList": [
-          "Personal AI agent training",
-          "Knowledge base and document support",
-          "Public AI profile",
+          "Personal, business, property, operations, product, support, and custom agent types",
+          "Purpose, audience, topic, behavior, uncertainty, and escalation controls",
+          "Knowledge base, FAQ, link, and document support",
+          "Branded public AI chat",
           "Embeddable website widget",
           "Conversation analytics"
         ],
         "audience": {
           "@type": "Audience",
-          "audienceType": "Creators, professionals, founders, freelancers, and businesses"
+          "audienceType": "Professionals, creators, businesses, property teams, operations teams, product teams, and support teams"
         },
         "offers": [
           {

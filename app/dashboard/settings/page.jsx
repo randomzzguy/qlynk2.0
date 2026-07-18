@@ -290,7 +290,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
+    <div className="w-full max-w-[1440px] px-5 sm:px-7 lg:px-9 py-8 sm:py-10">
       <Toaster position="top-right" />
       <UpgradePrompt />
 
@@ -364,9 +364,9 @@ export default function SettingsPage() {
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-white/10 transition-all h-32 resize-none" 
-                placeholder="Tell us about yourself... this is used to train your AI representative." 
+                placeholder="Add account context that may help configure your Qlynk Agent."
               />
-              <p className="text-xs text-gray-500 mt-2 italic">This bio is the primary source of truth for your AI clone.</p>
+              <p className="text-xs text-gray-500 mt-2 italic">This bio is part of the approved context available to your Qlynk Agent.</p>
             </div>
             <div>
               <label className="block text-sm font-bold text-gray-400 mb-2">Primary Brand Color</label>

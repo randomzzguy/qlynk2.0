@@ -42,11 +42,11 @@ export default function PressPage() {
         <section className="space-y-10">
           <div>
             <h2 className="text-3xl font-bold mb-4">Short product description</h2>
-            <p className="text-lg text-gray-300 leading-relaxed">Qlynk AI helps professionals, creators, founders, and businesses create a personal AI agent trained on the knowledge they choose to provide.</p>
+            <p className="text-lg text-gray-300 leading-relaxed">Qlynk AI helps people and teams build focused AI agents from approved knowledge, clear rules, and a defined purpose.</p>
           </div>
           <div>
             <h2 className="text-3xl font-bold mb-4">Company boilerplate</h2>
-            <p className="text-lg text-gray-300 leading-relaxed">Qlynk is a personal AI agent platform for building, training, publishing, and improving an AI-powered online representative. Users can add professional context, share a personal Qlynk link, and understand visitor interests through conversation insights.</p>
+            <p className="text-lg text-gray-300 leading-relaxed">Qlynk is a no-code platform for building, governing, training, publishing, and improving focused AI agents. Owners can create personal, business, property, operations, product, support, or custom guides; define their boundaries; add approved knowledge; share a Qlynk link; and learn from real conversations.</p>
           </div>
           <div>
             <h2 className="text-3xl font-bold mb-4">Media contact</h2>

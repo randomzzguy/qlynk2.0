@@ -59,7 +59,7 @@ export default function NotFound() {
           </h1>
           <p className="text-gray-400 text-lg mb-10 leading-relaxed">
             The page you're looking for doesn't exist or has been moved. 
-            Maybe your AI clone knows where it went?
+            Maybe your Qlynk Agent knows where it went?
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

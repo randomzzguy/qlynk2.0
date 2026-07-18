@@ -18,7 +18,7 @@ export default function Footer() {
               />
             </Link>
             <p className="text-sm leading-relaxed mb-6">
-              Qlynk AI helps you create a personal AI agent trained on your knowledge, ready to represent your work online 24/7.
+              Build a focused AI agent from your approved knowledge, rules, and purpose—then share it at your own Qlynk link.
             </p>
           </div>
 
@@ -26,7 +26,7 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-4">Product</h4>
             <ul className="space-y-3 text-sm">
-              <li><Link href="/ai-agent" className="hover:text-[#f46530] transition-colors">Personal AI Agent</Link></li>
+              <li><Link href="/ai-agent" className="hover:text-[#f46530] transition-colors">AI Agent Platform</Link></li>
               <li><Link href="/ai-clone" className="hover:text-[#f46530] transition-colors">AI Clone</Link></li>
               <li><Link href="/personal-ai" className="hover:text-[#f46530] transition-colors">Personal AI</Link></li>
               <li><Link href="/pricing" className="hover:text-[#f46530] transition-colors">Pricing</Link></li>

@@ -166,6 +166,20 @@ assert(
   'Public profile view exposes account deletion fields.'
 );
 
+const profileEmailWasBackfilled = await scalar(`
+  SELECT email = 'migration-test@example.com' AS value
+  FROM public.profiles
+  WHERE id = '${fixtureUserId}'
+`);
+assert(profileEmailWasBackfilled === true, 'Private profile email was not backfilled from Auth.');
+
+const profileEmailIndexIsUnique = await scalar(`
+  SELECT indisunique AS value
+  FROM pg_index
+  WHERE indexrelid = 'public.profiles_email_unique_ci_idx'::regclass
+`);
+assert(profileEmailIndexIsUnique === true, 'Private profile email index is missing or not unique.');
+
 const privateProfilePolicyCount = await scalar(`
   SELECT count(*)::int AS value
   FROM pg_policies

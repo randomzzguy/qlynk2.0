@@ -87,7 +87,7 @@ function ColorField({ label, value, onChange, hint }) {
   );
 }
 
-export function AgentConfigPage({ sectionOverride = null }) {
+export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const section = sectionOverride || searchParams.get('section') || 'general';
@@ -144,6 +144,7 @@ export function AgentConfigPage({ sectionOverride = null }) {
   const [ruleVersions, setRuleVersions] = useState([]);
   const [securitySummary, setSecuritySummary] = useState({ total: 0, prompt_injection: 0, off_topic: 0, safety: 0, last_event_at: null });
   const [restoringRules, setRestoringRules] = useState(false);
+  const [setupPanel, setSetupPanel] = useState('role');
   const savedConfigRef = useRef(null);
   const savedRulesRef = useRef(null);
   const isDirty = savedConfigRef.current !== null
@@ -480,24 +481,27 @@ export function AgentConfigPage({ sectionOverride = null }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-8 h-8 border-3 border-[#f46530] border-t-transparent rounded-full animate-spin"></div>
+      <div className={`flex items-center justify-center ${embedded ? 'min-h-[240px]' : 'min-h-[60vh]'}`}>
+        <div className="flex items-center gap-3 text-sm text-gray-400">
+          <div className="w-7 h-7 border-3 border-[#f46530] border-t-transparent rounded-full animate-spin"></div>
+          {embedded && <span>Loading profile context...</span>}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
-      <UpgradePrompt />
+    <div className={embedded ? 'w-full' : 'w-full max-w-[1440px] px-5 sm:px-7 lg:px-9 py-8 sm:py-10'}>
+      {!embedded && <UpgradePrompt />}
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
+      <div className={`${embedded ? 'rounded-2xl border border-white/10 bg-white/[0.035] px-5' : 'sticky top-0 z-30 border-b border-white/10 bg-[#0a0a0f]/90 px-1'} flex flex-col md:flex-row justify-between items-start md:items-center mb-7 py-4 gap-4 backdrop-blur-xl`}>
         <div>
-          <h1 className="text-3xl font-black text-white mb-2 flex items-center gap-3">
-            {section === 'visual' ? 'Visual Style' : section === 'profile' ? 'Agent Knowledge' : 'Agent Setup'}
+          <h1 className={`${embedded ? 'text-xl' : 'text-3xl'} font-black text-white mb-1 flex items-center gap-3`}>
+            {section === 'visual' ? 'Visual Style' : section === 'profile' ? (embedded ? 'Profile & Background' : 'Agent Knowledge') : 'Agent Setup'}
             <Sparkles size={20} className="text-[#f46530]" />
           </h1>
-          <p className="text-lg text-gray-400">
+          <p className={`${embedded ? 'text-sm' : 'text-base'} text-gray-400`}>
             {section === 'visual'
               ? 'Customize the appearance of your Qlynk Agent'
               : section === 'profile'
@@ -539,22 +543,22 @@ export function AgentConfigPage({ sectionOverride = null }) {
 
           {section === 'general' && <>
           {/* Enable/Disable Toggle */}
-          <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mb-8">
+          <div className="bg-white/[0.035] backdrop-blur-xl rounded-2xl border border-white/10 p-4 mb-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
+                <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${
                   config.is_enabled 
                     ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/10 border border-green-500/30' 
                     : 'bg-gray-700/50 border border-gray-600/50'
                 }`}>
-                  <Bot className={config.is_enabled ? 'text-green-400' : 'text-gray-500'} size={28} />
+                  <Bot className={config.is_enabled ? 'text-green-400' : 'text-gray-500'} size={22} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <h3 className="text-base font-bold text-white flex items-center gap-2">
                     Agent Status
                     {config.is_enabled && <Sparkles size={16} className="text-[#f46530]" />}
                   </h3>
-                  <p className="text-gray-400">
+                  <p className="text-sm text-gray-400">
                     {config.is_enabled ? 'Your Qlynk Agent is live and visible to visitors' : 'Your Qlynk Agent is currently offline'}
                   </p>
                 </div>
@@ -581,6 +585,8 @@ export function AgentConfigPage({ sectionOverride = null }) {
                 
                 <button
                   onClick={() => updateConfig('is_enabled', !config.is_enabled)}
+                  aria-label={config.is_enabled ? 'Take agent offline' : 'Publish agent'}
+                  aria-pressed={config.is_enabled}
                   className={`relative w-14 h-7 rounded-full transition-all ${
                     config.is_enabled 
                       ? 'bg-gradient-to-r from-green-500 to-emerald-500 shadow-lg shadow-green-500/30' 
@@ -595,6 +601,28 @@ export function AgentConfigPage({ sectionOverride = null }) {
             </div>
           </div>
 
+          <div className="grid sm:grid-cols-3 gap-2 p-1.5 mb-6 rounded-2xl border border-white/10 bg-black/20">
+            {[
+              { id: 'role', label: 'Role & Rules', detail: 'Purpose, scope, and behavior' },
+              { id: 'access', label: 'Access & Safety', detail: 'Visitor access and protection' },
+              { id: 'branding', label: 'Identity & Welcome', detail: 'Name, avatar, tone, and sharing' },
+            ].map((panel) => (
+              <button
+                key={panel.id}
+                type="button"
+                onClick={() => setSetupPanel(panel.id)}
+                aria-pressed={setupPanel === panel.id}
+                className={`rounded-xl px-4 py-3 text-left transition-all ${setupPanel === panel.id
+                  ? 'bg-white/10 border border-white/15 shadow-lg text-white'
+                  : 'border border-transparent text-gray-400 hover:text-white hover:bg-white/5'}`}
+              >
+                <span className="block text-sm font-bold">{panel.label}</span>
+                <span className="block text-[11px] mt-0.5 text-gray-500">{panel.detail}</span>
+              </button>
+            ))}
+          </div>
+
+          {setupPanel === 'role' && (
           <AgentRulesEditor
             agentType={config.agent_type || DEFAULT_AGENT_TYPE}
             onAgentTypeChange={handleAgentTypeChange}
@@ -606,8 +634,10 @@ export function AgentConfigPage({ sectionOverride = null }) {
             onRestoreVersion={restoreRuleVersion}
             restoring={restoringRules}
           />
+          )}
 
           {/* Access Control */}
+          {setupPanel === 'access' && (
           <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mb-8 hover:border-[#f46530]/20 transition-all">
             <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
               <div className="w-8 h-8 bg-purple-500/10 rounded flex items-center justify-center">
@@ -693,8 +723,10 @@ export function AgentConfigPage({ sectionOverride = null }) {
               </div>
             </div>
           </div>
+          )}
 
           {/* Agent Branding */}
+          {setupPanel === 'branding' && (
           <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mb-8 hover:border-[#f46530]/20 transition-all">
             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
               <div className="w-8 h-8 bg-[#f46530]/10 rounded flex items-center justify-center">
@@ -826,6 +858,7 @@ export function AgentConfigPage({ sectionOverride = null }) {
               </div>
             </div>
           </div>
+          )}
 
           </>}
 
@@ -873,7 +906,7 @@ export function AgentConfigPage({ sectionOverride = null }) {
                     label="CTA Button Color"
                     value={config.cta_button_color}
                     onChange={(v) => updateConfig('cta_button_color', v)}
-                    hint="'Chat with AI Clone' button"
+                    hint="Primary chat button"
                   />
                   <ColorField
                     label="CTA Button Text"
@@ -926,7 +959,7 @@ export function AgentConfigPage({ sectionOverride = null }) {
                       style={{ background: config.cta_button_color || '#f46530', color: config.cta_text_color || '#ffffff' }}
                     >
                       <MessageSquare size={16} />
-                      Chat with AI Clone
+                      Chat with {config.agent_name || 'Agent'}
                     </button>
                   </div>
                   {/* Mini chat preview */}
@@ -938,12 +971,12 @@ export function AgentConfigPage({ sectionOverride = null }) {
                     </div>
                     <div className="flex justify-end">
                       <div className="px-4 py-2 rounded-2xl text-sm text-white max-w-[80%]" style={{ background: config.user_bubble_color || '#ffffff1a', border: '1px solid rgba(255,255,255,0.2)' }}>
-                        Tell me about your projects
+                        {isPersonalAgent ? 'Tell me about your projects' : 'What can you help me with?'}
                       </div>
                     </div>
                     <div className="flex justify-start">
                       <div className="px-4 py-2 rounded-2xl text-sm text-white max-w-[80%]" style={{ background: config.ai_bubble_color || '#3b82f620', border: '1px solid rgba(59,130,246,0.3)' }}>
-                        Sure! Here are some highlights...
+                        {isPersonalAgent ? 'Sure! Here are some highlights...' : 'Here are the topics I can help with.'}
                       </div>
                     </div>
                   </div>
@@ -1278,7 +1311,7 @@ export function AgentConfigPage({ sectionOverride = null }) {
 
           </>}
 
-          {section === 'general' && <>
+          {section === 'general' && setupPanel === 'branding' && <>
           {/* Share Section */}
           <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-8 mb-20 hover:border-[#f46530]/20 transition-all">
             <div className="flex flex-col md:flex-row justify-between items-center gap-8">
@@ -1290,7 +1323,7 @@ export function AgentConfigPage({ sectionOverride = null }) {
                   Share Your Page
                 </h2>
                 <p className="text-gray-400 max-w-2xl text-lg">
-                  Share your Qlynk Agent with others. Copy your profile link or view your public page.
+                  Share your Qlynk Agent with others. Copy its public link or open the visitor experience.
                 </p>
               </div>
 
@@ -1303,7 +1336,7 @@ export function AgentConfigPage({ sectionOverride = null }) {
                   className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gray-800/60 border border-gray-700 rounded-xl text-white hover:border-[#f46530]/50 hover:bg-gray-800 transition-all font-bold"
                 >
                   <Copy size={18} />
-                  Copy Profile Link
+                  Copy Agent Link
                 </button>
                 <a 
                   href={`/${username}`}

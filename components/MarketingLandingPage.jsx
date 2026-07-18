@@ -44,7 +44,7 @@ export default function MarketingLandingPage({ page, path }) {
         </section>
 
         <section className="rounded-3xl bg-gradient-to-r from-[#f46530] to-[#c14f22] p-10 md:p-14 text-center">
-          <h2 className="text-3xl md:text-4xl font-black mb-4">Create your personal AI agent</h2>
+          <h2 className="text-3xl md:text-4xl font-black mb-4">Create your focused Qlynk Agent</h2>
           <p className="text-orange-50 mb-8">Start with a 14-day free trial and publish at your own {SITE_URL.replace('https://www.', '')}/username link.</p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link href="/auth/signup" className="rounded-xl bg-white text-orange-700 px-7 py-4 font-bold">Start Free</Link>

@@ -128,7 +128,7 @@ export default function NeuralInsights() {
   );
 
   return (
-    <div className="max-w-7xl mx-auto p-6 md:p-10 space-y-10 font-sans">
+    <div className="w-full max-w-[1500px] px-5 sm:px-7 lg:px-9 py-8 sm:py-10 space-y-10 font-sans">
       {/* Header & Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">

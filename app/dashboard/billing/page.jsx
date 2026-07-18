@@ -90,7 +90,7 @@ export default function BillingPage() {
   const usagePercent = Math.min(100, (messagesUsed / messagesLimit) * 100);
 
   return (
-    <div className="p-6 md:p-8 max-w-4xl mx-auto">
+    <div className="w-full max-w-[1200px] px-5 sm:px-7 lg:px-9 py-8 sm:py-10">
       {isPastDue && (
         <div className="mb-8 rounded-3xl border border-amber-500/30 bg-amber-500/10 p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>

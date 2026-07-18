@@ -1,11 +1,21 @@
-import { createClient as createServerClient } from '@/utils/supabase/server';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient, createClient as createServerClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { rateLimitResponse } from '@/lib/rate-limit';
 import { sendEmail } from '@/lib/email/send';
 import { welcomeEmail } from '@/lib/email/templates/welcome';
 import { verifyHCaptchaToken } from '@/lib/hcaptcha';
+import { authEmailExists, isDuplicateSignupResult } from '@/lib/signup-availability';
+
+const EMAIL_ALREADY_EXISTS_MESSAGE = 'An account with this email already exists. Please log in or use a different email.';
+const USERNAME_ALREADY_EXISTS_MESSAGE = 'This username is already taken. Please choose a different username.';
+
+async function rollbackIncompleteSignup(supabaseAdmin, userId) {
+  const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
+  if (error) {
+    console.error('[Auth] Failed to roll back incomplete signup:', error.message);
+  }
+}
 
 export async function POST(request) {
   // Rate limit: 3 requests per 15 minutes per IP
@@ -51,6 +61,42 @@ export async function POST(request) {
       );
     }
 
+    // Supabase deliberately obscures duplicate email signups when email confirmation is enabled.
+    // Check the authoritative Auth user list on the server before requesting a new signup email.
+    const supabaseAdmin = createAdminClient();
+    const emailLookup = await authEmailExists(supabaseAdmin, normalizedEmail);
+
+    if (emailLookup.error) {
+      console.error('[Auth] Could not verify email availability:', emailLookup.error.message);
+      return NextResponse.json(
+        { message: 'We could not verify email availability. Please try again.' },
+        { status: 503 }
+      );
+    }
+
+    if (emailLookup.exists) {
+      console.info('[Auth] Signup rejected because the email is already registered.');
+      return NextResponse.json({ message: EMAIL_ALREADY_EXISTS_MESSAGE }, { status: 409 });
+    }
+
+    const { count: usernameCount, error: usernameLookupError } = await supabaseAdmin
+      .from('profiles')
+      .select('id', { count: 'exact', head: true })
+      .eq('username', normalizedUsername);
+
+    if (usernameLookupError) {
+      console.error('[Auth] Could not verify username availability:', usernameLookupError.message);
+      return NextResponse.json(
+        { message: 'We could not verify username availability. Please try again.' },
+        { status: 503 }
+      );
+    }
+
+    if ((usernameCount || 0) > 0) {
+      console.info('[Auth] Signup rejected because the username is already registered.');
+      return NextResponse.json({ message: USERNAME_ALREADY_EXISTS_MESSAGE }, { status: 409 });
+    }
+
     // Proceed with signup
     const cookieStore = await cookies();
     const supabase = createServerClient(cookieStore);
@@ -68,18 +114,24 @@ export async function POST(request) {
 
     console.info('[Auth] Signup completed:', { success: !error, errorCode: error?.code });
 
+    // Defense in depth for a concurrent signup or Supabase's masked duplicate response.
+    if (isDuplicateSignupResult(signUpData, error)) {
+      console.info('[Auth] Signup rejected after Supabase reported a duplicate email.');
+      return NextResponse.json({ message: EMAIL_ALREADY_EXISTS_MESSAGE }, { status: 409 });
+    }
+
     if (error) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
 
+    if (!signUpData?.user) {
+      console.error('[Auth] Signup returned no user and no explicit error.');
+      return NextResponse.json({ message: 'Account setup failed. Please try again.' }, { status: 500 });
+    }
+
     // MANUALLY create the profile and subscription using the Admin client
     // This bypasses the need for database triggers which are currently failing
-    if (signUpData?.user) {
-      const supabaseAdmin = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_ROLE_KEY
-      );
-
+    if (signUpData.user) {
       console.log('[v0] Manually creating records for user:', signUpData.user.id);
 
       // Create Profile
@@ -87,11 +139,18 @@ export async function POST(request) {
         .from('profiles')
         .insert({
           id: signUpData.user.id,
-          username: normalizedUsername
+          username: normalizedUsername,
+          email: normalizedEmail,
         });
 
       if (profileError) {
         console.error('[v0] Manual Profile Error:', profileError.message);
+        await rollbackIncompleteSignup(supabaseAdmin, signUpData.user.id);
+        const isUniqueConflict = profileError.code === '23505';
+        return NextResponse.json(
+          { message: isUniqueConflict ? USERNAME_ALREADY_EXISTS_MESSAGE : 'Account setup failed. Please try again.' },
+          { status: isUniqueConflict ? 409 : 500 }
+        );
       }
 
       // Create Subscription
@@ -106,6 +165,8 @@ export async function POST(request) {
 
       if (subError) {
         console.error('[v0] Manual Subscription Error:', subError.message);
+        await rollbackIncompleteSignup(supabaseAdmin, signUpData.user.id);
+        return NextResponse.json({ message: 'Account setup failed. Please try again.' }, { status: 500 });
       }
 
       // Create Default Page (so URL works immediately)
@@ -129,6 +190,8 @@ export async function POST(request) {
 
       if (pageError) {
         console.error('[v0] Manual Page Error:', pageError.message);
+        await rollbackIncompleteSignup(supabaseAdmin, signUpData.user.id);
+        return NextResponse.json({ message: 'Account setup failed. Please try again.' }, { status: 500 });
       }
 
       // Create Default Agent Config
@@ -137,13 +200,15 @@ export async function POST(request) {
         .insert({
           user_id: signUpData.user.id,
           agent_name: 'Your AI',
-          welcome_message: `Hi! I'm ${normalizedUsername}'s AI clone. Ask me anything about their work!`,
+          welcome_message: `Hi! I'm ${normalizedUsername}'s Qlynk Agent. Ask me anything within my configured knowledge and purpose!`,
           is_enabled: true,
           primary_color: '#f46530'
         });
 
       if (agentError) {
         console.error('[v0] Manual Agent Error:', agentError.message);
+        await rollbackIncompleteSignup(supabaseAdmin, signUpData.user.id);
+        return NextResponse.json({ message: 'Account setup failed. Please try again.' }, { status: 500 });
       }
     }
 

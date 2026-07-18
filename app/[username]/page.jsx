@@ -107,7 +107,7 @@ export default async function PublicPage({ params }) {
             @{username} is available!
           </h1>
           <p className="text-lg text-gray-400 mb-10 leading-relaxed">
-            This digital identity hasn&apos;t been claimed yet. Create your AI clone and secure this handle in seconds.
+            This Qlynk address hasn&apos;t been claimed yet. Create your focused AI agent and secure this handle in seconds.
           </p>
           
           <Link 

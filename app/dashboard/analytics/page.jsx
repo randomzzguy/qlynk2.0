@@ -221,7 +221,7 @@ export default function AnalyticsPage() {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
+    <div className="w-full max-w-[1440px] px-5 sm:px-7 lg:px-9 py-8 sm:py-10">
       <UpgradePrompt />
 
       <h1 className="text-3xl font-black text-white mb-10 flex items-center gap-3">

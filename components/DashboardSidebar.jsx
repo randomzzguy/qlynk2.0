@@ -32,7 +32,7 @@ const navGroups = [
     ]
   },
   {
-    title: 'AI Clone',
+    title: 'Agent Workspace',
     items: [
       { href: '/dashboard/agent?section=general', icon: SlidersHorizontal, label: 'Agent Setup', section: 'general' },
       { href: '/dashboard/agent?section=visual', icon: Palette, label: 'Visual Style', section: 'visual' },

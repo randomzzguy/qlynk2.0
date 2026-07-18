@@ -229,7 +229,7 @@ export default function ConversationsPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+    <div className="w-full max-w-[1400px] px-5 sm:px-7 lg:px-9 py-8 sm:py-10">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>

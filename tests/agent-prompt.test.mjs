@@ -54,6 +54,25 @@ test('immutable platform policy precedes owner rules and untrusted knowledge', (
   assert.doesNotMatch(prompt, /you can professionally expand on skills/i);
 });
 
+test('response guidance restores natural synthesis and measured visitor engagement', () => {
+  const prompt = buildAgentSystemPrompt({
+    agent_name: 'Studio Guide',
+    agent_type: 'business',
+    tone: 'friendly',
+    skills: ['Brand strategy'],
+  }, [], {
+    purpose: 'Explain the studio services to prospective customers.',
+    response_length: 'balanced',
+  });
+
+  assert.match(prompt, /warm, approachable, conversational voice/i);
+  assert.match(prompt, /own natural wording/i);
+  assert.match(prompt, /complete, helpful sentences/i);
+  assert.match(prompt, /one short, specific follow-up question/i);
+  assert.match(prompt, /Do not force a question after every reply/i);
+  assert.match(prompt, /never add unverified capabilities, outcomes, superlatives, or personal claims/i);
+});
+
 test('scope classifier explicitly blocks free-LLM and prompt-extraction use', () => {
   const classifier = buildScopeClassifierPrompt({
     config: { agent_type: 'operations' },

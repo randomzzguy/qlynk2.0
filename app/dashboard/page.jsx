@@ -222,7 +222,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    <div className="w-full max-w-[1500px] px-5 sm:px-7 lg:px-9 py-8 sm:py-10">
       {verifyingPayment && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex flex-col items-center justify-center text-center px-4">
           <div className="w-20 h-20 bg-[#f46530]/10 rounded-3xl flex items-center justify-center mb-6 border border-[#f46530]/20 animate-pulse">
@@ -261,9 +261,6 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
-
-      <UpgradePrompt />
-      <TrialChoiceManager subscription={subscription} userId={profile?.id} />
 
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
@@ -307,6 +304,9 @@ export default function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      <UpgradePrompt />
+      <TrialChoiceManager subscription={subscription} userId={profile?.id} />
 
       {isAccountDeletionScheduled && (
         <div className="mb-8 rounded-3xl border border-amber-500/30 bg-amber-500/10 p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -395,8 +395,8 @@ export default function DashboardPage() {
                 </div>
                 <p className="text-gray-400 text-sm font-medium">
                   {agentConfig?.is_enabled 
-                    ? 'Your AI clone is active and receiving visitors.' 
-                    : 'Your AI clone is currently disabled.'}
+                    ? 'Your Qlynk Agent is active and receiving visitors.'
+                    : 'Your Qlynk Agent is currently disabled.'}
                 </p>
               </div>
             </div>
@@ -476,7 +476,7 @@ export default function DashboardPage() {
                     <MessageSquare size={24} />
                   </div>
                   <h4 className="text-white font-bold mb-1">No conversations yet</h4>
-                  <p className="text-sm text-gray-400 max-w-xs mx-auto">Share your profile link to start engaging with your audience.</p>
+                  <p className="text-sm text-gray-400 max-w-xs mx-auto">Share your agent link to start answering questions for visitors.</p>
                 </div>
               )}
             </div>

@@ -605,7 +605,7 @@ export async function POST(req) {
           ...trustedHistory,
           latestMessage,
         ],
-        temperature: 0.35,
+        temperature: 0.5,
         max_tokens: MAX_OUTPUT_TOKENS,
         stream: true,
       }),

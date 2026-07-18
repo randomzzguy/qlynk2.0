@@ -42,23 +42,23 @@ const faqs = [
     items: [
       {
         q: 'What exactly is a Qlynk Agent?',
-        a: 'A Qlynk Agent is an AI-powered version of you that lives on your personal page at qlynk.site/yourname. It answers questions about you, your work, your skills, and your projects — 24/7, without you lifting a finger. Think of it as a digital clone that represents you online.',
+        a: 'A Qlynk Agent is a focused AI guide published at qlynk.site/yourname. It can represent a person, business, property, operation, product, support workflow, or custom purpose and answers from the knowledge and rules its owner provides.',
       },
       {
-        q: 'How does the AI know things about me?',
-        a: 'You train your Qlynk Agent through your dashboard. You fill in structured forms covering your bio, skills, projects, social links, and contact info. You can also upload documents like a resume, portfolio PDF, or any text file, and the agent learns from those too.',
+        q: 'How does the agent know what to answer?',
+        a: 'You configure its purpose, audience, allowed and blocked topics, behavior, uncertainty response, and escalation path. You can then add profile context, capabilities, facts, FAQs, links, custom knowledge, and supported documents from the dashboard.',
       },
       {
         q: 'What kind of questions can visitors ask my Qlynk Agent?',
-        a: 'Visitors can ask anything about you — your background, what services you offer, how to contact you, what projects you\'ve worked on, your pricing, your availability, and much more. The agent answers conversationally based on the knowledge you\'ve provided.',
+        a: 'Visitors can ask questions reasonably connected to the purpose and topics you configured. The agent answers from approved knowledge, declines out-of-scope or blocked requests, and can direct uncertain or sensitive issues to a human.',
       },
       {
         q: 'Can I customize how my Qlynk Agent looks and sounds?',
-        a: 'Yes. You can set your agent\'s name, profile avatar, welcome message, and primary brand color. On the Agency tier you can fully white-label the agent, removing all qlynk branding entirely.',
+        a: 'Yes. You can choose the agent type, purpose, audience, response rules, name, avatar, welcome message, tone, response length, and visual colors. Agency branding options remain available according to the current plan details below.',
       },
       {
         q: 'What does my public page look like?',
-        a: 'Your public page at qlynk.site/username displays your profile using a theme you choose from the dashboard. The Qlynk Agent chat widget sits as a floating bubble in the corner, ready for visitors to interact with at any time.',
+        a: 'Your public qlynk.site/username page presents the agent as a focused chat experience with the identity, introduction, knowledge, and visual style you configured.',
       },
       {
         q: 'Is my Qlynk Agent available all the time?',

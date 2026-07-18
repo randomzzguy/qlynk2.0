@@ -5,8 +5,8 @@ import JsonLd from '@/components/JsonLd';
 import { breadcrumbSchema, createMetadata } from '@/lib/seo';
 
 export const metadata = createMetadata({
-  title: 'Qlynk AI FAQ | Personal AI Agent Questions',
-  description: 'Get clear answers about Qlynk AI, personal AI agents, AI clones, training data, availability, customization, privacy, and pricing.',
+  title: 'Qlynk AI FAQ | AI Agent Platform Questions',
+  description: 'Get clear answers about Qlynk AI agent types, knowledge, rules, scope, availability, customization, privacy, and pricing.',
   path: '/faq',
 });
 
@@ -16,23 +16,23 @@ const faqs = [
     items: [
       {
         q: "What is Qlynk?",
-        a: "Qlynk AI is a personal AI agent platform. It lets you create an AI clone trained on the professional knowledge you choose to provide, so visitors can learn about you, ask questions, and find the right next step at your personal qlynk.site/username link."
+        a: "Qlynk AI is a no-code platform for building focused AI agents from approved knowledge and owner-defined rules. You can publish the agent at a qlynk.site/username link so people can ask questions within its configured purpose."
       },
       {
         q: "How does Qlynk work?",
-        a: "Claim your qlynk.site/username address, add your bio, experience, projects, FAQs, links, and supported documents, then publish and share your Qlynk AI agent. You can update its knowledge and settings from the dashboard."
+        a: "Claim your qlynk.site/username address, choose an agent type, define its purpose and audience, set topic and behavior boundaries, add approved knowledge, then publish and share it. You can review conversations and update everything from the dashboard."
       },
       {
         q: "Who is Qlynk for?",
-        a: "Qlynk AI is built for freelancers, consultants, founders, creators, job seekers, professionals, and expert-led businesses that want a conversational way to explain their work online."
+        a: "Qlynk supports people and experts, businesses and services, properties and venues, operations and training teams, products, customer-support workflows, and custom focused use cases."
       },
       {
         q: "Is Qlynk an AI chatbot?",
-        a: "Qlynk uses conversational AI, but it is designed as a personal AI agent rather than a generic scripted chatbot. It represents the knowledge and professional context its owner provides."
+        a: "Qlynk uses conversational AI, but each agent is built around an owner-defined job, approved knowledge, and explicit boundaries rather than a fixed script or unrestricted general assistant."
       },
       {
         q: "How is Qlynk different from ChatGPT?",
-        a: "ChatGPT is a general-purpose AI assistant. A Qlynk Agent is a published, branded personal AI experience focused on one person or business, using owner-provided knowledge, links, instructions, and visitor insights."
+        a: "ChatGPT is a general-purpose AI assistant. A Qlynk Agent is a published, branded experience focused on one configured person, business, place, operation, product, support workflow, or custom purpose, using owner-provided knowledge and rules."
       },
       {
         q: "Can my AI answer questions while I am offline?",
@@ -40,7 +40,7 @@ const faqs = [
       },
       {
         q: "What data can I train my AI with?",
-        a: "You can add structured profile information, a bio, skills, projects, social and booking links, FAQs, additional instructions, and supported documents. Only provide information you have the right to use and want the agent to know."
+        a: "You can add profile context, capabilities, examples, contact and social links, manual facts, FAQs, website links, custom knowledge, and supported documents. Only provide information you have the right to use and want the agent to know."
       },
       {
         q: "How much does Qlynk cost?",
@@ -48,7 +48,7 @@ const faqs = [
       },
       {
         q: "How long does setup take?",
-        a: "The initial setup is designed to take only a few minutes. The time needed to fully train your AI clone depends on how much professional knowledge and supporting material you add."
+        a: "The initial role and purpose can be set in a few minutes. A useful production setup takes longer when the job needs detailed rules, FAQs, procedures, documents, or carefully reviewed knowledge."
       }
     ]
   },
@@ -57,11 +57,11 @@ const faqs = [
     items: [
       {
         q: "Can I customize my AI agent's responses?",
-        a: "Yes. You can manage its knowledge, additional instructions, welcome message, identity, appearance, and supporting links. You remain responsible for reviewing the information you provide and how the agent is used."
+        a: "Yes. You can manage its type, purpose, audience, allowed and blocked topics, do and don’t rules, uncertainty response, escalation message, response length, knowledge, identity, tone, appearance, and supporting links. Qlynk’s fixed platform safeguards remain active."
       },
       {
-        q: "What can visitors do with my AI clone?",
-        a: "Visitors can ask about your work, skills, experience, services, products, and projects; follow relevant links; and use the contact or booking paths you provide."
+        q: "What can visitors do with my Qlynk Agent?",
+        a: "Visitors can ask questions within the agent’s configured purpose, explore approved knowledge conversationally, follow relevant links, and use the contact, booking, support, or escalation paths you provide."
       },
       {
         q: "Can I see what people are asking?",
@@ -81,7 +81,7 @@ const faqs = [
         a: "Only add information that you want the agent to use, review documents before uploading them, and remove knowledge that should no longer be available. Do not upload secrets or information you are not authorized to process."
       },
       {
-        q: "Can I control whether my AI clone is live?",
+        q: "Can I control whether my Qlynk Agent is live?",
         a: "Yes. Agent owners can manage their agent configuration and availability from the authenticated dashboard."
       }
     ]
@@ -133,7 +133,7 @@ export default function FAQPage() {
             Frequently Asked Questions
           </h1>
           <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-            Everything you need to know about creating and managing your personal AI agent.
+            Everything you need to know about creating and managing a focused Qlynk Agent.
           </p>
         </div>
 
@@ -164,7 +164,7 @@ export default function FAQPage() {
         </div>
 
         <div className="mt-20 text-center bg-gradient-to-r from-blue-900/40 to-purple-900/40 border border-white/10 rounded-3xl p-10 backdrop-blur-md">
-          <h3 className="text-2xl font-bold text-white mb-4">Ready to create your AI clone?</h3>
+          <h3 className="text-2xl font-bold text-white mb-4">Ready to create your Qlynk Agent?</h3>
           <p className="text-gray-300 mb-8">14-day free trial · No charge today · 5-minute setup</p>
           <Link 
             href="/auth/signup"

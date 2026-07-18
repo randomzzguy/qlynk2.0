@@ -63,7 +63,7 @@ export default function PrivacyPage() {
                   We use your information to provide, maintain, and improve the Service, specifically to:
                 </p>
                 <ul className="list-disc pl-6 space-y-2 mt-4 text-gray-400">
-                  <li>Power your personal AI agent (Qlynk Agent).</li>
+                  <li>Power and operate your configured Qlynk Agent.</li>
                   <li>Process payments and subscriptions.</li>
                   <li>Send you technical notices and support messages.</li>
                   <li>Respond to your comments and questions.</li>

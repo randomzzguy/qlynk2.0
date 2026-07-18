@@ -122,17 +122,14 @@ export default function DashboardSidebar({ onSignOut, isOpen, onClose, username,
         {/* Logo Section */}
         <div className={`p-6 border-b border-gray-800/30 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
           {!isCollapsed ? (
-            <Link href="/" className="group flex items-center gap-2" onClick={onClose}>
-              <div className="w-8 h-8 bg-gradient-to-br from-[#f46530] to-[#ff8c5a] rounded-lg flex items-center justify-center shadow-lg">
-                <Sparkles size={18} className="text-white" />
-              </div>
+            <Link href="/" className="group flex items-center" onClick={onClose}>
               <Image 
                 src="/logoWhite.svg" 
                 alt="Qlynk AI logo"
-                width={90} 
-                height={26} 
+                width={122}
+                height={36}
                 priority
-                className="h-auto"
+                className="h-auto w-[122px] group-hover:scale-[1.02] transition-transform"
               />
             </Link>
           ) : (

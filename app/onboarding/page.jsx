@@ -17,20 +17,15 @@ import {
   Sparkles, 
   User, 
   Brain, 
-  Palette, 
   Rocket,
   Check,
-  Plus,
-  Trash2,
   Loader2
 } from 'lucide-react';
 
 const STEPS = [
-  { id: 'welcome', label: 'Welcome', icon: Sparkles },
-  { id: 'profile', label: 'Profile', icon: User },
+  { id: 'profile', label: 'Basics', icon: User },
   { id: 'knowledge', label: 'Knowledge', icon: Brain },
-  { id: 'branding', label: 'Branding', icon: Palette },
-  { id: 'complete', label: 'Go Live', icon: Rocket },
+  { id: 'complete', label: 'Publish', icon: Rocket },
 ];
 
 export default function OnboardingPage() {
@@ -56,10 +51,6 @@ export default function OnboardingPage() {
     welcome_message: "Hi! I'm the AI assistant for this page. How can I help you?",
     primary_color: '#f46530',
   });
-
-  // Temp inputs
-  const [newSkill, setNewSkill] = useState('');
-  const [newProject, setNewProject] = useState({ name: '', description: '' });
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -114,7 +105,12 @@ export default function OnboardingPage() {
 
       // Set step based on saved progress
       if (profile?.onboarding_step) {
-        const stepIndex = STEPS.findIndex(s => s.id === profile.onboarding_step);
+        const resumedStep = profile.onboarding_step === 'branding'
+          ? 'complete'
+          : profile.onboarding_step === 'welcome'
+            ? 'profile'
+            : profile.onboarding_step;
+        const stepIndex = STEPS.findIndex(s => s.id === resumedStep);
         if (stepIndex > 0) setCurrentStep(stepIndex);
       }
 
@@ -152,7 +148,9 @@ export default function OnboardingPage() {
         skills: formData.skills,
         projects: formData.projects,
         custom_knowledge: formData.custom_knowledge,
-        agent_name: formData.agent_name,
+        agent_name: formData.agent_name === 'Your AI' && formData.full_name.trim()
+          ? `${formData.full_name.trim()}'s AI`
+          : formData.agent_name,
         welcome_message: formData.welcome_message,
         primary_color: formData.primary_color,
         cta_button_color: formData.primary_color,
@@ -270,45 +268,11 @@ export default function OnboardingPage() {
     }
   };
 
-  const addSkill = () => {
-    if (newSkill.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        skills: [...prev.skills, { name: newSkill.trim(), level: 'intermediate' }]
-      }));
-      setNewSkill('');
-    }
-  };
-
-  const removeSkill = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      skills: prev.skills.filter((_, i) => i !== index)
-    }));
-  };
-
-  const addProject = () => {
-    if (newProject.name.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        projects: [...prev.projects, { ...newProject }]
-      }));
-      setNewProject({ name: '', description: '' });
-    }
-  };
-
-  const removeProject = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      projects: prev.projects.filter((_, i) => i !== index)
-    }));
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-orange border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-400 font-semibold">Loading...</p>
         </div>
       </div>
@@ -316,7 +280,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-[#0f0f14]">
+    <div className="min-h-screen relative overflow-hidden bg-[#090a0f] text-white">
       {/* Background - neon lines, particles and gradient orbs matching homepage */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <QlynkBackground />
@@ -324,25 +288,33 @@ export default function OnboardingPage() {
         <div className="gradient-sphere sphere-2" />
         <div className="gradient-sphere sphere-3" />
         <div className="grid-overlay" />
+        <div className="absolute inset-0 bg-[#090a0f]/55" />
       </div>
       
       {/* Header */}
-      <div className="relative z-10 px-6 py-4 flex items-center justify-between">
+      <div className="relative z-10 max-w-5xl mx-auto px-5 sm:px-6 py-5 flex items-center justify-between">
         <Link href="/">
           <Image width={120} height={40} src="/logoWhite.svg" alt="Qlynk AI logo" priority />
         </Link>
-        <button 
-          onClick={handleSkip}
-          className="text-gray-400 hover:text-white text-sm transition-colors"
-          disabled={saving}
-        >
-          {saving ? 'Processing...' : 'Skip for now'}
-        </button>
+        {currentStep < STEPS.length - 1 && (
+          <button
+            onClick={handleSkip}
+            className="px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 text-sm font-semibold transition-colors disabled:opacity-50"
+            disabled={saving}
+          >
+            {saving ? 'Processing...' : 'Set up later'}
+          </button>
+        )}
       </div>
 
       {/* Progress Bar */}
-      <div className="relative z-10 max-w-2xl mx-auto px-6 py-4">
-        <div className="flex items-center justify-between mb-2">
+      <div className="relative z-10 max-w-2xl mx-auto px-4 sm:px-6 py-4">
+        <div className="rounded-2xl border border-white/15 bg-[#11131b]/90 px-4 sm:px-6 pt-4 sm:pt-5 pb-5 sm:pb-9 shadow-xl shadow-black/20 backdrop-blur-xl">
+          <div className="flex sm:hidden items-center justify-between mb-4 text-xs font-bold uppercase tracking-widest">
+            <span className="text-gray-300">Step {currentStep + 1} of {STEPS.length}</span>
+            <span className="text-orange">{STEPS[currentStep].label}</span>
+          </div>
+          <div className="flex items-center justify-between">
           {STEPS.map((step, index) => {
             const Icon = step.icon;
             const isActive = index === currentStep;
@@ -353,10 +325,10 @@ export default function OnboardingPage() {
                   <motion.div 
                     className={`flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-500 border ${
                       isComplete 
-                        ? 'bg-green-500/20 border-green-500 text-green-500' 
+                        ? 'bg-green/20 border-green text-green'
                         : isActive 
-                          ? 'bg-orange/20 border-orange text-orange shadow-[0_0_20px_rgba(244,101,48,0.3)]' 
-                          : 'bg-gray-800/50 border-white/5 text-gray-500'
+                          ? 'bg-orange/20 border-orange text-orange shadow-[0_0_20px_rgba(244,101,48,0.35)]'
+                          : 'bg-white/[0.07] border-white/15 text-gray-300'
                     }`}
                     animate={isActive ? { scale: [1, 1.1, 1] } : {}}
                     transition={{ duration: 2, repeat: Infinity }}
@@ -368,16 +340,16 @@ export default function OnboardingPage() {
                     )}
                   </motion.div>
                   {/* Tooltip-like label for mobile/tablet */}
-                  <span className={`absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] whitespace-nowrap uppercase tracking-widest font-black transition-colors ${
-                    isActive ? 'text-orange' : 'text-gray-600'
+                  <span className={`hidden sm:block absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] whitespace-nowrap uppercase tracking-widest font-black transition-colors ${
+                    isActive ? 'text-orange' : isComplete ? 'text-green' : 'text-gray-300'
                   }`}>
                     {step.label}
                   </span>
                 </div>
                 {index < STEPS.length - 1 && (
-                  <div className="flex-1 mx-4 h-[2px] bg-gray-800 relative overflow-hidden rounded-full">
+                  <div className="flex-1 mx-2 sm:mx-4 h-[2px] bg-white/15 relative overflow-hidden rounded-full">
                     <motion.div 
-                      className="absolute inset-0 bg-gradient-to-r from-orange to-green-500"
+                      className="absolute inset-0 bg-gradient-to-r from-orange to-green"
                       initial={{ scaleX: 0 }}
                       animate={{ scaleX: isComplete ? 1 : 0 }}
                       style={{ originX: 0 }}
@@ -388,11 +360,12 @@ export default function OnboardingPage() {
               </div>
             );
           })}
+          </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="relative z-10 max-w-2xl mx-auto px-6 py-8 semi-translucent-card rounded-2xl border border-white/10 mb-12">
+      <div className="relative z-10 max-w-2xl mx-4 sm:mx-auto px-5 sm:px-8 py-7 sm:py-9 bg-[#11131b]/95 backdrop-blur-2xl rounded-3xl border border-white/20 shadow-[0_24px_80px_rgba(0,0,0,0.45)] mb-12">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentStep}
@@ -401,290 +374,140 @@ export default function OnboardingPage() {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
           >
-            {/* Step 0: Welcome */}
+            {/* Step 1: Basics */}
             {currentStep === 0 && (
-              <div className="text-center">
-                <div className="w-24 h-24 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-8">
-                  <Sparkles className="w-12 h-12 text-orange-500" />
-                </div>
-                <h1 className="text-4xl font-black text-white mb-4">
-                  Welcome to qlynk, {username}!
-                </h1>
-                <p className="text-xl text-gray-300 mb-8 max-w-md mx-auto">
-                  Let&apos;s set up your Qlynk Agent in just a few steps. Your AI ambassador will be ready to chat with visitors 24/7.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left max-w-xl mx-auto">
-                  {[
-                    { icon: User, title: "Identity", desc: "Your profile & bio" },
-                    { icon: Brain, title: "Intelligence", desc: "Skills & projects" },
-                    { icon: Palette, title: "Branding", desc: "Style & appearance" },
-                    { icon: Rocket, title: "Deployment", desc: "Instant go-live" }
-                  ].map((item, i) => (
-                    <motion.div 
-                      key={i}
-                      className="p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center gap-4 group hover:border-orange/30 transition-all"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.5 + (i * 0.1) }}
-                    >
-                      <div className="w-10 h-10 rounded-xl bg-orange/10 flex items-center justify-center text-orange group-hover:scale-110 transition-transform">
-                        <item.icon size={20} />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-white text-sm">{item.title}</h4>
-                        <p className="text-xs text-gray-500">{item.desc}</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Step 1: Profile */}
-            {currentStep === 1 && (
               <div>
-                <h2 className="text-3xl font-black text-white mb-2 text-center">What should your agent represent?</h2>
-                <p className="text-gray-400 mb-8 text-center">Choose a type, then provide the identity or place behind it.</p>
+                <div className="w-16 h-16 bg-orange/15 border border-orange/25 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(235,94,40,0.14)]">
+                  <Sparkles className="w-8 h-8 text-orange" />
+                </div>
+                <h1 className="text-3xl sm:text-4xl font-black text-white mb-3 text-center break-words">
+                  Let&apos;s create your agent, {username}
+                </h1>
+                <p className="text-gray-200 mb-8 text-center max-w-lg mx-auto leading-relaxed">
+                  Start with three simple details. Everything else can be customized later.
+                </p>
                 
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-white font-semibold mb-2">Agent Type</label>
+                    <label className="block text-white font-semibold mb-2">Who or what does this agent represent?</label>
                     <select
                       value={formData.agent_type}
                       onChange={(e) => setFormData(prev => ({ ...prev, agent_type: e.target.value }))}
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:border-orange-500 focus:outline-none"
+                      className="w-full px-4 py-3.5 bg-[#090b11] border border-white/20 rounded-xl text-white focus:border-orange focus:ring-2 focus:ring-orange/25 focus:outline-none transition-all"
                     >
                       {AGENT_TYPE_CATALOG.map((type) => (
                         <option key={type.id} value={type.id}>{type.label}</option>
                       ))}
                     </select>
-                    <p className="text-gray-500 text-sm mt-2">
-                      {getAgentTypeDefinition(formData.agent_type).description} You can customize detailed rules later.
+                    <p className="text-gray-300 text-sm leading-relaxed mt-2">
+                      {getAgentTypeDefinition(formData.agent_type).description}
                     </p>
                   </div>
 
                   <div>
-                    <label className="block text-white font-semibold mb-2">Owner or Display Name</label>
+                    <label className="block text-white font-semibold mb-2">Name or business</label>
                     <input
                       type="text"
                       value={formData.full_name}
                       onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
-                      placeholder="John Doe"
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none"
+                      placeholder="e.g. John Doe or Acme Studio"
+                      className="w-full px-4 py-3.5 bg-[#090b11] border border-white/20 rounded-xl text-white placeholder:text-gray-400 focus:border-orange focus:ring-2 focus:ring-orange/25 focus:outline-none transition-all"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-white font-semibold mb-2">Description / Background</label>
+                    <label className="block text-white font-semibold mb-2">Short description</label>
                     <textarea
                       value={formData.bio}
                       onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                      placeholder="I'm a software developer passionate about building great products..."
-                      rows={4}
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none resize-none"
+                      placeholder="What should visitors know about you, your business, or this place?"
+                      rows={3}
+                      className="w-full px-4 py-3.5 bg-[#090b11] border border-white/20 rounded-xl text-white placeholder:text-gray-400 focus:border-orange focus:ring-2 focus:ring-orange/25 focus:outline-none resize-none transition-all"
                     />
-                    <p className="text-gray-500 text-sm mt-2">This becomes part of the approved context for your agent.</p>
+                    <p className="text-gray-300 text-sm leading-relaxed mt-2">A sentence or two is enough to get started.</p>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Step 2: Knowledge */}
-            {currentStep === 2 && (
+            {/* Step 2: Starter knowledge */}
+            {currentStep === 1 && (
               <div>
-                <h2 className="text-3xl font-black text-white mb-2 text-center">Train Your Agent</h2>
-                <p className="text-gray-400 mb-8 text-center">Add capabilities, examples, and knowledge relevant to this agent.</p>
+                <div className="w-16 h-16 bg-blue-500/15 border border-blue-400/25 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Brain className="w-8 h-8 text-blue-300" />
+                </div>
+                <h2 className="text-3xl sm:text-4xl font-black text-white mb-3 text-center">Add one useful starting point</h2>
+                <p className="text-gray-200 mb-8 text-center max-w-lg mx-auto leading-relaxed">
+                  Paste anything your agent should know first. This step is optional—you can build its knowledge over time.
+                </p>
                 
-                <div className="space-y-8">
-                  {/* Skills */}
+                <div className="space-y-5">
                   <div>
-                    <label className="block text-white font-semibold mb-3">Skills or Capabilities</label>
-                    <div className="flex gap-2 mb-3">
-                      <input
-                        type="text"
-                        value={newSkill}
-                        onChange={(e) => setNewSkill(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && addSkill()}
-                        placeholder="e.g., React, Python, UI Design"
-                        className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none"
-                      />
-                      <button
-                        onClick={addSkill}
-                        className="px-4 py-3 bg-orange-500 hover:bg-orange-600 rounded-xl transition-colors"
-                      >
-                        <Plus className="w-5 h-5 text-white" />
-                      </button>
+                    <div className="flex items-center justify-between gap-4 mb-2">
+                      <label className="block text-white font-semibold">Quick context</label>
+                      <span className="text-xs font-bold uppercase tracking-widest text-gray-300 bg-white/[0.07] border border-white/10 px-3 py-1 rounded-full">Optional</span>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      {formData.skills.map((skill, index) => (
-                        <span key={index} className="flex items-center gap-2 px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-full text-gray-300">
-                          {skill.name}
-                          <button onClick={() => removeSkill(index)} className="hover:text-red-400">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Projects */}
-                  <div>
-                    <label className="block text-white font-semibold mb-3">Projects or Examples</label>
-                    <div className="space-y-3 mb-3">
-                      <input
-                        type="text"
-                        value={newProject.name}
-                        onChange={(e) => setNewProject(prev => ({ ...prev, name: e.target.value }))}
-                        placeholder="Project name"
-                        className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none"
-                      />
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={newProject.description}
-                          onChange={(e) => setNewProject(prev => ({ ...prev, description: e.target.value }))}
-                          placeholder="Brief description"
-                          className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none"
-                        />
-                        <button
-                          onClick={addProject}
-                          className="px-4 py-3 bg-orange-500 hover:bg-orange-600 rounded-xl transition-colors"
-                        >
-                          <Plus className="w-5 h-5 text-white" />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      {formData.projects.map((project, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-gray-800 border border-gray-700 rounded-xl">
-                          <div>
-                            <p className="font-semibold text-white">{project.name}</p>
-                            <p className="text-sm text-gray-400">{project.description}</p>
-                          </div>
-                          <button onClick={() => removeProject(index)} className="text-gray-400 hover:text-red-400">
-                            <Trash2 className="w-5 h-5" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Custom Knowledge */}
-                  <div>
-                    <label className="block text-white font-semibold mb-2">Additional Information (Optional)</label>
                     <textarea
                       value={formData.custom_knowledge}
                       onChange={(e) => setFormData(prev => ({ ...prev, custom_knowledge: e.target.value }))}
-                      placeholder="Any other information you want your agent to know..."
-                      rows={3}
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none resize-none"
+                      placeholder="For example: what you offer, common questions, opening hours, current projects, or anything visitors often ask about..."
+                      rows={8}
+                      className="w-full px-4 py-3.5 bg-[#090b11] border border-white/20 rounded-xl text-white placeholder:text-gray-400 focus:border-orange focus:ring-2 focus:ring-orange/25 focus:outline-none resize-none transition-all"
                     />
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-2xl bg-white/[0.06] border border-white/10 p-4">
+                    <Sparkles className="w-5 h-5 text-orange flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-gray-200 leading-relaxed">
+                      After publishing, you can add documents, website links, FAQs, skills, projects, and more from the Knowledge Base.
+                    </p>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Step 3: Branding */}
-            {currentStep === 3 && (
-              <div>
-                <h2 className="text-3xl font-black text-white mb-2 text-center">Customize Your Agent</h2>
-                <p className="text-gray-400 mb-8 text-center">Make your Qlynk Agent feel personal and on-brand.</p>
-                
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-white font-semibold mb-2">Agent Name</label>
-                    <input
-                      type="text"
-                      value={formData.agent_name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, agent_name: e.target.value }))}
-                      placeholder="Your AI"
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-white font-semibold mb-2">Welcome Message</label>
-                    <textarea
-                      value={formData.welcome_message}
-                      onChange={(e) => setFormData(prev => ({ ...prev, welcome_message: e.target.value }))}
-                      placeholder="Hi! I'm the AI assistant for this page. How can I help you?"
-                      rows={2}
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none resize-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-white font-semibold mb-2">Primary Color</label>
-                    <div className="flex items-center gap-4">
-                      <input
-                        type="color"
-                        value={formData.primary_color}
-                        onChange={(e) => setFormData(prev => ({ ...prev, primary_color: e.target.value }))}
-                        className="w-16 h-12 rounded-lg cursor-pointer border-2 border-gray-700"
-                      />
-                      <input
-                        type="text"
-                        value={formData.primary_color}
-                        onChange={(e) => setFormData(prev => ({ ...prev, primary_color: e.target.value }))}
-                        className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Enhanced Preview */}
-                  <div className="mt-8">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-4 ml-1">Live Preview</p>
-                    <div className="p-8 bg-black/40 backdrop-blur-xl border border-white/5 rounded-[2rem] overflow-hidden relative">
-                      <div className="absolute inset-0 bg-gradient-to-br from-orange/5 to-transparent pointer-events-none" />
-                      
-                      <div className="flex items-start gap-4 relative z-10">
-                        <div 
-                          className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg transition-colors duration-500"
-                          style={{ backgroundColor: formData.primary_color }}
-                        >
-                          {formData.agent_name.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Image src="/assets/iconWhite.svg" alt="" width={12} height={12} />
-                            <span className="text-[10px] font-black text-orange uppercase tracking-widest">{formData.agent_name}</span>
-                          </div>
-                          <div className="bg-white/5 border border-white/10 p-4 rounded-2xl rounded-tl-none shadow-2xl">
-                            <p className="text-white text-sm leading-relaxed">{formData.welcome_message}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Step 4: Complete */}
-            {currentStep === 4 && (
+            {/* Step 3: Review and publish */}
+            {currentStep === 2 && (
               <div className="text-center py-8">
                 <div className="relative inline-block mb-10">
                   <motion.div 
-                    className="absolute inset-0 bg-green-500/30 blur-3xl rounded-full"
+                    className="absolute inset-0 bg-green/30 blur-3xl rounded-full"
                     animate={{ scale: [1, 1.5, 1], opacity: [0.3, 0.6, 0.3] }}
                     transition={{ duration: 3, repeat: Infinity }}
                   />
-                  <div className="relative w-24 h-24 bg-green-500 rounded-[2rem] flex items-center justify-center mx-auto shadow-[0_20px_50px_rgba(34,197,94,0.3)]">
+                  <div className="relative w-24 h-24 bg-green rounded-[2rem] flex items-center justify-center mx-auto shadow-[0_20px_50px_rgba(34,197,94,0.3)]">
                     <Rocket className="w-12 h-12 text-white" />
                   </div>
                 </div>
                 <h1 className="text-4xl font-black text-white mb-4 tracking-tight">
-                  Success! You&apos;re Live.
+                  Your agent is ready to launch
                 </h1>
-                <p className="text-xl text-gray-400 mb-10 max-w-md mx-auto leading-relaxed">
-                  Your Qlynk Agent has been deployed to your personal corner of the internet.
+                <p className="text-lg text-gray-200 mb-8 max-w-md mx-auto leading-relaxed">
+                  We&apos;ve applied smart defaults so you can publish now and customize the advanced options whenever you&apos;re ready.
                 </p>
+
+                <div className="max-w-md mx-auto mb-8 grid gap-3 text-left">
+                  <div className="flex items-center gap-3 rounded-xl bg-white/[0.06] border border-white/10 px-4 py-3">
+                    <Check className="w-5 h-5 text-green flex-shrink-0" />
+                    <span className="text-gray-100">Basic identity and agent type saved</span>
+                  </div>
+                  <div className="flex items-center gap-3 rounded-xl bg-white/[0.06] border border-white/10 px-4 py-3">
+                    <Check className="w-5 h-5 text-green flex-shrink-0" />
+                    <span className="text-gray-100">
+                      {formData.custom_knowledge.trim() ? 'Starter knowledge added' : 'Ready with safe starter defaults'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 rounded-xl bg-white/[0.06] border border-white/10 px-4 py-3">
+                    <Sparkles className="w-5 h-5 text-orange flex-shrink-0" />
+                    <span className="text-gray-100">Advanced tools remain available in your dashboard</span>
+                  </div>
+                </div>
                 
-                <div className="relative group mb-10 inline-block">
+                <div className="relative group mb-8 inline-block max-w-full">
                   <div className="absolute -inset-1 bg-gradient-to-r from-orange to-[#c14f22] rounded-2xl blur opacity-25" />
-                  <div className="relative bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl px-8 py-4 flex items-center gap-4">
-                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-orange font-mono text-lg font-bold tracking-tight">qlynk.site/{username}</span>
+                  <div className="relative bg-[#090b11] border border-white/20 rounded-2xl px-5 sm:px-8 py-4 flex items-center gap-3 min-w-0">
+                    <div className="w-2 h-2 rounded-full bg-green flex-shrink-0" />
+                    <span className="text-orange font-mono text-base sm:text-lg font-bold tracking-tight truncate">qlynk.site/{username}</span>
                   </div>
                 </div>
 
@@ -698,10 +521,19 @@ export default function OnboardingPage() {
                       <Loader2 className="w-6 h-6 animate-spin" />
                     ) : (
                       <>
-                        Go to Dashboard
+                        <span className="sm:hidden">Publish agent</span>
+                        <span className="hidden sm:inline">Publish &amp; open dashboard</span>
                         <ArrowRight className="w-6 h-6" />
                       </>
                     )}
+                  </button>
+                  <button
+                    onClick={prevStep}
+                    disabled={saving}
+                    className="w-full flex items-center justify-center gap-2 text-gray-300 hover:text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/[0.06] transition-all disabled:opacity-50"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                    Back
                   </button>
                 </div>
               </div>
@@ -710,15 +542,15 @@ export default function OnboardingPage() {
         </AnimatePresence>
 
         {/* Navigation */}
-        {currentStep < 4 && (
+        {currentStep < STEPS.length - 1 && (
           <div className="flex justify-between mt-12">
             <button
               onClick={prevStep}
               disabled={currentStep === 0}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
                 currentStep === 0 
-                  ? 'text-gray-600 cursor-not-allowed' 
-                  : 'text-gray-300 hover:text-white bg-gray-800 hover:bg-gray-700'
+                  ? 'text-gray-500 cursor-not-allowed border border-transparent'
+                  : 'text-gray-100 hover:text-white bg-white/10 hover:bg-white/15 border border-white/15'
               }`}
             >
               <ArrowLeft className="w-5 h-5" />
@@ -727,7 +559,7 @@ export default function OnboardingPage() {
             <button
               onClick={nextStep}
               disabled={saving}
-              className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-xl font-semibold transition-all disabled:opacity-50"
+              className="flex items-center gap-2 bg-gradient-to-r from-orange to-[#c94b1d] hover:from-[#d84f1e] hover:to-[#a83c18] text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-orange/20 transition-all disabled:opacity-50"
             >
               {saving ? (
                 <>
@@ -736,7 +568,7 @@ export default function OnboardingPage() {
                 </>
               ) : (
                 <>
-                  {currentStep === 0 ? "Let's Go" : 'Continue'}
+                  {currentStep === 0 ? 'Continue' : 'Review & publish'}
                   <ArrowRight className="w-5 h-5" />
                 </>
               )}

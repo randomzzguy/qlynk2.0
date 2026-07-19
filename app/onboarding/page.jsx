@@ -215,7 +215,10 @@ export default function OnboardingPage() {
       .from('profiles')
       .update({ 
         onboarding_completed: true,
-        onboarding_step: 'complete'
+        onboarding_step: 'complete',
+        dashboard_tour_status: 'pending',
+        dashboard_tour_version: 1,
+        dashboard_tour_completed_at: null,
       })
       .eq('id', userId);
 
@@ -231,7 +234,10 @@ export default function OnboardingPage() {
       .from('profiles')
       .update({ 
         onboarding_completed: true,
-        onboarding_step: 'skipped'
+        onboarding_step: 'skipped',
+        dashboard_tour_status: 'pending',
+        dashboard_tour_version: 1,
+        dashboard_tour_completed_at: null,
       })
       .eq('id', userId);
 

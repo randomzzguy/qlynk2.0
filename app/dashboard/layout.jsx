@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { getCurrentProfile, signOut, getCurrentUser, createClientBrowser } from '@/lib/supabase';
 import DashboardSidebar from '@/components/DashboardSidebar';
+import DashboardWalkthrough from '@/components/DashboardWalkthrough';
 import QlynkBackground from '@/components/QlynkBackground';
 import { Menu } from 'lucide-react';
 import Link from 'next/link';
@@ -18,6 +19,7 @@ export default function DashboardLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile
   const [isCollapsed, setIsCollapsed] = useState(false); // Desktop
   const [profile, setProfile] = useState(null);
+  const sidebarWasCollapsedBeforeTourRef = useRef(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -68,6 +70,37 @@ export default function DashboardLayout({ children }) {
     setIsCollapsed(newState);
     localStorage.setItem('sidebar-collapsed', newState.toString());
   };
+
+  const prepareDashboardTour = useCallback(() => {
+    setIsCollapsed((current) => {
+      if (sidebarWasCollapsedBeforeTourRef.current === null) {
+        sidebarWasCollapsedBeforeTourRef.current = current;
+      }
+      return false;
+    });
+    localStorage.setItem('sidebar-collapsed', 'false');
+    if (window.innerWidth < 1024) {
+      setIsSidebarOpen(true);
+    }
+  }, []);
+
+  const handleDashboardTourStatus = useCallback((status) => {
+    setProfile((current) => current ? {
+      ...current,
+      dashboard_tour_status: status,
+      dashboard_tour_version: 1,
+      dashboard_tour_completed_at: new Date().toISOString(),
+    } : current);
+    if (sidebarWasCollapsedBeforeTourRef.current !== null) {
+      const shouldCollapse = sidebarWasCollapsedBeforeTourRef.current;
+      sidebarWasCollapsedBeforeTourRef.current = null;
+      setIsCollapsed(shouldCollapse);
+      localStorage.setItem('sidebar-collapsed', shouldCollapse.toString());
+    }
+    if (window.innerWidth < 1024) {
+      setIsSidebarOpen(false);
+    }
+  }, []);
 
   // Close sidebar when pathname changes (Mobile)
   useEffect(() => {
@@ -155,6 +188,12 @@ export default function DashboardLayout({ children }) {
           avatarUrl={profile?.avatar_url}
           tier={profile?.tier}
           accountDeletionScheduledFor={profile?.account_deletion_scheduled_for}
+        />
+
+        <DashboardWalkthrough
+          profile={profile}
+          onPrepareTour={prepareDashboardTour}
+          onStatusChange={handleDashboardTourStatus}
         />
         
         {/* Main Content Scrollable Area */}

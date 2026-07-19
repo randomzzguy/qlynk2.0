@@ -28,15 +28,15 @@ const navGroups = [
   {
     title: 'General',
     items: [
-      { href: '/dashboard', icon: LayoutDashboard, label: 'Overview' },
+      { href: '/dashboard', icon: LayoutDashboard, label: 'Overview', tourKey: 'overview' },
     ]
   },
   {
     title: 'Agent Workspace',
     items: [
-      { href: '/dashboard/agent?section=general', icon: SlidersHorizontal, label: 'Agent Setup', section: 'general' },
-      { href: '/dashboard/agent?section=visual', icon: Palette, label: 'Visual Style', section: 'visual' },
-      { href: '/dashboard/knowledge', icon: Database, label: 'Knowledge Base' },
+      { href: '/dashboard/agent?section=general', icon: SlidersHorizontal, label: 'Agent Setup', section: 'general', tourKey: 'agent-setup' },
+      { href: '/dashboard/agent?section=visual', icon: Palette, label: 'Visual Style', section: 'visual', tourKey: 'visual-style' },
+      { href: '/dashboard/knowledge', icon: Database, label: 'Knowledge Base', tourKey: 'knowledge' },
       { href: '/dashboard/conversations', icon: MessageSquare, label: 'Conversations' },
     ]
   },
@@ -73,6 +73,7 @@ export default function DashboardSidebar({ onSignOut, isOpen, onClose, username,
       <Link
         href={item.href}
         onClick={onClose}
+        data-tour={item.tourKey}
         className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all group relative ${
           isActive
             ? 'bg-[#f46530] text-white shadow-lg shadow-[#f46530]/20'
@@ -148,7 +149,7 @@ export default function DashboardSidebar({ onSignOut, isOpen, onClose, username,
         </div>
 
         {/* Navigation Area */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden py-6 px-4 space-y-8 custom-scrollbar">
+        <div data-tour-sidebar-scroll className="flex-1 overflow-y-auto overflow-x-hidden py-6 px-4 space-y-8 custom-scrollbar">
           {navGroups.map((group, gIdx) => (
             <div key={gIdx} className="space-y-2">
               {!isCollapsed && (
@@ -179,6 +180,7 @@ export default function DashboardSidebar({ onSignOut, isOpen, onClose, username,
                 <Link
                   href={`/${username}`}
                   target="_blank"
+                  data-tour="view-agent"
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-blue-400 hover:bg-blue-500/10 transition-all group relative"
                 >
                   <ExternalLink size={20} className="group-hover:scale-110 transition-transform" />

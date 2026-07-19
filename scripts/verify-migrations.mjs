@@ -95,6 +95,14 @@ for (const file of migrationFiles) {
     `);
   }
 
+  if (file === '20260719040000_add_dashboard_walkthrough_state.sql') {
+    await db.exec(`
+      UPDATE public.profiles
+      SET onboarding_completed = true
+      WHERE id = '${fixtureUserId}';
+    `);
+  }
+
   const sql = await readFile(join(migrationsDirectory, file), 'utf8');
   try {
     await db.exec(sql);
@@ -165,6 +173,10 @@ assert(
   !profilePublicColumns.rows.some((row) => row.column_name.startsWith('account_deletion_')),
   'Public profile view exposes account deletion fields.'
 );
+assert(
+  !profilePublicColumns.rows.some((row) => row.column_name.startsWith('dashboard_tour_')),
+  'Public profile view exposes private dashboard walkthrough state.'
+);
 
 for (const view of ['profiles_public', 'agent_configs_public']) {
   assert(
@@ -209,6 +221,37 @@ const profileEmailIndexIsUnique = await scalar(`
   WHERE indexrelid = 'public.profiles_email_unique_ci_idx'::regclass
 `);
 assert(profileEmailIndexIsUnique === true, 'Private profile email index is missing or not unique.');
+
+const existingProfileTourState = await db.query(`
+  SELECT dashboard_tour_status, dashboard_tour_version, dashboard_tour_completed_at
+  FROM public.profiles
+  WHERE id = '${fixtureUserId}'
+`);
+assert(
+  existingProfileTourState.rows[0]?.dashboard_tour_status === 'skipped'
+    && existingProfileTourState.rows[0]?.dashboard_tour_version === 1
+    && existingProfileTourState.rows[0]?.dashboard_tour_completed_at instanceof Date,
+  'Existing onboarded accounts were not safely excluded from the automatic dashboard tour.'
+);
+assert(
+  await scalar(`
+    SELECT column_default = '''pending''::text' AS value
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'profiles'
+      AND column_name = 'dashboard_tour_status'
+  `) === true,
+  'New profiles do not default to a pending dashboard tour.'
+);
+assert(
+  await scalar(`
+    SELECT pg_get_constraintdef(oid) LIKE '%pending%completed%skipped%' AS value
+    FROM pg_constraint
+    WHERE conrelid = 'public.profiles'::regclass
+      AND conname = 'profiles_dashboard_tour_status_check'
+  `) === true,
+  'Dashboard tour status is not constrained to the supported states.'
+);
 
 const privateProfilePolicyCount = await scalar(`
   SELECT count(*)::int AS value

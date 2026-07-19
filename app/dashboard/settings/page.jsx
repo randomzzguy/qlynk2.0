@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { getCurrentUser, getCurrentProfile } from '@/lib/supabase';
 import { 
@@ -19,12 +20,15 @@ import {
   MessageSquare,
   CreditCard,
   Clock,
-  AlertTriangle
+  AlertTriangle,
+  Compass,
+  ArrowRight
 } from 'lucide-react';
 import UpgradePrompt from '@/components/UpgradePrompt';
 import { toast, Toaster } from 'react-hot-toast';
 
 export default function SettingsPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
@@ -281,6 +285,13 @@ export default function SettingsPage() {
     }
   };
 
+  const replayDashboardTour = () => {
+    if (isDirty && !window.confirm('You have unsaved settings. Leave this page and start the dashboard tour?')) {
+      return;
+    }
+    router.push('/dashboard?tour=1');
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -519,6 +530,31 @@ export default function SettingsPage() {
                 }`} />
               </button>
             </label>
+          </div>
+        </div>
+
+        {/* Dashboard Guide */}
+        <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-8 mb-8 hover:border-blue-500/25 hover:bg-white/10 transition-all group">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
+                <Compass size={24} />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white">Dashboard Walkthrough</h2>
+                <p className="text-gray-400 text-sm mt-1 max-w-2xl">
+                  Take another guided tour of Agent Setup, the Knowledge Base, Visual Style, and your public agent preview.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={replayDashboardTour}
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-blue-500/10 border border-blue-400/20 text-blue-200 font-bold hover:bg-blue-500/20 hover:border-blue-400/35 transition-all shrink-0"
+            >
+              Replay walkthrough
+              <ArrowRight size={17} />
+            </button>
           </div>
         </div>
 

@@ -13,13 +13,18 @@ import {
   File,
   X,
   HelpCircle,
+  Lightbulb,
+  CheckCircle,
+  RotateCcw,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { useSearchParams } from 'next/navigation';
 import { createClientBrowser } from '@/lib/supabase';
 import { AgentConfigPage } from '@/app/dashboard/agent/page';
 
 export default function KnowledgeDashboard() {
-  const [activeTab, setActiveTab] = useState('profile');
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') === 'gaps' ? 'gaps' : 'profile');
   const [knowledge, setKnowledge] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,6 +48,10 @@ export default function KnowledgeDashboard() {
   // File State
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [knowledgeGaps, setKnowledgeGaps] = useState([]);
+  const [gapsLoading, setGapsLoading] = useState(false);
+  const [selectedGapId, setSelectedGapId] = useState(null);
+  const [gapAnswer, setGapAnswer] = useState('');
   const hasUnsavedDraft = Boolean(
     newTitle.trim()
     || newContent.trim()
@@ -315,6 +324,45 @@ export default function KnowledgeDashboard() {
     }
   };
 
+  const fetchKnowledgeGaps = useCallback(async () => {
+    setGapsLoading(true);
+    try {
+      const response = await fetch('/api/agent/knowledge-gaps', { cache: 'no-store' });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Unable to load knowledge gaps');
+      setKnowledgeGaps(result.gaps || []);
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setGapsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'gaps') fetchKnowledgeGaps();
+  }, [activeTab, fetchKnowledgeGaps]);
+
+  const handleGapAction = async (gapId, action) => {
+    setSubmitting(true);
+    try {
+      const response = await fetch('/api/agent/knowledge-gaps', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gapId, action, answer: action === 'resolve' ? gapAnswer : undefined }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Unable to update this knowledge gap');
+      toast.success(action === 'resolve' ? 'Approved answer added to FAQ' : action === 'dismiss' ? 'Question dismissed' : 'Question reopened');
+      setSelectedGapId(null);
+      setGapAnswer('');
+      await Promise.all([fetchKnowledgeGaps(), action === 'resolve' ? fetchAllData() : Promise.resolve()]);
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="w-full max-w-[1440px] px-5 sm:px-7 lg:px-9 py-8 sm:py-10 space-y-7">
       {/* Header */}
@@ -359,6 +407,17 @@ export default function KnowledgeDashboard() {
             className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all ${activeTab === 'links' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
           >
             Links
+          </button>
+          <button
+            onClick={() => setActiveTab('gaps')}
+            className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all flex items-center gap-2 ${activeTab === 'gaps' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+          >
+            Knowledge Gaps
+            {knowledgeGaps.filter((gap) => gap.status === 'open').length > 0 && (
+              <span className={`min-w-5 h-5 px-1 rounded-full text-[10px] flex items-center justify-center ${activeTab === 'gaps' ? 'bg-orange text-white' : 'bg-orange/15 text-orange'}`}>
+                {knowledgeGaps.filter((gap) => gap.status === 'open').length}
+              </span>
+            )}
           </button>
         </div>
       </div>
@@ -781,6 +840,70 @@ export default function KnowledgeDashboard() {
                   ))
               )}
             </div>
+          </div>
+        )}
+
+        {activeTab === 'gaps' && (
+          <div className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Lightbulb className="text-amber-400" size={20} /> Knowledge Gaps
+                </h2>
+                <p className="text-sm text-gray-400 mt-1">Questions are collected when your agent says it lacks enough approved information.</p>
+              </div>
+              <button onClick={fetchKnowledgeGaps} disabled={gapsLoading} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-sm font-semibold text-gray-300 hover:text-white hover:bg-white/10 disabled:opacity-50">
+                <RotateCcw size={15} className={gapsLoading ? 'animate-spin' : ''} /> Refresh
+              </button>
+            </div>
+
+            {gapsLoading ? (
+              <div className="flex items-center justify-center py-20"><Loader2 className="w-9 h-9 animate-spin text-amber-400" /></div>
+            ) : knowledgeGaps.length === 0 ? (
+              <div className="py-20 text-center bg-white/5 rounded-[2rem] border border-dashed border-white/10">
+                <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-4" />
+                <h3 className="text-white font-bold mb-2">No knowledge gaps detected</h3>
+                <p className="text-gray-500 text-sm max-w-md mx-auto">Keep testing your agent. Questions it cannot answer confidently will appear here.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {knowledgeGaps.map((gap) => (
+                  <div key={gap.id} className={`rounded-2xl border p-5 ${gap.status === 'open' ? 'border-amber-500/25 bg-amber-500/[0.06]' : 'border-white/10 bg-white/[0.035]'}`}>
+                    <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${gap.status === 'open' ? 'bg-amber-500/15 text-amber-300' : gap.status === 'resolved' ? 'bg-green-500/15 text-green-300' : 'bg-gray-500/15 text-gray-400'}`}>{gap.status}</span>
+                          <span className="text-xs text-gray-500">Asked {gap.occurrence_count} time{gap.occurrence_count === 1 ? '' : 's'}</span>
+                        </div>
+                        <h3 className="text-white font-bold leading-relaxed">{gap.question}</h3>
+                        <p className="text-xs text-gray-500 mt-2">Last seen {new Date(gap.last_seen_at).toLocaleString()}</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2 shrink-0">
+                        {gap.status === 'open' ? (
+                          <>
+                            <button onClick={() => { setSelectedGapId(gap.id); setGapAnswer(''); }} className="px-4 py-2 rounded-xl bg-orange text-white text-sm font-bold hover:bg-orange/90">Add Answer</button>
+                            <button onClick={() => handleGapAction(gap.id, 'dismiss')} disabled={submitting} className="px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-gray-300 text-sm font-semibold hover:bg-white/10">Dismiss</button>
+                          </>
+                        ) : (
+                          <button onClick={() => handleGapAction(gap.id, 'reopen')} disabled={submitting} className="px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-gray-300 text-sm font-semibold hover:bg-white/10">Reopen</button>
+                        )}
+                      </div>
+                    </div>
+
+                    {selectedGapId === gap.id && (
+                      <div className="mt-5 pt-5 border-t border-white/10">
+                        <label className="block text-sm font-semibold text-white mb-2">Approved answer</label>
+                        <textarea value={gapAnswer} onChange={(event) => setGapAnswer(event.target.value)} rows={5} maxLength={8000} placeholder="Write the exact answer your agent should use..." className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-orange/50 resize-y" />
+                        <div className="flex justify-end gap-2 mt-3">
+                          <button onClick={() => { setSelectedGapId(null); setGapAnswer(''); }} className="px-4 py-2 rounded-xl text-sm text-gray-400 hover:text-white">Cancel</button>
+                          <button onClick={() => handleGapAction(gap.id, 'resolve')} disabled={submitting || !gapAnswer.trim()} className="px-5 py-2 rounded-xl bg-orange text-white text-sm font-bold disabled:opacity-50">{submitting ? 'Saving...' : 'Add to FAQ & Resolve'}</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

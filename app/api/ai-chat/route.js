@@ -13,6 +13,7 @@ import {
   parseScopeDecision,
 } from '@/lib/agent-prompt';
 import { normalizeAgentRules } from '@/lib/agent-rules';
+import { normalizeKnowledgeGapQuestion, shouldRecordKnowledgeGap } from '@/lib/knowledge-gaps';
 
 export const maxDuration = 30;
 
@@ -244,7 +245,7 @@ async function analyzeAndSaveSentiment(conversationId, supabase) {
   }
 }
 
-function createAssistantPersistenceStream(conversationId, adminSupabase) {
+function createAssistantPersistenceStream({ conversationId, adminSupabase, ownerId, question, uncertaintyMessage }) {
   const decoder = new TextDecoder();
   let buffer = '';
   let assistantContent = '';
@@ -287,6 +288,21 @@ function createAssistantPersistenceStream(conversationId, adminSupabase) {
       if (error) {
         console.error('[AI Chat] Failed to save assistant message:', error);
       } else {
+        if (ownerId && shouldRecordKnowledgeGap(assistantContent, uncertaintyMessage)) {
+          const normalizedQuestion = normalizeKnowledgeGapQuestion(question);
+          if (normalizedQuestion) {
+            const { error: gapError } = await adminSupabase.rpc('record_agent_knowledge_gap', {
+              p_owner_id: ownerId,
+              p_question: String(question || '').slice(0, 1000),
+              p_normalized_question: normalizedQuestion,
+              p_conversation_id: conversationId,
+            });
+            if (gapError) {
+              console.error('[AI Chat] Failed to record knowledge gap:', gapError.message);
+            }
+          }
+        }
+
         // Perform sentiment analysis in the background
         analyzeAndSaveSentiment(conversationId, adminSupabase).catch(err => {
           console.error('[Background Sentiment Async Catch]:', err);
@@ -617,7 +633,13 @@ export async function POST(req) {
     }
 
     const responseBody = activeConversationId
-      ? groqResponse.body.pipeThrough(createAssistantPersistenceStream(activeConversationId, adminSupabase))
+      ? groqResponse.body.pipeThrough(createAssistantPersistenceStream({
+          conversationId: activeConversationId,
+          adminSupabase,
+          ownerId: profile.id,
+          question: latestMessage.content,
+          uncertaintyMessage: effectiveRules.uncertainty_message,
+        }))
       : groqResponse.body;
 
     // Pass the stream back to the browser with the conversation ID in headers

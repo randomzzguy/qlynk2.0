@@ -18,8 +18,13 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('password_updated') === '1') {
+      setSuccessMessage('Your password has been updated. You can now log in.');
+    }
+
     async function checkSession() {
       try {
         const { createClient } = await import('@/utils/supabase/client');
@@ -158,6 +163,12 @@ export default function LoginPage() {
             </div>
           )}
 
+          {successMessage && (
+            <div className="mb-6 p-4 bg-green-50 border-2 border-green-200 rounded-xl text-green-800 text-sm">
+              {successMessage}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email */}
             <div>
@@ -182,7 +193,7 @@ export default function LoginPage() {
                 <label htmlFor="password" className="block font-bold text-cream">
                   Password
                 </label>
-                <Link href="#" className="text-sm text-orange hover:underline font-semibold">
+                <Link href="/auth/forgot-password" className="text-sm text-orange hover:underline font-semibold">
                   Forgot?
                 </Link>
               </div>

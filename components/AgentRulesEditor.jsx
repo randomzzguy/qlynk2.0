@@ -253,7 +253,7 @@ export default function AgentRulesEditor({
               className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-xs font-semibold text-white hover:bg-white/10 disabled:opacity-40"
             >
               <RotateCcw size={14} className={restoring ? 'animate-spin' : ''} />
-              Restore
+              Restore & publish
             </button>
           </div>
         )}

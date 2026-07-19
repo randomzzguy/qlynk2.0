@@ -1,10 +1,12 @@
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { safeAuthRedirect } from '@/lib/auth-redirect';
 
 export async function GET(request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
+  const next = safeAuthRedirect(requestUrl.searchParams.get('next'));
 
   if (code) {
     const cookieStore = await cookies();
@@ -19,8 +21,7 @@ export async function GET(request) {
         .eq('id', data.user.id)
         .single();
 
-      // Redirect to success page as requested by user
-      return NextResponse.redirect(new URL('/auth/confirm-success', requestUrl.origin));
+      return NextResponse.redirect(new URL(next, requestUrl.origin));
     }
   }
 

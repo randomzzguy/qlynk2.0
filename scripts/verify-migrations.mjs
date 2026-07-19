@@ -250,6 +250,10 @@ const rlsTables = [
   'agent_rule_configs',
   'agent_rule_config_versions',
   'agent_security_events',
+  'agent_knowledge_gaps',
+  'agent_message_feedback',
+  'agent_config_drafts',
+  'agent_publish_versions',
 ];
 const enabledRlsCount = await scalar(`
   SELECT count(*)::int AS value
@@ -262,7 +266,7 @@ const enabledRlsCount = await scalar(`
 assert(enabledRlsCount === rlsTables.length, 'RLS is not enabled on every sensitive table.');
 
 await db.exec('SET ROLE anon;');
-for (const table of ['agent_configs', 'agent_knowledge', 'profiles', 'subscriptions', 'stripe_webhook_events', 'api_rate_limits', 'agent_rule_configs', 'agent_rule_config_versions', 'agent_security_events']) {
+for (const table of ['agent_configs', 'agent_knowledge', 'profiles', 'subscriptions', 'stripe_webhook_events', 'api_rate_limits', 'agent_rule_configs', 'agent_rule_config_versions', 'agent_security_events', 'agent_knowledge_gaps', 'agent_message_feedback', 'agent_config_drafts', 'agent_publish_versions']) {
   let count = 0;
   try {
     count = await scalar(`SELECT count(*)::int AS value FROM public.${table}`);
@@ -310,6 +314,10 @@ assert(
   await scalar(`SELECT has_function_privilege('authenticated', 'public.consume_agent_message_credit(uuid,integer)', 'EXECUTE') AS value`) === false,
   'Authenticated clients can reserve or manipulate message credits.'
 );
+assert(
+  await scalar(`SELECT has_function_privilege('authenticated', 'public.record_agent_knowledge_gap(uuid,text,text,uuid)', 'EXECUTE') AS value`) === false,
+  'Authenticated clients can forge knowledge-gap activity.'
+);
 await db.exec('SET ROLE service_role;');
 const limiterKey = 'a'.repeat(64);
 const firstLimit = await db.query(`SELECT * FROM public.check_api_rate_limit('verification', '${limiterKey}', 2, 60)`);
@@ -354,6 +362,27 @@ const thirdCredit = await db.query(`SELECT * FROM public.consume_agent_message_c
 assert(firstCredit.rows[0]?.allowed === true && firstCredit.rows[0]?.messages_used === 1, 'First message credit reservation failed.');
 assert(secondCredit.rows[0]?.allowed === true && secondCredit.rows[0]?.messages_used === 2, 'Second message credit reservation failed.');
 assert(thirdCredit.rows[0]?.allowed === false && thirdCredit.rows[0]?.messages_used === 2, 'Atomic message quota allowed an excess request.');
+const knowledgeGapId = await scalar(`
+  SELECT public.record_agent_knowledge_gap(
+    '${fixtureUserId}',
+    'What time does breakfast start?',
+    'what time does breakfast start',
+    NULL
+  ) AS value
+`);
+assert(Boolean(knowledgeGapId), 'Knowledge gap was not recorded.');
+await db.query(`
+  SELECT public.record_agent_knowledge_gap(
+    '${fixtureUserId}',
+    'What time does breakfast start?',
+    'what time does breakfast start',
+    NULL
+  )
+`);
+assert(
+  await scalar(`SELECT occurrence_count = 2 AS value FROM public.agent_knowledge_gaps WHERE id = '${knowledgeGapId}'`) === true,
+  'Repeated knowledge gaps were not deduplicated and counted.'
+);
 await db.exec('RESET ROLE;');
 assert(
   await scalar(`SELECT has_table_privilege('authenticated', 'public.subscriptions', 'SELECT') AS value`) === true,
@@ -408,6 +437,14 @@ assert(
 assert(
   await scalar(`SELECT has_table_privilege('authenticated', 'public.agent_security_events', 'SELECT') AS value`) === false,
   'Authenticated clients can read private security events directly.'
+);
+assert(
+  await scalar(`SELECT has_table_privilege('authenticated', 'public.agent_config_drafts', 'SELECT') AS value`) === false,
+  'Authenticated clients can bypass the staged publishing API.'
+);
+assert(
+  await scalar(`SELECT has_table_privilege('authenticated', 'public.agent_publish_versions', 'SELECT') AS value`) === false,
+  'Authenticated clients can read private publish snapshots directly.'
 );
 
 await db.close();

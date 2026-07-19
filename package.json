@@ -13,7 +13,8 @@
     "verify:production-isolation": "node --env-file=.env.local scripts/verify-production-isolation.mjs",
     "verify:http": "node scripts/verify-http-smoke.mjs",
     "verify:integrations": "node --env-file=.env.local scripts/verify-production-integrations.mjs",
-    "verify:migrations": "node scripts/verify-migrations.mjs"
+    "verify:migrations": "node scripts/verify-migrations.mjs",
+    "verify:backups": "node scripts/verify-backup-readiness.mjs"
   },
   "dependencies": {
     "@ai-sdk/groq": "^3.0.39",
@@ -36,6 +37,7 @@
     "next": "^16.2.10",
     "pdf-parse": "^2.4.5",
     "postcss": "^8.5.16",
+    "qrcode.react": "^4.2.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-hot-toast": "^2.6.0",

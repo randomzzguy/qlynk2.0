@@ -19,7 +19,10 @@ import {
   Zap,
   Activity,
   Eye,
-  MousePointer2
+  MousePointer2,
+  ThumbsUp,
+  ThumbsDown,
+  Lightbulb
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import UpgradePrompt from '@/components/UpgradePrompt';
@@ -66,11 +69,11 @@ export default function AnalyticsPage() {
 
       const supabase = createClient();
 
-      // Fetch conversations + page views in parallel
-      const [convoRes, viewRes] = await Promise.all([
+      // Fetch conversations, traffic, response feedback, and open knowledge gaps in parallel.
+      const [convoRes, viewRes, feedbackRes, gapsRes] = await Promise.all([
         supabase
           .from('agent_conversations')
-          .select('id, visitor_id, visitor_name, visitor_email, message_count, created_at')
+          .select('id, visitor_id, visitor_name, visitor_email, message_count, sentiment, created_at')
           .eq('agent_owner_id', user.id)
           .order('created_at', { ascending: false })
           .limit(500),
@@ -80,10 +83,22 @@ export default function AnalyticsPage() {
           .eq('page_owner_id', user.id)
           .order('created_at', { ascending: false })
           .limit(2000),
+        supabase
+          .from('agent_message_feedback')
+          .select('rating, created_at')
+          .eq('agent_owner_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(2000),
+        supabase
+          .from('agent_knowledge_gaps')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('status', 'open'),
       ]);
 
       const convos = convoRes.data || [];
       const views  = viewRes.data  || [];
+      const feedback = feedbackRes.data || [];
 
       setConversations(convos.slice(0, 50));
 
@@ -125,6 +140,12 @@ export default function AnalyticsPage() {
       const engagementRate  = totalViews > 0
         ? Math.min(100, Math.round((totalConvos / totalViews) * 100))
         : 0;
+
+      const helpfulResponses = feedback.filter((item) => item.rating === 1).length;
+      const unhelpfulResponses = feedback.filter((item) => item.rating === -1).length;
+      const helpfulRate = feedback.length > 0
+        ? Math.round((helpfulResponses / feedback.length) * 100)
+        : null;
 
       // ── 7-day daily breakdown — views AND convos ──────────────────────
       const dailyBreakdown = Array.from({ length: 7 }, (_, i) => {
@@ -176,6 +197,11 @@ export default function AnalyticsPage() {
         avgMessagesPerConvo: totalConvos > 0 ? (totalMessages / totalConvos).toFixed(1) : 0,
         dailyBreakdown, hourlyBreakdown, topReferrers,
         sentimentBreakdown,
+        helpfulResponses,
+        unhelpfulResponses,
+        helpfulRate,
+        feedbackCount: feedback.length,
+        openKnowledgeGaps: gapsRes.count || 0,
       });
 
       setLoading(false);
@@ -449,6 +475,54 @@ export default function AnalyticsPage() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* ── Response Quality ────────────────────────────────────────────── */}
+      <div className="grid md:grid-cols-3 gap-4 mb-6">
+        <div className="md:col-span-2 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-7 hover:border-green-500/30 transition-all">
+          <div className="flex items-start justify-between gap-4 mb-6">
+            <div>
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <ThumbsUp size={18} className="text-green-400" />
+                Response Quality
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">Direct ratings from visitors after an agent answer</p>
+            </div>
+            <span className="text-xs text-gray-500 font-mono">{stats.feedbackCount} ratings</span>
+          </div>
+          {stats.feedbackCount === 0 ? (
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center">
+              <p className="text-gray-400 text-sm">No response ratings yet</p>
+              <p className="text-gray-600 text-xs mt-1">Helpful and not-helpful feedback will appear here automatically.</p>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-3 gap-4">
+              <div className="rounded-2xl bg-green-500/10 border border-green-500/20 p-5">
+                <p className="text-3xl font-black text-green-400">{stats.helpfulRate}%</p>
+                <p className="text-sm text-gray-400 mt-1">helpful rate</p>
+              </div>
+              <div className="rounded-2xl bg-white/5 border border-white/10 p-5">
+                <p className="text-3xl font-black text-white flex items-center gap-2"><ThumbsUp size={20} className="text-green-400" />{stats.helpfulResponses}</p>
+                <p className="text-sm text-gray-400 mt-1">helpful</p>
+              </div>
+              <div className="rounded-2xl bg-white/5 border border-white/10 p-5">
+                <p className="text-3xl font-black text-white flex items-center gap-2"><ThumbsDown size={20} className="text-red-400" />{stats.unhelpfulResponses}</p>
+                <p className="text-sm text-gray-400 mt-1">not helpful</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => router.push('/dashboard/knowledge?tab=gaps')}
+          className="text-left bg-amber-500/10 backdrop-blur-xl rounded-3xl border border-amber-500/20 p-7 hover:bg-amber-500/15 hover:border-amber-500/40 transition-all"
+        >
+          <Lightbulb size={24} className="text-amber-400 mb-5" />
+          <p className="text-4xl font-black text-white">{stats.openKnowledgeGaps}</p>
+          <p className="text-sm font-semibold text-amber-200 mt-2">Open knowledge gaps</p>
+          <p className="text-xs text-gray-500 mt-2">Answer recurring questions to improve future conversations.</p>
+        </button>
       </div>
 
       {/* ── Sentiment Analysis ──────────────────────────────────────────── */}

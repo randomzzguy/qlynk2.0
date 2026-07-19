@@ -29,12 +29,12 @@ import {
   EyeOff,
   Sparkles,
   ExternalLink,
-  Copy,
   Palette,
   Type,
   MessageSquare
 } from 'lucide-react';
 import UpgradePrompt from '@/components/UpgradePrompt';
+import AgentLaunchTools from '@/components/AgentLaunchTools';
 
 const GOOGLE_FONTS = [
   'Inter',
@@ -93,7 +93,11 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
   const section = sectionOverride || searchParams.get('section') || 'general';
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingAction, setSavingAction] = useState(null);
   const [saveStatus, setSaveStatus] = useState(null); // 'success' | 'error' | null
+  const [saveMessage, setSaveMessage] = useState('');
+  const [hasDraft, setHasDraft] = useState(false);
+  const [draftSavedAt, setDraftSavedAt] = useState(null);
   const [userId, setUserId] = useState(null);
   const [username, setUsername] = useState(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
@@ -147,12 +151,12 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
   const [setupPanel, setSetupPanel] = useState('role');
   const savedConfigRef = useRef(null);
   const savedRulesRef = useRef(null);
-  const isDirty = savedConfigRef.current !== null
+  const hasContentChanges = savedConfigRef.current !== null
     && (
       JSON.stringify(config) !== savedConfigRef.current
       || (savedRulesRef.current !== null && JSON.stringify(agentRules) !== savedRulesRef.current)
-      || Boolean(accessPassword)
     );
+  const isDirty = hasContentChanges || Boolean(accessPassword);
   const selectedAgentType = getAgentTypeDefinition(config.agent_type || DEFAULT_AGENT_TYPE);
   const isPersonalAgent = selectedAgentType.id === 'personal';
 
@@ -238,6 +242,29 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
           });
         }
 
+        // A private draft takes precedence in the editor, while the public
+        // agent continues using the published rows above.
+        const draftResponse = await fetch('/api/agent/draft', { cache: 'no-store' });
+        if (draftResponse.ok) {
+          const draftData = await draftResponse.json();
+          if (draftData.draft) {
+            const draftConfig = draftData.draft.config || {};
+            const draftRules = normalizeAgentRules(
+              draftData.draft.rules || {},
+              draftConfig.agent_type || existingConfig?.agent_type || DEFAULT_AGENT_TYPE,
+            );
+            setConfig((current) => {
+              const next = { ...current, ...draftConfig };
+              savedConfigRef.current = JSON.stringify(next);
+              return next;
+            });
+            setAgentRules(draftRules);
+            savedRulesRef.current = JSON.stringify(draftRules);
+            setHasDraft(true);
+            setDraftSavedAt(draftData.draft.updated_at);
+          }
+        }
+
         setLoading(false);
       } catch (error) {
         console.error('Error loading config:', error);
@@ -258,6 +285,41 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
     return () => window.removeEventListener('beforeunload', warnAboutUnsavedChanges);
   }, [isDirty]);
 
+  const handleSaveDraft = async () => {
+    if (!userId || !hasContentChanges) return;
+    setSaving(true);
+    setSavingAction('draft');
+    setSaveStatus(null);
+    setSaveMessage('');
+
+    try {
+      const response = await fetch('/api/agent/draft', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ config, rules: agentRules }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Unable to save this draft');
+
+      const savedRules = normalizeAgentRules(result.rules || agentRules, config.agent_type || DEFAULT_AGENT_TYPE);
+      setAgentRules(savedRules);
+      savedConfigRef.current = JSON.stringify(config);
+      savedRulesRef.current = JSON.stringify(savedRules);
+      setHasDraft(true);
+      setDraftSavedAt(result.updated_at);
+      setSaveStatus('success');
+      setSaveMessage('Draft saved. Visitors still see the published version.');
+    } catch (error) {
+      console.error('Error saving agent draft:', error);
+      setSaveStatus('error');
+      setSaveMessage(error.message || 'Unable to save this draft.');
+    } finally {
+      setSaving(false);
+      setSavingAction(null);
+      setTimeout(() => setSaveStatus(null), 4000);
+    }
+  };
+
   const handleSave = async () => {
     if (!userId) return;
 
@@ -267,7 +329,9 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
     }
     
     setSaving(true);
+    setSavingAction('publish');
     setSaveStatus(null);
+    setSaveMessage('');
 
     try {
       const supabase = createClient();
@@ -311,6 +375,12 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
         setPasswordIsSet(true);
       }
 
+      const snapshotResponse = await fetch('/api/agent/publish-snapshot', { method: 'POST' });
+      const snapshotResult = await snapshotResponse.json();
+      if (!snapshotResponse.ok) {
+        throw new Error(snapshotResult.error || 'Published, but unable to record the new version.');
+      }
+
       savedConfigRef.current = JSON.stringify(config);
       savedRulesRef.current = JSON.stringify(rulesResult.rules);
       setAgentRules(rulesResult.rules);
@@ -324,13 +394,34 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
       }
       
       setSaveStatus('success');
-      setTimeout(() => setSaveStatus(null), 3000);
+      setSaveMessage(`Published version ${snapshotResult.version}. Your live agent is up to date.`);
+      setHasDraft(false);
+      setDraftSavedAt(null);
+      setTimeout(() => setSaveStatus(null), 4000);
     } catch (error) {
       console.error('[v0] Error saving config:', error);
       setSaveStatus('error');
-      setTimeout(() => setSaveStatus(null), 3000);
+      setSaveMessage(error.message || 'Unable to publish these changes.');
+      setTimeout(() => setSaveStatus(null), 4000);
     } finally {
       setSaving(false);
+      setSavingAction(null);
+    }
+  };
+
+  const handleDiscardDraft = async () => {
+    if (!hasDraft || !window.confirm('Discard this saved draft and reload the published agent settings?')) return;
+    setSaving(true);
+    setSavingAction('draft');
+    try {
+      const response = await fetch('/api/agent/draft', { method: 'DELETE' });
+      if (!response.ok) throw new Error('Unable to discard the draft');
+      window.location.reload();
+    } catch (error) {
+      setSaveStatus('error');
+      setSaveMessage(error.message || 'Unable to discard the draft.');
+      setSaving(false);
+      setSavingAction(null);
     }
   };
 
@@ -367,12 +458,19 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
       savedConfigRef.current = JSON.stringify(nextConfig);
       savedRulesRef.current = JSON.stringify(restoredRules);
 
+      const snapshotResponse = await fetch('/api/agent/publish-snapshot', { method: 'POST' });
+      const snapshotResult = await snapshotResponse.json();
+      if (!snapshotResponse.ok) throw new Error(snapshotResult.error || 'Rules restored, but the publish snapshot failed.');
+      setHasDraft(false);
+      setDraftSavedAt(null);
+
       const refreshed = await fetch('/api/agent/rules', { cache: 'no-store' });
       if (refreshed.ok) {
         const data = await refreshed.json();
         setRuleVersions(data.versions || []);
       }
       setSaveStatus('success');
+      setSaveMessage(`Restored and published prompt version ${result.prompt_version}.`);
     } catch (error) {
       console.error('Error restoring agent rules:', error);
       setSaveStatus('error');
@@ -523,11 +621,19 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
                 </a>
               )}
               <button
+                onClick={handleSaveDraft}
+                disabled={saving || !hasContentChanges}
+                className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 text-gray-200 rounded-xl font-semibold hover:bg-white/10 hover:border-white/20 transition-all disabled:opacity-40"
+              >
+                {saving && savingAction === 'draft' ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                {saving && savingAction === 'draft' ? 'Saving...' : 'Save Draft'}
+              </button>
+              <button
                 onClick={handleSave}
-                disabled={saving || !isDirty}
+                disabled={saving || (!isDirty && !hasDraft)}
                 className="flex items-center gap-2 px-6 py-2.5 bg-[#f46530] text-white rounded-xl font-semibold hover:bg-[#f46530]/90 shadow-lg shadow-[#f46530]/20 transition-all disabled:opacity-50"
               >
-                {saving ? (
+                {saving && savingAction === 'publish' ? (
                   <Loader2 size={18} className="animate-spin" />
                 ) : saveStatus === 'success' ? (
                   <CheckCircle size={18} />
@@ -536,10 +642,28 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
                 ) : (
                   <Save size={18} />
                 )}
-                {saving ? 'Saving...' : saveStatus === 'success' ? 'Saved!' : saveStatus === 'error' ? 'Error' : 'Save Changes'}
+                {saving && savingAction === 'publish' ? 'Publishing...' : saveStatus === 'error' ? 'Error' : 'Publish Changes'}
               </button>
             </div>
           </div>
+
+          {(hasDraft || saveMessage) && section === 'general' && (
+            <div className={`mb-5 rounded-xl border px-4 py-3 text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${
+              saveStatus === 'error'
+                ? 'border-red-500/30 bg-red-500/10 text-red-200'
+                : 'border-amber-500/25 bg-amber-500/10 text-amber-100'
+            }`}>
+              <span>
+                {saveMessage || `Draft saved ${draftSavedAt ? new Date(draftSavedAt).toLocaleString() : ''}. Publish when you are ready for visitors to see it.`}
+                {accessPassword && <span className="block text-xs text-gray-400 mt-1">Access passwords are applied only when you publish.</span>}
+              </span>
+              {hasDraft && (
+                <button type="button" onClick={handleDiscardDraft} disabled={saving} className="shrink-0 text-xs font-bold text-gray-300 hover:text-white underline underline-offset-4 disabled:opacity-50">
+                  Discard draft
+                </button>
+              )}
+            </div>
+          )}
 
           {section === 'general' && <>
           {/* Enable/Disable Toggle */}
@@ -1312,43 +1436,7 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
           </>}
 
           {section === 'general' && setupPanel === 'branding' && <>
-          {/* Share Section */}
-          <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-8 mb-20 hover:border-[#f46530]/20 transition-all">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-              <div className="flex-1">
-                <h2 className="text-2xl font-bold text-white mb-3 flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#f46530]/10 rounded-xl flex items-center justify-center">
-                    <Globe size={22} className="text-[#f46530]" />
-                  </div>
-                  Share Your Page
-                </h2>
-                <p className="text-gray-400 max-w-2xl text-lg">
-                  Share your Qlynk Agent with others. Copy its public link or open the visitor experience.
-                </p>
-              </div>
-
-              <div className="w-full md:w-64 flex flex-col gap-3">
-                <button 
-                  onClick={() => {
-                    const url = `${window.location.origin}/${username}`;
-                    navigator.clipboard.writeText(url);
-                  }}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gray-800/60 border border-gray-700 rounded-xl text-white hover:border-[#f46530]/50 hover:bg-gray-800 transition-all font-bold"
-                >
-                  <Copy size={18} />
-                  Copy Agent Link
-                </button>
-                <a 
-                  href={`/${username}`}
-                  target="_blank"
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-[#f46530]/10 border border-[#f46530]/30 rounded-xl text-[#f46530] hover:bg-[#f46530]/20 transition-all font-bold"
-                >
-                  <ExternalLink size={18} />
-                  View Public Page
-                </a>
-              </div>
-            </div>
-          </div>
+          <AgentLaunchTools username={username} agentType={config.agent_type} agentName={config.agent_name} />
           </>}
         </div>
     );

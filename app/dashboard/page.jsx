@@ -44,6 +44,7 @@ export default function DashboardPage() {
   const [verifyingPayment, setVerifyingPayment] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [newPlanName, setNewPlanName] = useState('');
+  const [readinessData, setReadinessData] = useState({ knowledgeCount: 0, openGaps: 0, rules: null });
   const isPaymentPastDue = subscription?.status?.toLowerCase() === 'past_due';
   const isAccountDeletionScheduled = !!profile?.account_deletion_scheduled_for;
 
@@ -77,6 +78,18 @@ export default function DashboardPage() {
       }
       
       setAgentConfig(config);
+
+      const [factsResult, documentsResult, gapsResult, rulesResult] = await Promise.all([
+        supabase.from('agent_knowledge').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_active', true),
+        supabase.from('agent_documents').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_processed', true),
+        supabase.from('agent_knowledge_gaps').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'open'),
+        fetch('/api/agent/rules', { cache: 'no-store' }).then((response) => response.ok ? response.json() : null).catch(() => null),
+      ]);
+      setReadinessData({
+        knowledgeCount: (factsResult.count || 0) + (documentsResult.count || 0),
+        openGaps: gapsResult.count || 0,
+        rules: rulesResult?.rules || null,
+      });
 
       // Load public page - ensure it exists (Fixes "Setting up the clone" error)
       const { data: pageData, error: pageFetchError } = await supabase
@@ -220,6 +233,17 @@ export default function DashboardPage() {
       </div>
     );
   }
+
+  const readinessItems = [
+    { label: 'Agent identity', complete: Boolean(agentConfig?.agent_name && agentConfig.agent_name !== 'Your AI'), href: '/dashboard/agent?section=general' },
+    { label: 'Purpose and audience', complete: Boolean(readinessData.rules?.purpose && readinessData.rules?.audience), href: '/dashboard/agent?section=general' },
+    { label: 'Approved knowledge', complete: readinessData.knowledgeCount > 0, href: '/dashboard/knowledge' },
+    { label: 'Uncertainty and handoff', complete: Boolean(readinessData.rules?.uncertainty_message && readinessData.rules?.escalation_message), href: '/dashboard/agent?section=general' },
+    { label: 'Welcome experience', complete: Boolean(agentConfig?.welcome_message && agentConfig.welcome_message.length >= 12), href: '/dashboard/agent?section=general' },
+    { label: 'Agent published', complete: Boolean(agentConfig?.is_enabled), href: '/dashboard/agent?section=general' },
+  ];
+  const readinessComplete = readinessItems.filter((item) => item.complete).length;
+  const readinessScore = Math.round((readinessComplete / readinessItems.length) * 100);
 
   return (
     <div className="w-full max-w-[1500px] px-5 sm:px-7 lg:px-9 py-8 sm:py-10">
@@ -485,6 +509,36 @@ export default function DashboardPage() {
 
         {/* Sidebar / Secondary Content Area */}
         <div className="space-y-6">
+
+          {/* Agent Readiness */}
+          <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6">
+            <div className="flex items-start justify-between gap-4 mb-5">
+              <div>
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Agent Readiness</p>
+                <h3 className="text-2xl font-black text-white">{readinessScore}% ready</h3>
+              </div>
+              <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-black ${readinessScore === 100 ? 'bg-green-500/15 text-green-300' : 'bg-[#f46530]/15 text-[#f46530]'}`}>
+                {readinessComplete}/{readinessItems.length}
+              </div>
+            </div>
+            <div className="h-2 rounded-full bg-white/5 overflow-hidden mb-5">
+              <div className="h-full rounded-full bg-gradient-to-r from-[#f46530] to-amber-400 transition-all" style={{ width: `${readinessScore}%` }} />
+            </div>
+            <div className="space-y-2">
+              {readinessItems.map((item) => (
+                <Link key={item.label} href={item.href} className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-white/5 transition-colors">
+                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${item.complete ? 'bg-green-500/15 text-green-300' : 'bg-white/5 text-gray-500 border border-white/10'}`}>{item.complete ? '✓' : '•'}</span>
+                  <span className={`text-sm ${item.complete ? 'text-gray-300' : 'text-white font-semibold'}`}>{item.label}</span>
+                </Link>
+              ))}
+            </div>
+            {readinessData.openGaps > 0 && (
+              <Link href="/dashboard/knowledge" className="mt-4 flex items-center justify-between rounded-xl border border-amber-500/20 bg-amber-500/[0.07] px-4 py-3 text-sm text-amber-200">
+                <span>{readinessData.openGaps} knowledge gap{readinessData.openGaps === 1 ? '' : 's'} need attention</span>
+                <span>Review →</span>
+              </Link>
+            )}
+          </div>
           
           {/* Usage & Plan */}
           <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 relative overflow-hidden">

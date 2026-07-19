@@ -132,7 +132,7 @@ export default function DashboardLayout({ children }) {
             width={100} 
             height={30} 
             priority
-            className="group-hover:scale-105 transition-transform h-auto"
+            className="group-hover:scale-105 transition-transform"
           />
         </Link>
         

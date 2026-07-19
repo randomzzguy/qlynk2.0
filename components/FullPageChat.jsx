@@ -16,7 +16,9 @@ import {
   Github,
   Twitter,
   Linkedin,
-  Globe
+  Globe,
+  ThumbsUp,
+  ThumbsDown
 } from 'lucide-react';
 import QlynkBackground from '@/components/QlynkBackground';
 import AgentResponseIndicator from '@/components/AgentResponseIndicator';
@@ -46,6 +48,7 @@ export default function FullPageChat({
   const [isLoading, setIsLoading] = useState(false);
   const [responsePhase, setResponsePhase] = useState('idle');
   const [conversationId, setConversationId] = useState(null);
+  const [feedbackByMessage, setFeedbackByMessage] = useState({});
   const [accessPassword, setAccessPassword] = useState('');
   const scrollRef = useRef(null);
 
@@ -267,6 +270,29 @@ export default function FullPageChat({
     } finally {
       setIsLoading(false);
       setResponsePhase('idle');
+    }
+  };
+
+  const submitFeedback = async (message, rating) => {
+    if (!conversationId || !visitorId || !message?.content) return;
+    setFeedbackByMessage((current) => ({ ...current, [message.id]: 'saving' }));
+
+    try {
+      const response = await fetch('/api/agent/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username,
+          visitorId,
+          conversationId,
+          assistantContent: message.content,
+          rating,
+        }),
+      });
+      if (!response.ok) throw new Error('Unable to save feedback');
+      setFeedbackByMessage((current) => ({ ...current, [message.id]: rating }));
+    } catch {
+      setFeedbackByMessage((current) => ({ ...current, [message.id]: null }));
     }
   };
 
@@ -616,6 +642,32 @@ export default function FullPageChat({
                             </div>
                           )}
                         </div>
+                        {m.role === 'assistant' && m.id !== 'welcome' && conversationId && m.content && (
+                          <div className="flex items-center gap-2 px-1 text-xs text-gray-500">
+                            <span>Was this helpful?</span>
+                            <button
+                              type="button"
+                              onClick={() => submitFeedback(m, 1)}
+                              disabled={feedbackByMessage[m.id] === 'saving'}
+                              aria-label="Mark this response as helpful"
+                              aria-pressed={feedbackByMessage[m.id] === 1}
+                              className={`p-1.5 rounded-lg border transition-colors ${feedbackByMessage[m.id] === 1 ? 'border-green-500/40 bg-green-500/15 text-green-300' : 'border-white/10 hover:border-white/25 hover:text-white'}`}
+                            >
+                              <ThumbsUp size={14} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => submitFeedback(m, -1)}
+                              disabled={feedbackByMessage[m.id] === 'saving'}
+                              aria-label="Mark this response as not helpful"
+                              aria-pressed={feedbackByMessage[m.id] === -1}
+                              className={`p-1.5 rounded-lg border transition-colors ${feedbackByMessage[m.id] === -1 ? 'border-red-500/40 bg-red-500/15 text-red-300' : 'border-white/10 hover:border-white/25 hover:text-white'}`}
+                            >
+                              <ThumbsDown size={14} />
+                            </button>
+                            {typeof feedbackByMessage[m.id] === 'number' && <span className="text-gray-400">Thanks for the feedback.</span>}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </motion.div>

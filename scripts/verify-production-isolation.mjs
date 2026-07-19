@@ -80,11 +80,36 @@ async function createFixture(fixture) {
     visitor_name: `Visitor ${fixture.label}`,
   }).select('id').single(), `conversation ${fixture.label}`);
   fixture.conversationId = conversation.id;
-  await requireResult(admin.from('agent_messages').insert({
+  const message = await requireResult(admin.from('agent_messages').insert({
     conversation_id: fixture.conversationId,
     role: 'user',
     content: `private-message-${fixture.label}-${suffix}`,
-  }), `message ${fixture.label}`);
+  }).select('id').single(), `message ${fixture.label}`);
+  fixture.messageId = message.id;
+  await requireResult(admin.rpc('record_agent_knowledge_gap', {
+    p_owner_id: fixture.id,
+    p_question: `Private unanswered question ${fixture.label}`,
+    p_normalized_question: `private unanswered question ${fixture.label.toLowerCase()}`,
+    p_conversation_id: fixture.conversationId,
+  }), `knowledge gap ${fixture.label}`);
+  await requireResult(admin.from('agent_message_feedback').insert({
+    agent_owner_id: fixture.id,
+    conversation_id: fixture.conversationId,
+    message_id: fixture.messageId,
+    visitor_key_hash: fixture.label.toLowerCase().repeat(64),
+    rating: 1,
+  }), `message feedback ${fixture.label}`);
+  await requireResult(admin.from('agent_config_drafts').insert({
+    user_id: fixture.id,
+    config: { agent_name: `Private draft ${fixture.label}`, agent_type: 'operations' },
+    rules: { purpose: `Private draft purpose ${fixture.label}` },
+  }), `agent draft ${fixture.label}`);
+  await requireResult(admin.from('agent_publish_versions').insert({
+    user_id: fixture.id,
+    version: 1,
+    config: { agent_name: `Private publish ${fixture.label}`, agent_type: 'operations' },
+    rules: { purpose: `Private publish purpose ${fixture.label}` },
+  }), `agent publish snapshot ${fixture.label}`);
   await requireResult(admin.from('page_views').insert({
     page_owner_id: fixture.id,
     visitor_id: randomUUID(),
@@ -108,6 +133,8 @@ async function assertOwnerIsolation(client, owner, other) {
     ['subscriptions', 'user_id', owner.id, other.id],
     ['agent_conversations', 'agent_owner_id', owner.id, other.id],
     ['page_views', 'page_owner_id', owner.id, other.id],
+    ['agent_knowledge_gaps', 'user_id', owner.id, other.id],
+    ['agent_message_feedback', 'agent_owner_id', owner.id, other.id],
   ];
 
   for (const [table, column, ownId, otherId] of checks) {
@@ -155,7 +182,13 @@ async function assertStorageIsolation(clientA, clientB, fixtureA) {
 }
 
 async function assertPrivateRuleIsolation(client, fixture) {
-  for (const [table, ownerColumn] of [['agent_rule_configs', 'user_id'], ['agent_rule_config_versions', 'user_id'], ['agent_security_events', 'agent_owner_id']]) {
+  for (const [table, ownerColumn] of [
+    ['agent_rule_configs', 'user_id'],
+    ['agent_rule_config_versions', 'user_id'],
+    ['agent_security_events', 'agent_owner_id'],
+    ['agent_config_drafts', 'user_id'],
+    ['agent_publish_versions', 'user_id'],
+  ]) {
     const { data, error } = await client.from(table).select('*').eq(ownerColumn, fixture.id);
     assert(Boolean(error) && !data, `${fixture.label} can access service-managed ${table} directly`);
   }
@@ -170,7 +203,7 @@ try {
   await assertPrivateRuleIsolation(clients[0], fixtures[0]);
   await assertPrivateRuleIsolation(clients[1], fixtures[1]);
   await assertStorageIsolation(clients[0], clients[1], fixtures[0]);
-  console.log('Production two-account isolation passed for profiles/deletion state, agents, private rules/history, knowledge, documents, subscriptions, conversations, messages, analytics, writes, and private Storage.');
+  console.log('Production two-account isolation passed for profiles/deletion state, agents, private rules/history, drafts/publish snapshots, knowledge/gaps, feedback, documents, subscriptions, conversations, messages, analytics, writes, and private Storage.');
 } finally {
   for (const fixture of fixtures) {
     if (!fixture.id) continue;

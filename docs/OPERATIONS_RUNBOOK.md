@@ -73,6 +73,10 @@ Detailed `/api/status` and `/api/errors` requests require `Authorization: Bearer
 
 ## Backups and restoration
 
+Run `npm run verify:backups` before a production release. This check fails closed when the linked project has neither an available provider-managed physical backup nor PITR. A passing check confirms that a recovery point is advertised; it does not replace a restoration drill.
+
+The scheduled GitHub workflow in `.github/workflows/production-monitor.yml` checks public health every 15 minutes. Add the repository Actions secret `PRODUCTION_CRON_SECRET` to enable its protected diagnostics check. Keep GitHub Actions failure notifications enabled for the maintainers responsible for production.
+
 Before launch, record the Supabase plan's database backup frequency and retention. Confirm how Storage objects are recovered; database backups may not include Storage object contents.
 
 Perform a restoration drill into a separate non-production project:

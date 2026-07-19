@@ -1,0 +1,40 @@
+name: Production health monitor
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qlynk-production-monitor
+  cancel-in-progress: true
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PRODUCTION_CRON_SECRET: ${{ secrets.PRODUCTION_CRON_SECRET }}
+    steps:
+      - name: Verify public health endpoint
+        shell: bash
+        run: |
+          response_file="$(mktemp)"
+          http_code="$(curl --silent --show-error --location \
+            --connect-timeout 10 --max-time 20 \
+            --output "$response_file" --write-out '%{http_code}' \
+            https://www.qlynk.site/api/health)"
+          test "$http_code" = "200"
+          node -e "const fs=require('fs'); const body=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); if(body.status!=='ok') process.exit(1)" "$response_file"
+
+      - name: Verify protected diagnostics
+        if: ${{ env.PRODUCTION_CRON_SECRET != '' }}
+        shell: bash
+        run: |
+          curl --fail --silent --show-error --location \
+            --connect-timeout 10 --max-time 30 \
+            --header "Authorization: Bearer ${PRODUCTION_CRON_SECRET}" \
+            https://www.qlynk.site/api/status > /dev/null

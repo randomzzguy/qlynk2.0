@@ -57,6 +57,7 @@ const navGroups = [
 ];
 
 export default function DashboardSidebar({ onSignOut, isOpen, onClose, username, avatarUrl, isCollapsed, onCollapseToggle, tier, accountDeletionScheduledFor }) {
+  const profileInitial = username?.trim()?.charAt(0)?.toUpperCase() || '?';
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isDeletionScheduled = Boolean(accountDeletionScheduledFor);
@@ -129,7 +130,7 @@ export default function DashboardSidebar({ onSignOut, isOpen, onClose, username,
                 width={122}
                 height={36}
                 priority
-                className="h-auto w-[122px] group-hover:scale-[1.02] transition-transform"
+                className="group-hover:scale-[1.02] transition-transform"
               />
             </Link>
           ) : (
@@ -248,10 +249,8 @@ export default function DashboardSidebar({ onSignOut, isOpen, onClose, username,
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg overflow-hidden border border-white/10">
                 {avatarUrl ? (
                   <Image src={avatarUrl} alt={username || 'Profile'} width={40} height={40} className="w-full h-full object-cover" />
-                ) : username ? (
-                  <Image src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`} alt={username || 'Profile'} width={40} height={40} className="w-full h-full object-cover" />
                 ) : (
-                  '?'
+                  <span aria-label={`${username || 'User'} profile initial`}>{profileInitial}</span>
                 )}
               </div>
               <div className="flex-1 min-w-0">
@@ -264,9 +263,7 @@ export default function DashboardSidebar({ onSignOut, isOpen, onClose, username,
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg overflow-hidden border border-white/10 group-hover:scale-110 transition-transform cursor-help">
                  {avatarUrl ? (
                    <Image src={avatarUrl} alt={username || 'Profile'} width={40} height={40} className="w-full h-full object-cover" />
-                 ) : (
-                   <Image src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`} alt={username || 'Profile'} width={40} height={40} className="w-full h-full object-cover" />
-                 )}
+                 ) : <span aria-label={`${username || 'User'} profile initial`}>{profileInitial}</span>}
               </div>
               <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap border border-gray-800 font-bold uppercase tracking-widest">
                 Account: @{username}

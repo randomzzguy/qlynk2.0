@@ -116,8 +116,8 @@ export default function DashboardSidebar({ onSignOut, isOpen, onClose, username,
         )}
       </AnimatePresence>
 
-      <aside className={`
-        fixed inset-y-0 left-0 z-[70] bg-[#0a0a0f] border-r border-gray-800/50 flex flex-col transition-all duration-300 ease-in-out
+      <aside data-dashboard-tour-background className={`
+        fixed inset-y-0 left-0 z-[70] bg-[#0a0a0f] border-r border-gray-800/50 flex flex-col transition-all duration-300 ease-in-out motion-reduce:transition-none
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         ${isCollapsed ? 'lg:w-20' : 'lg:w-64 w-64'}
       `}>

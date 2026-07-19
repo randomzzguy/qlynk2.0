@@ -84,13 +84,7 @@ export default function DashboardLayout({ children }) {
     }
   }, []);
 
-  const handleDashboardTourStatus = useCallback((status) => {
-    setProfile((current) => current ? {
-      ...current,
-      dashboard_tour_status: status,
-      dashboard_tour_version: 1,
-      dashboard_tour_completed_at: new Date().toISOString(),
-    } : current);
+  const restoreDashboardTourUi = useCallback(() => {
     if (sidebarWasCollapsedBeforeTourRef.current !== null) {
       const shouldCollapse = sidebarWasCollapsedBeforeTourRef.current;
       sidebarWasCollapsedBeforeTourRef.current = null;
@@ -101,6 +95,16 @@ export default function DashboardLayout({ children }) {
       setIsSidebarOpen(false);
     }
   }, []);
+
+  const handleDashboardTourStatus = useCallback((status) => {
+    setProfile((current) => current ? {
+      ...current,
+      dashboard_tour_status: status,
+      dashboard_tour_version: 1,
+      dashboard_tour_completed_at: new Date().toISOString(),
+    } : current);
+    restoreDashboardTourUi();
+  }, [restoreDashboardTourUi]);
 
   // Close sidebar when pathname changes (Mobile)
   useEffect(() => {
@@ -157,7 +161,7 @@ export default function DashboardLayout({ children }) {
       </div>
 
       {/* Mobile Header */}
-      <header className="lg:hidden h-16 bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-gray-800/50 flex items-center justify-between px-6 sticky top-0 z-40">
+      <header data-dashboard-tour-background className="lg:hidden h-16 bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-gray-800/50 flex items-center justify-between px-6 sticky top-0 z-40">
         <Link href="/" className="group py-2">
           <Image 
             src="/logoWhite.svg" 
@@ -194,11 +198,12 @@ export default function DashboardLayout({ children }) {
           profile={profile}
           onPrepareTour={prepareDashboardTour}
           onStatusChange={handleDashboardTourStatus}
+          onExitTour={restoreDashboardTourUi}
         />
         
         {/* Main Content Scrollable Area */}
-        <main className={`
-          flex-1 overflow-y-auto relative z-10 transition-all duration-300 ease-in-out
+        <main data-dashboard-tour-background data-dashboard-tour-main tabIndex={-1} className={`
+          flex-1 overflow-y-auto relative z-10 transition-all duration-300 ease-in-out motion-reduce:transition-none
           ${isCollapsed ? 'lg:ml-20' : 'lg:ml-64'}
         `}>
           <div className="min-h-full pb-20">

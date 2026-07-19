@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
   ArrowLeft,
   ArrowRight,
@@ -17,8 +17,10 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { toast } from 'react-hot-toast';
-
-export const DASHBOARD_TOUR_VERSION = 1;
+import {
+  DASHBOARD_TOUR_CHECKOUT_EVENT,
+  DASHBOARD_TOUR_VERSION,
+} from '@/lib/dashboard-tour';
 
 const TOUR_STEPS = [
   {
@@ -58,16 +60,19 @@ const TOUR_STEPS = [
   },
 ];
 
-export default function DashboardWalkthrough({ profile, onPrepareTour, onStatusChange }) {
+export default function DashboardWalkthrough({ profile, onPrepareTour, onStatusChange, onExitTour }) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const shouldReduceMotion = useReducedMotion();
   const [phase, setPhase] = useState(null);
   const [stepIndex, setStepIndex] = useState(0);
   const [targetRect, setTargetRect] = useState(null);
   const [viewport, setViewport] = useState({ width: 0, height: 0 });
+  const [checkoutBlocksTour, setCheckoutBlocksTour] = useState(() => searchParams.has('session_id'));
   const openedForProfileRef = useRef(null);
   const sidebarScrollStartRef = useRef(null);
+  const returnFocusRef = useRef(null);
   const dialogRef = useRef(null);
   const primaryButtonRef = useRef(null);
 
@@ -76,20 +81,87 @@ export default function DashboardWalkthrough({ profile, onPrepareTour, onStatusC
     && Number(profile?.dashboard_tour_version || DASHBOARD_TOUR_VERSION) <= DASHBOARD_TOUR_VERSION;
 
   useEffect(() => {
+    const handleCheckoutState = (event) => {
+      setCheckoutBlocksTour(Boolean(event.detail?.blocked));
+    };
+    window.addEventListener(DASHBOARD_TOUR_CHECKOUT_EVENT, handleCheckoutState);
+    return () => window.removeEventListener(DASHBOARD_TOUR_CHECKOUT_EVENT, handleCheckoutState);
+  }, []);
+
+  useEffect(() => {
     if (!profile?.id) return;
-    if (pathname !== '/dashboard' || (!requestedFromSettings && !isPending)) {
+    if (pathname !== '/dashboard' || checkoutBlocksTour || (!requestedFromSettings && !isPending)) {
       openedForProfileRef.current = null;
       return;
     }
     if (openedForProfileRef.current === profile.id) return;
 
     const openTimer = window.setTimeout(() => {
+      returnFocusRef.current = document.activeElement instanceof HTMLElement && document.activeElement !== document.body
+        ? document.activeElement
+        : null;
       openedForProfileRef.current = profile.id;
       setStepIndex(0);
       setPhase('intro');
     }, 0);
     return () => window.clearTimeout(openTimer);
-  }, [isPending, pathname, profile?.id, requestedFromSettings]);
+  }, [checkoutBlocksTour, isPending, pathname, profile?.id, requestedFromSettings]);
+
+  useEffect(() => {
+    if (!phase) return;
+    const backgroundElements = [...document.querySelectorAll('[data-dashboard-tour-background]')];
+    const previousStates = backgroundElements.map((element) => ({
+      element,
+      inert: element.inert,
+      ariaHidden: element.getAttribute('aria-hidden'),
+    }));
+
+    for (const element of backgroundElements) {
+      element.inert = true;
+      element.setAttribute('aria-hidden', 'true');
+    }
+
+    return () => {
+      for (const previous of previousStates) {
+        previous.element.inert = previous.inert;
+        if (previous.ariaHidden === null) {
+          previous.element.removeAttribute('aria-hidden');
+        } else {
+          previous.element.setAttribute('aria-hidden', previous.ariaHidden);
+        }
+      }
+    };
+  }, [phase]);
+
+  useEffect(() => {
+    if (!phase || (pathname === '/dashboard' && !checkoutBlocksTour)) return;
+
+    const exitTimer = window.setTimeout(() => {
+      setPhase(null);
+      setTargetRect(null);
+      openedForProfileRef.current = null;
+
+      const sidebarScroller = document.querySelector('[data-tour-sidebar-scroll]');
+      if (sidebarScroller && sidebarScrollStartRef.current !== null) {
+        sidebarScroller.scrollTo({
+          top: sidebarScrollStartRef.current,
+          behavior: shouldReduceMotion ? 'auto' : 'smooth',
+        });
+      }
+      sidebarScrollStartRef.current = null;
+      onExitTour?.();
+
+      window.requestAnimationFrame(() => {
+        const focusTarget = returnFocusRef.current?.isConnected
+          ? returnFocusRef.current
+          : document.querySelector('[data-dashboard-tour-main]');
+        focusTarget?.focus({ preventScroll: true });
+        returnFocusRef.current = null;
+      });
+    }, 0);
+
+    return () => window.clearTimeout(exitTimer);
+  }, [checkoutBlocksTour, onExitTour, pathname, phase, shouldReduceMotion]);
 
   useEffect(() => {
     if (!phase) return;
@@ -167,7 +239,7 @@ export default function DashboardWalkthrough({ profile, onPrepareTour, onStatusC
     const settleTimer = window.setTimeout(() => {
       target = document.querySelector(`[data-tour="${TOUR_STEPS[stepIndex].target}"]`);
       target?.scrollIntoView({
-        behavior: 'smooth',
+        behavior: shouldReduceMotion ? 'auto' : 'smooth',
         block: window.innerWidth < 768 ? 'start' : 'center',
       });
       measureTarget();
@@ -185,7 +257,7 @@ export default function DashboardWalkthrough({ profile, onPrepareTour, onStatusC
       window.removeEventListener('resize', measureTarget);
       window.removeEventListener('scroll', measureTarget, true);
     };
-  }, [onPrepareTour, phase, stepIndex]);
+  }, [onPrepareTour, phase, shouldReduceMotion, stepIndex]);
 
   const saveStatus = async (status) => {
     setPhase(null);
@@ -194,13 +266,24 @@ export default function DashboardWalkthrough({ profile, onPrepareTour, onStatusC
 
     const sidebarScroller = document.querySelector('[data-tour-sidebar-scroll]');
     if (sidebarScroller && sidebarScrollStartRef.current !== null) {
-      sidebarScroller.scrollTo({ top: sidebarScrollStartRef.current, behavior: 'smooth' });
+      sidebarScroller.scrollTo({
+        top: sidebarScrollStartRef.current,
+        behavior: shouldReduceMotion ? 'auto' : 'smooth',
+      });
     }
     sidebarScrollStartRef.current = null;
 
     if (requestedFromSettings) {
       router.replace('/dashboard', { scroll: false });
     }
+
+    window.requestAnimationFrame(() => {
+      const focusTarget = returnFocusRef.current?.isConnected
+        ? returnFocusRef.current
+        : document.querySelector('[data-dashboard-tour-main]');
+      focusTarget?.focus({ preventScroll: true });
+      returnFocusRef.current = null;
+    });
 
     if (!profile?.id) return;
     const supabase = createClient();
@@ -255,9 +338,9 @@ export default function DashboardWalkthrough({ profile, onPrepareTour, onStatusC
       {phase === 'intro' && (
         <motion.div
           className="fixed inset-0 z-[120] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
-          initial={{ opacity: 0 }}
+          initial={shouldReduceMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          exit={shouldReduceMotion ? undefined : { opacity: 0 }}
         >
           <motion.div
             ref={dialogRef}
@@ -265,9 +348,9 @@ export default function DashboardWalkthrough({ profile, onPrepareTour, onStatusC
             aria-modal="true"
             aria-labelledby="dashboard-tour-title"
             className="relative w-full max-w-lg overflow-hidden rounded-[2rem] border border-white/10 bg-[#101016] p-7 shadow-[0_30px_100px_rgba(0,0,0,0.65)] sm:p-9"
-            initial={{ opacity: 0, y: 18, scale: 0.98 }}
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 18, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 12, scale: 0.98 }}
+            exit={shouldReduceMotion ? undefined : { opacity: 0, y: 12, scale: 0.98 }}
           >
             <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-[#f46530]/20 blur-[80px]" />
             <button
@@ -305,7 +388,7 @@ export default function DashboardWalkthrough({ profile, onPrepareTour, onStatusC
                   ref={primaryButtonRef}
                   type="button"
                   onClick={startTour}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#f46530] px-6 py-3 text-sm font-black text-white shadow-lg shadow-[#f46530]/25 transition-all hover:-translate-y-0.5 hover:bg-[#f57a4f]"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#f46530] px-6 py-3 text-sm font-black text-white shadow-lg shadow-[#f46530]/25 transition-all hover:-translate-y-0.5 hover:bg-[#f57a4f] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
                 >
                   Show me around
                   <ArrowRight size={17} />
@@ -351,7 +434,7 @@ export default function DashboardWalkthrough({ profile, onPrepareTour, onStatusC
                 width: targetRect.width,
                 height: targetRect.height,
               }}
-              transition={{ duration: 0.22, ease: 'easeOut' }}
+              transition={{ duration: shouldReduceMotion ? 0 : 0.22, ease: 'easeOut' }}
             />
           )}
 
@@ -369,9 +452,9 @@ export default function DashboardWalkthrough({ profile, onPrepareTour, onStatusC
                 left: tooltipLeft,
                 top: tooltipTop,
               }}
-              initial={{ opacity: 0, y: 10, scale: 0.98 }}
+              initial={shouldReduceMotion ? false : { opacity: 0, y: 10, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
             >
             <div className="mb-5 flex items-start justify-between gap-4">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#f46530]/20 bg-[#f46530]/10 text-[#f46530]">

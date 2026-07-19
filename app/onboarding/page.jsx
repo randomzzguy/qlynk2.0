@@ -11,6 +11,8 @@ import { getCurrentUser } from '@/lib/supabase';
 import QlynkBackground from '@/components/QlynkBackground';
 import { AGENT_TYPE_CATALOG, DEFAULT_AGENT_TYPE, getAgentTypeDefinition } from '@/lib/agent-type-catalog';
 import { normalizeAgentRules } from '@/lib/agent-rules';
+import { DASHBOARD_TOUR_VERSION } from '@/lib/dashboard-tour';
+import { toast, Toaster } from 'react-hot-toast';
 import { 
   ArrowRight, 
   ArrowLeft, 
@@ -122,24 +124,25 @@ export default function OnboardingPage() {
 
   const saveProgress = async (step) => {
     const supabase = createClient();
-    await supabase
+    const { error } = await supabase
       .from('profiles')
       .update({ onboarding_step: step })
       .eq('id', userId);
+    if (error) throw new Error(error.message || 'Unable to save onboarding progress');
   };
 
   const saveAgentConfig = async () => {
-    setSaving(true);
     const supabase = createClient();
     
     // Update profile
-    await supabase
+    const { error: profileError } = await supabase
       .from('profiles')
       .update({ full_name: formData.full_name })
       .eq('id', userId);
+    if (profileError) throw new Error(profileError.message || 'Unable to save profile details');
 
     // Upsert agent config
-    await supabase
+    const { error: configError } = await supabase
       .from('agent_configs')
       .upsert({
         user_id: userId,
@@ -156,8 +159,7 @@ export default function OnboardingPage() {
         cta_button_color: formData.primary_color,
         is_enabled: true,
       }, { onConflict: 'user_id' });
-
-    setSaving(false);
+    if (configError) throw new Error(configError.message || 'Unable to save agent details');
   };
 
   const saveAgentRules = async () => {
@@ -182,7 +184,7 @@ export default function OnboardingPage() {
     const supabase = createClient();
     
     // Upsert public page data
-    await supabase
+    const { error } = await supabase
       .from('pages')
       .upsert({
         user_id: userId,
@@ -199,71 +201,94 @@ export default function OnboardingPage() {
         },
         is_published: true
       }, { onConflict: 'user_id' });
+    if (error) throw new Error(error.message || 'Unable to save the public agent page');
   };
 
   const completeOnboarding = async () => {
     setSaving(true);
     const supabase = createClient();
-    
-    // Save final config
-    await saveAgentConfig();
-    await saveAgentRules();
-    await savePageData();
-    
-    // Mark onboarding complete
-    await supabase
-      .from('profiles')
-      .update({ 
-        onboarding_completed: true,
-        onboarding_step: 'complete',
-        dashboard_tour_status: 'pending',
-        dashboard_tour_version: 1,
-        dashboard_tour_completed_at: null,
-      })
-      .eq('id', userId);
 
-    router.push('/dashboard');
+    try {
+      // Save all retry-safe setup data before unlocking the dashboard.
+      await saveAgentConfig();
+      await saveAgentRules();
+      await savePageData();
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          onboarding_completed: true,
+          onboarding_step: 'complete',
+          dashboard_tour_status: 'pending',
+          dashboard_tour_version: DASHBOARD_TOUR_VERSION,
+          dashboard_tour_completed_at: null,
+        })
+        .eq('id', userId);
+      if (error) throw new Error(error.message || 'Unable to complete onboarding');
+
+      router.push('/dashboard');
+    } catch (error) {
+      console.error('Unable to complete onboarding:', error);
+      toast.error('We could not finish setting up your agent. Your progress is safe—please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleSkip = async () => {
     setSaving(true);
     const supabase = createClient();
-    
-    // Mark onboarding complete so dashboard allows access
-    await supabase
-      .from('profiles')
-      .update({ 
-        onboarding_completed: true,
-        onboarding_step: 'skipped',
-        dashboard_tour_status: 'pending',
-        dashboard_tour_version: 1,
-        dashboard_tour_completed_at: null,
-      })
-      .eq('id', userId);
 
-    // Ensure a page exists even on skip
-    await saveAgentRules();
-    await savePageData();
+    try {
+      // Keep onboarding locked until the minimum dashboard data is ready.
+      await saveAgentRules();
+      await savePageData();
 
-    router.push('/dashboard');
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          onboarding_completed: true,
+          onboarding_step: 'skipped',
+          dashboard_tour_status: 'pending',
+          dashboard_tour_version: DASHBOARD_TOUR_VERSION,
+          dashboard_tour_completed_at: null,
+        })
+        .eq('id', userId);
+      if (error) throw new Error(error.message || 'Unable to skip onboarding');
+
+      router.push('/dashboard');
+    } catch (error) {
+      console.error('Unable to skip onboarding:', error);
+      toast.error('We could not open the dashboard yet. Please check your connection and try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const nextStep = async () => {
     if (currentStep < STEPS.length - 1) {
-      await saveAgentConfig();
-      await saveProgress(STEPS[currentStep + 1].id);
-      
-      const newStep = currentStep + 1;
-      setCurrentStep(newStep);
+      setSaving(true);
+      try {
+        await saveAgentConfig();
+        await saveProgress(STEPS[currentStep + 1].id);
 
-      // Trigger celebration on final step
-      if (STEPS[newStep].id === 'complete') {
-        confetti({
-          particleCount: 150,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ['#f46530', '#ffffff', '#3b82f6']
-        });
+        const newStep = currentStep + 1;
+        setCurrentStep(newStep);
+
+        // Trigger celebration on final step
+        if (STEPS[newStep].id === 'complete') {
+          confetti({
+            particleCount: 150,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#f46530', '#ffffff', '#3b82f6']
+          });
+        }
+      } catch (error) {
+        console.error('Unable to save onboarding step:', error);
+        toast.error('We could not save this step. Please check your connection and try again.');
+      } finally {
+        setSaving(false);
       }
     }
   };
@@ -287,6 +312,7 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-[#090a0f] text-white">
+      <Toaster position="top-right" />
       {/* Background - neon lines, particles and gradient orbs matching homepage */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <QlynkBackground />

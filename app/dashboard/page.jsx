@@ -25,6 +25,7 @@ import {
 import UpgradePrompt from '@/components/UpgradePrompt';
 import TrialChoiceManager from '@/components/TrialChoiceManager';
 import confetti from 'canvas-confetti';
+import { announceDashboardTourCheckoutState } from '@/lib/dashboard-tour';
 
 export default function DashboardPage() {
   const [profile, setProfile] = useState(null);
@@ -170,7 +171,9 @@ export default function DashboardPage() {
       const searchParams = new URLSearchParams(window.location.search);
       const sessionId = searchParams.get('session_id');
       if (sessionId) {
+        announceDashboardTourCheckoutState(true);
         setVerifyingPayment(true);
+        let welcomeWillOpen = false;
         try {
           const res = await fetch('/api/checkout/confirm', {
             method: 'POST',
@@ -191,6 +194,7 @@ export default function DashboardPage() {
             
             setNewPlanName(data.tier);
             setShowWelcomeModal(true);
+            welcomeWillOpen = true;
             
             // Clean URL query params
             const cleanUrl = window.location.pathname;
@@ -203,6 +207,9 @@ export default function DashboardPage() {
           console.error('Error confirming checkout session:', err);
         } finally {
           setVerifyingPayment(false);
+          if (!welcomeWillOpen) {
+            announceDashboardTourCheckoutState(false);
+          }
         }
       }
     };
@@ -224,6 +231,11 @@ export default function DashboardPage() {
     if (!error) {
       setAgentConfig(prev => ({ ...prev, is_enabled: newStatus }));
     }
+  };
+
+  const closeSubscriptionWelcome = () => {
+    setShowWelcomeModal(false);
+    announceDashboardTourCheckoutState(false);
   };
 
   if (loading) {
@@ -276,7 +288,7 @@ export default function DashboardPage() {
               </p>
               
               <button
-                onClick={() => setShowWelcomeModal(false)}
+                onClick={closeSubscriptionWelcome}
                 className="w-full py-4 bg-[#f46530] text-white rounded-2xl font-bold hover:bg-[#f46530]/95 active:scale-95 transition-all shadow-lg shadow-[#f46530]/20"
               >
                 Go to Dashboard

@@ -53,7 +53,7 @@ export default function RootLayout({ children }) {
           "width": 512,
           "height": 512
         },
-        "description": "Qlynk AI is a platform for building focused AI agents from approved knowledge, owner-defined rules, and a clear purpose.",
+        "description": "Qlynk AI helps people and teams turn their information into AI agents they can control and share through a simple link.",
         "foundingDate": "2026"
       },
       {

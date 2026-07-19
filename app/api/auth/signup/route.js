@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { rateLimitResponse } from '@/lib/rate-limit';
 import { sendEmail } from '@/lib/email/send';
 import { welcomeEmail } from '@/lib/email/templates/welcome';
+import { buildEmailPreferencesUrl } from '@/lib/email/preferences';
 import { verifyHCaptchaToken } from '@/lib/hcaptcha';
 import { authEmailExists, isDuplicateSignupResult } from '@/lib/signup-availability';
 
@@ -213,7 +214,14 @@ export async function POST(request) {
     }
 
     // Send welcome email (fire-and-forget — don't block signup response)
-    sendEmail({ to: normalizedEmail, ...welcomeEmail({ username: normalizedUsername }) }).catch((err) =>
+    sendEmail({
+      to: normalizedEmail,
+      ...welcomeEmail({
+        username: normalizedUsername,
+        preferencesUrl: buildEmailPreferencesUrl(signUpData.user.id, 'all'),
+      }),
+      idempotencyKey: `welcome-${signUpData.user.id}`,
+    }).catch((err) =>
       console.error('[Signup] Welcome email failed:', err)
     );
 

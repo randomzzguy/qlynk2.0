@@ -3,6 +3,27 @@ import { sendEmail } from '@/lib/email/send';
 import { trialExpiringEmail } from '@/lib/email/templates/trial-expiring';
 import { trialExpiredEmail } from '@/lib/email/templates/trial-expired';
 import { authorizeCronRequest } from '@/lib/cron-auth';
+import { buildEmailPreferencesUrl } from '@/lib/email/preferences';
+
+async function getTrialEmailPreference(supabase, userId) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('notif_trial_expiry')
+    .eq('id', userId)
+    .maybeSingle();
+  if (error) throw error;
+  return data?.notif_trial_expiry !== false;
+}
+
+async function markTrialWarningHandled(supabase, userId) {
+  const { error } = await supabase
+    .from('subscriptions')
+    .update({ trial_warning_sent: true })
+    .eq('user_id', userId)
+    .eq('tier', 'trial')
+    .eq('status', 'trialing');
+  if (error) throw error;
+}
 
 /**
  * Check all trial expirations and handle accordingly
@@ -28,35 +49,45 @@ export async function GET(request) {
       .from('subscriptions')
       .select('user_id, trial_ends_at')
       .eq('tier', 'trial')
+      .eq('status', 'trialing')
       .lt('trial_ends_at', new Date().toISOString());
 
     if (fetchError) {
       throw fetchError;
     }
 
-    // Flip expired trial subscriptions to a non-live tier. Agent availability is
-    // derived from subscription eligibility plus the owner's is_enabled switch.
+    // Move expired trials into the schema's supported non-live status. This must
+    // happen before email so a delivery failure cannot select the trial again.
     let updated = 0;
     let emailsSent = 0;
     for (const trial of expiredTrials || []) {
       const { data: updatedSubscriptions, error: updateError } = await supabase
         .from('subscriptions')
-        .update({ tier: 'expired' })
+        .update({ status: 'canceled' })
         .eq('user_id', trial.user_id)
         .eq('tier', 'trial')
+        .eq('status', 'trialing')
         .select('user_id');
       if (updateError) throw updateError;
       if (!updatedSubscriptions?.length) continue;
       updated++;
 
-      // Send trial expired email
+      // Settle the subscription before attempting email, so a provider failure
+      // can never cause the same expired trial to be processed every day.
+      const notificationEnabled = await getTrialEmailPreference(supabase, trial.user_id);
+      if (!notificationEnabled) continue;
+
       const { data: authUser } = await supabase.auth.admin.getUserById(trial.user_id);
       const userEmail = authUser?.user?.email;
       const username = authUser?.user?.user_metadata?.username || 'there';
       if (userEmail) {
         const { success } = await sendEmail({
           to: userEmail,
-          ...trialExpiredEmail({ username }),
+          ...trialExpiredEmail({
+            username,
+            preferencesUrl: buildEmailPreferencesUrl(trial.user_id, 'trial_expiry'),
+          }),
+          idempotencyKey: `trial-expired-${trial.user_id}-${trial.trial_ends_at}`,
         });
         if (success) emailsSent++;
       }
@@ -68,32 +99,43 @@ export async function GET(request) {
     in3DaysStart.setHours(0, 0, 0, 0);
     const in3DaysEnd = new Date(in3DaysStart.getTime() + 24 * 60 * 60 * 1000);
 
-    const { data: expiringIn3Days } = await supabase
+    const { data: expiringIn3Days, error: warningFetchError } = await supabase
       .from('subscriptions')
       .select('user_id, trial_ends_at')
       .eq('tier', 'trial')
+      .eq('status', 'trialing')
       .eq('trial_warning_sent', false)
       .gte('trial_ends_at', in3DaysStart.toISOString())
       .lt('trial_ends_at', in3DaysEnd.toISOString());
+    if (warningFetchError) throw warningFetchError;
 
     let warningsSent = 0;
     for (const trial of expiringIn3Days || []) {
+      const notificationEnabled = await getTrialEmailPreference(supabase, trial.user_id);
+      if (!notificationEnabled) {
+        await markTrialWarningHandled(supabase, trial.user_id);
+        continue;
+      }
+
       const { data: authUser } = await supabase.auth.admin.getUserById(trial.user_id);
       const userEmail = authUser?.user?.email;
       const username = authUser?.user?.user_metadata?.username || 'there';
       if (userEmail) {
         const { success } = await sendEmail({
           to: userEmail,
-          ...trialExpiringEmail({ username, daysLeft: 3 }),
+          ...trialExpiringEmail({
+            username,
+            daysLeft: 3,
+            preferencesUrl: buildEmailPreferencesUrl(trial.user_id, 'trial_expiry'),
+          }),
+          idempotencyKey: `trial-warning-${trial.user_id}-${trial.trial_ends_at}`,
         });
         if (success) {
           warningsSent++;
-          // Mark as warned so this user is skipped on future cron runs
-          await supabase
-            .from('subscriptions')
-            .update({ trial_warning_sent: true })
-            .eq('user_id', trial.user_id);
+          await markTrialWarningHandled(supabase, trial.user_id);
         }
+      } else {
+        await markTrialWarningHandled(supabase, trial.user_id);
       }
     }
 

@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { sendEmail } from '@/lib/email/send';
 import { subscriptionRenewedEmail } from '@/lib/email/templates/subscription-renewed';
 import { paymentFailedEmail } from '@/lib/email/templates/payment-failed';
+import { buildEmailPreferencesUrl } from '@/lib/email/preferences';
 import {
   claimStripeWebhookEvent,
   completeStripeWebhookEvent,
@@ -30,6 +31,16 @@ async function sendRequiredWebhookEmail(eventId, kind, email) {
   if (!result.success) {
     throw new Error(`${kind} email failed: ${result.error || 'unknown email error'}`);
   }
+}
+
+async function getSubscriptionEmailPreference(userId) {
+  const { data, error } = await supabaseAdmin
+    .from('profiles')
+    .select('notif_subscription')
+    .eq('id', userId)
+    .maybeSingle();
+  if (error) throw new Error(`Subscription email preference lookup failed: ${error.message}`);
+  return data?.notif_subscription !== false;
 }
 
 export async function POST(req) {
@@ -109,17 +120,25 @@ export async function POST(req) {
           const sub = await stripe.subscriptions.retrieve(invoice.subscription);
           const userId = sub.metadata?.supabase_user_id;
           if (userId) {
-            const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId);
+            const [{ data: authUser }, notificationEnabled] = await Promise.all([
+              supabaseAdmin.auth.admin.getUserById(userId),
+              getSubscriptionEmailPreference(userId),
+            ]);
             const userEmail = authUser?.user?.email;
             const username = authUser?.user?.user_metadata?.username || 'there';
             const planName = sub.metadata?.plan_name || sub.items?.data?.[0]?.price?.nickname || 'Pro';
             const nextRenewal = sub.current_period_end
               ? new Date(sub.current_period_end * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
               : null;
-            if (userEmail) {
+            if (userEmail && notificationEnabled) {
               await sendRequiredWebhookEmail(event.id, 'renewal', {
                 to: userEmail,
-                ...subscriptionRenewedEmail({ username, planName, renewalDate: nextRenewal }),
+                ...subscriptionRenewedEmail({
+                  username,
+                  planName,
+                  renewalDate: nextRenewal,
+                  preferencesUrl: buildEmailPreferencesUrl(userId, 'subscription'),
+                }),
               });
             }
           }
@@ -133,7 +152,10 @@ export async function POST(req) {
           const sub = await stripe.subscriptions.retrieve(invoice.subscription);
           const userId = sub.metadata?.supabase_user_id;
           if (userId) {
-            const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId);
+            const [{ data: authUser }, notificationEnabled] = await Promise.all([
+              supabaseAdmin.auth.admin.getUserById(userId),
+              getSubscriptionEmailPreference(userId),
+            ]);
             const userEmail = authUser?.user?.email;
             const username = authUser?.user?.user_metadata?.username || 'there';
             const planName = sub.metadata?.plan_name || sub.items?.data?.[0]?.price?.nickname || 'Pro';
@@ -151,7 +173,7 @@ export async function POST(req) {
               .select('user_id');
             requireUpdatedRows(data, error, 'Failed-payment subscription update');
 
-            if (userEmail) {
+            if (userEmail && notificationEnabled) {
               await sendRequiredWebhookEmail(event.id, 'payment-failed', {
                 to: userEmail,
                 ...paymentFailedEmail({
@@ -159,6 +181,7 @@ export async function POST(req) {
                   planName,
                   amountDue,
                   invoiceUrl: invoice.hosted_invoice_url || 'https://qlynk.site/dashboard/billing',
+                  preferencesUrl: buildEmailPreferencesUrl(userId, 'subscription'),
                 }),
               });
             }

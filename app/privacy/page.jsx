@@ -120,7 +120,7 @@ export default function PrivacyPage() {
               <section>
                 <h2 className="text-2xl font-bold text-white mb-4">9. Contact Us</h2>
                 <p className="leading-relaxed">
-                  For privacy questions or requests, contact <a className="text-blue-400 hover:text-blue-300" href="mailto:privacy@qlynk.site">privacy@qlynk.site</a>. Please do not send passwords or sensitive document contents by email.
+                  For privacy questions or requests, contact <a className="text-blue-400 hover:text-blue-300" href="mailto:info@qlynk.site">info@qlynk.site</a>. Please do not send passwords or sensitive document contents by email.
                 </p>
               </section>
             </div>

@@ -35,7 +35,7 @@ export default function AboutPage() {
           </section>
           <section>
             <h2 className="text-3xl font-bold mb-4">Contact</h2>
-            <p className="text-lg text-gray-400 leading-relaxed">For privacy questions or data requests, email <a className="text-orange hover:underline" href="mailto:privacy@qlynk.site">privacy@qlynk.site</a>. Additional company and media contacts will be published here once confirmed.</p>
+            <p className="text-lg text-gray-400 leading-relaxed">For privacy questions or data requests, email <a className="text-orange hover:underline" href="mailto:info@qlynk.site">info@qlynk.site</a>. Additional company and media contacts will be published here once confirmed.</p>
           </section>
         </div>
 

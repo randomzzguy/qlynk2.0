@@ -82,6 +82,13 @@ if (resendResponse.ok) {
   if (!verified) throw new Error(`Resend sender domain ${senderDomain} is not verified`);
   console.log(`Resend sender domain ${senderDomain}: verified PASS`);
 } else if (resendResponse.status === 401 && process.env.ALLOW_EMAIL_SMOKE_TEST === '1') {
+  const smokeTestRecipient = String(process.env.EMAIL_SMOKE_TEST_TO || '').trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(smokeTestRecipient)) {
+    throw new Error('EMAIL_SMOKE_TEST_TO must be set to a valid monitored inbox when ALLOW_EMAIL_SMOKE_TEST=1');
+  }
+  if (smokeTestRecipient === 'privacy@qlynk.site') {
+    throw new Error('EMAIL_SMOKE_TEST_TO cannot use the unmonitored privacy@qlynk.site address');
+  }
   const sendResponse = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -91,14 +98,14 @@ if (resendResponse.ok) {
     },
     body: JSON.stringify({
       from: process.env.EMAIL_FROM,
-      to: 'privacy@qlynk.site',
+      to: smokeTestRecipient,
       subject: 'Qlynk launch readiness email verification',
       html: '<p>This idempotent message verifies Qlynk production transactional email configuration for the July 11, 2026 launch-readiness audit.</p>',
     }),
     signal: AbortSignal.timeout(10_000),
   });
   if (!sendResponse.ok) throw new Error(`Resend email smoke returned HTTP ${sendResponse.status}`);
-  console.log(`Resend idempotent email accepted for privacy@qlynk.site: HTTP ${sendResponse.status} PASS`);
+  console.log(`Resend idempotent email accepted for the configured smoke-test inbox: HTTP ${sendResponse.status} PASS`);
 } else {
   throw new Error(`Resend domain listing returned HTTP ${resendResponse.status}; use ALLOW_EMAIL_SMOKE_TEST=1 to verify a restricted send-only key`);
 }

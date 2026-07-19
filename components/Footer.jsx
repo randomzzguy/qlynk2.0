@@ -18,7 +18,7 @@ export default function Footer() {
               />
             </Link>
             <p className="text-sm leading-relaxed mb-6">
-              Build a focused AI agent from your approved knowledge, rules, and purpose—then share it at your own Qlynk link.
+              Turn what you know into an AI agent that answers questions through a simple Qlynk link.
             </p>
           </div>
 

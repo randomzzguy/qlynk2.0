@@ -5,6 +5,7 @@ import { getMessageLimit, isSubscriptionLive, normalizeTier } from '@/lib/plans'
 import { checkRateLimitKey, rateLimitResponse, rateLimitResponseForKey } from '@/lib/rate-limit';
 import { sendEmail } from '@/lib/email/send';
 import { newMessageEmail } from '@/lib/email/templates/new-message';
+import { buildEmailPreferencesUrl } from '@/lib/email/preferences';
 import { compare } from 'bcryptjs';
 import {
   buildScopeClassifierPrompt,
@@ -520,9 +521,15 @@ export async function POST(req) {
 
       // Notify the agent owner of the new conversation (fire-and-forget)
       if (newConv?.id) {
-        const { data: ownerAuthUser } = await adminSupabase.auth.admin.getUserById(profile.id);
+        const [{ data: ownerAuthUser }, { data: ownerProfile, error: ownerProfileError }] = await Promise.all([
+          adminSupabase.auth.admin.getUserById(profile.id),
+          adminSupabase.from('profiles').select('notif_new_message').eq('id', profile.id).maybeSingle(),
+        ]);
+        if (ownerProfileError) {
+          console.error('[AI Chat] Failed to read notification preference:', ownerProfileError.message);
+        }
         const ownerEmail = ownerAuthUser?.user?.email;
-        const ownerNotifEnabled = ownerAuthUser?.user?.user_metadata?.notif_new_message !== false;
+        const ownerNotifEnabled = !ownerProfileError && ownerProfile?.notif_new_message !== false;
         if (ownerEmail && ownerNotifEnabled) {
           sendEmail({
             to: ownerEmail,
@@ -531,14 +538,18 @@ export async function POST(req) {
               visitorEmail: visitorEmail || null,
               messagePreview: latestMessage.content,
               conversationsUrl: `https://qlynk.site/dashboard/conversations`,
+              preferencesUrl: buildEmailPreferencesUrl(profile.id, 'new_message'),
             }),
-          }).then(() => {
-            adminSupabase
+            idempotencyKey: `new-conversation-${newConv.id}`,
+          }).then((result) => {
+            if (!result.success) {
+              console.error('[AI Chat] New message email failed:', result.error || 'unknown email error');
+              return;
+            }
+            return adminSupabase
               .from('agent_conversations')
               .update({ email_notified: true })
-              .eq('id', newConv.id)
-              .then(() => {})
-              .catch(() => {});
+              .eq('id', newConv.id);
           }).catch((err) => console.error('[AI Chat] New message email failed:', err));
         }
       }

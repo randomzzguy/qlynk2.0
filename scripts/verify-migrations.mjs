@@ -166,6 +166,36 @@ assert(
   'Public profile view exposes account deletion fields.'
 );
 
+for (const view of ['profiles_public', 'agent_configs_public']) {
+  assert(
+    await scalar(`
+      SELECT coalesce('security_invoker=true' = ANY(reloptions), false) AS value
+      FROM pg_class
+      WHERE oid = 'public.${view}'::regclass
+    `) === true,
+    `${view} is not a security-invoker view.`
+  );
+}
+assert(
+  await scalar(`SELECT definition LIKE '%profiles_public_data%' AS value FROM pg_views WHERE schemaname = 'public' AND viewname = 'profiles_public'`) === true,
+  'profiles_public is not backed by the safe projection table.'
+);
+assert(
+  await scalar(`SELECT definition LIKE '%agent_configs_public_data%' AS value FROM pg_views WHERE schemaname = 'public' AND viewname = 'agent_configs_public'`) === true,
+  'agent_configs_public is not backed by the safe projection table.'
+);
+
+await db.exec(`UPDATE public.profiles SET full_name = 'Projection Sync Test' WHERE id = '${fixtureUserId}'`);
+await db.exec(`UPDATE public.agent_configs SET agent_name = 'Projection Sync Agent' WHERE user_id = '${fixtureUserId}'`);
+assert(
+  await scalar(`SELECT full_name = 'Projection Sync Test' AS value FROM public.profiles_public WHERE id = '${fixtureUserId}'`) === true,
+  'Profile public projection did not synchronize.'
+);
+assert(
+  await scalar(`SELECT agent_name = 'Projection Sync Agent' AS value FROM public.agent_configs_public WHERE user_id = '${fixtureUserId}'`) === true,
+  'Agent public projection did not synchronize.'
+);
+
 const profileEmailWasBackfilled = await scalar(`
   SELECT email = 'migration-test@example.com' AS value
   FROM public.profiles
@@ -207,6 +237,8 @@ for (const [table, expectedPolicyCount] of Object.entries({
   agent_messages: 1,
   page_views: 1,
   subscriptions: 2,
+  profiles_public_data: 1,
+  agent_configs_public_data: 1,
 })) {
   const policyCount = await scalar(`
     SELECT count(*)::int AS value
@@ -254,6 +286,8 @@ const rlsTables = [
   'agent_message_feedback',
   'agent_config_drafts',
   'agent_publish_versions',
+  'profiles_public_data',
+  'agent_configs_public_data',
 ];
 const enabledRlsCount = await scalar(`
   SELECT count(*)::int AS value
@@ -283,6 +317,14 @@ assert(
   await scalar('SELECT count(*)::int AS value FROM public.profiles_public') === 1,
   'Anonymous role cannot read the safe profile view.'
 );
+assert(
+  await scalar('SELECT count(*)::int AS value FROM public.agent_configs_public_data') === 1,
+  'Anonymous role cannot read the safe agent projection.'
+);
+assert(
+  await scalar('SELECT count(*)::int AS value FROM public.profiles_public_data') === 1,
+  'Anonymous role cannot read the safe profile projection.'
+);
 
 for (const statement of [
   `INSERT INTO public.agent_conversations (agent_owner_id, visitor_id)
@@ -291,6 +333,8 @@ for (const statement of [
    VALUES ('22222222-2222-4222-8222-222222222222', 'user', 'anonymous-write')`,
   `INSERT INTO public.page_views (page_owner_id, visitor_id)
    VALUES ('${fixtureUserId}', 'anonymous-write')`,
+  `UPDATE public.profiles_public_data SET full_name = 'anonymous-write' WHERE id = '${fixtureUserId}'`,
+  `UPDATE public.agent_configs_public_data SET agent_name = 'anonymous-write' WHERE user_id = '${fixtureUserId}'`,
 ]) {
   let rejected = false;
   try {
@@ -318,6 +362,16 @@ assert(
   await scalar(`SELECT has_function_privilege('authenticated', 'public.record_agent_knowledge_gap(uuid,text,text,uuid)', 'EXECUTE') AS value`) === false,
   'Authenticated clients can forge knowledge-gap activity.'
 );
+for (const role of ['anon', 'authenticated']) {
+  assert(
+    await scalar(`SELECT has_function_privilege('${role}', 'public.sync_profile_public_projection()', 'EXECUTE') AS value`) === false,
+    `${role} clients can invoke the profile public-projection trigger directly.`
+  );
+  assert(
+    await scalar(`SELECT has_function_privilege('${role}', 'public.sync_agent_config_public_projection()', 'EXECUTE') AS value`) === false,
+    `${role} clients can invoke the agent-config public-projection trigger directly.`
+  );
+}
 await db.exec('SET ROLE service_role;');
 const limiterKey = 'a'.repeat(64);
 const firstLimit = await db.query(`SELECT * FROM public.check_api_rate_limit('verification', '${limiterKey}', 2, 60)`);
@@ -446,6 +500,16 @@ assert(
   await scalar(`SELECT has_table_privilege('authenticated', 'public.agent_publish_versions', 'SELECT') AS value`) === false,
   'Authenticated clients can read private publish snapshots directly.'
 );
+for (const table of ['profiles_public_data', 'agent_configs_public_data']) {
+  assert(
+    await scalar(`SELECT has_table_privilege('authenticated', 'public.${table}', 'SELECT') AS value`) === true,
+    `Authenticated clients cannot read ${table}.`
+  );
+  assert(
+    await scalar(`SELECT has_table_privilege('authenticated', 'public.${table}', 'UPDATE') AS value`) === false,
+    `Authenticated clients can write ${table}.`
+  );
+}
 
 await db.close();
 

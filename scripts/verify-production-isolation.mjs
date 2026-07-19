@@ -194,6 +194,42 @@ async function assertPrivateRuleIsolation(client, fixture) {
   }
 }
 
+async function assertPublicProjectionSafety(fixture) {
+  const anonymous = createClient(url, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const profileRows = await requireResult(
+    anonymous.from('profiles_public').select('*').eq('id', fixture.id),
+    'anonymous reads safe profile view',
+  );
+  const agentRows = await requireResult(
+    anonymous.from('agent_configs_public').select('*').eq('user_id', fixture.id),
+    'anonymous reads safe agent view',
+  );
+  assert(profileRows.length === 1 && !Object.hasOwn(profileRows[0], 'email'), 'Safe profile view is missing or exposes private email.');
+  assert(agentRows.length === 1 && !Object.hasOwn(agentRows[0], 'custom_knowledge'), 'Safe agent view is missing or exposes private knowledge.');
+
+  for (const table of ['profiles', 'agent_configs']) {
+    const { data, error } = await anonymous.from(table).select('*').limit(1);
+    assert(Boolean(error) && !data, `Anonymous clients can read private ${table}.`);
+  }
+
+  for (const table of ['profiles_public_data', 'agent_configs_public_data']) {
+    const ownerColumn = table === 'profiles_public_data' ? 'id' : 'user_id';
+    const { data, error } = await anonymous
+      .from(table)
+      .update(table === 'profiles_public_data' ? { full_name: 'unauthorized' } : { agent_name: 'unauthorized' })
+      .eq(ownerColumn, fixture.id)
+      .select(ownerColumn);
+    assert(Boolean(error) && !data, `Anonymous clients can write ${table}.`);
+  }
+
+  await requireResult(admin.from('profiles').update({ full_name: 'Projection Sync Verified' }).eq('id', fixture.id), 'profile projection update');
+  await requireResult(admin.from('agent_configs').update({ agent_name: 'Projection Sync Agent' }).eq('user_id', fixture.id), 'agent projection update');
+  const syncedProfile = await requireResult(anonymous.from('profiles_public').select('full_name').eq('id', fixture.id).single(), 'synced profile view');
+  const syncedAgent = await requireResult(anonymous.from('agent_configs_public').select('agent_name').eq('user_id', fixture.id).single(), 'synced agent view');
+  assert(syncedProfile.full_name === 'Projection Sync Verified', 'Live profile projection did not synchronize.');
+  assert(syncedAgent.agent_name === 'Projection Sync Agent', 'Live agent projection did not synchronize.');
+}
+
 let clients = [];
 try {
   for (const fixture of fixtures) await createFixture(fixture);
@@ -203,7 +239,8 @@ try {
   await assertPrivateRuleIsolation(clients[0], fixtures[0]);
   await assertPrivateRuleIsolation(clients[1], fixtures[1]);
   await assertStorageIsolation(clients[0], clients[1], fixtures[0]);
-  console.log('Production two-account isolation passed for profiles/deletion state, agents, private rules/history, drafts/publish snapshots, knowledge/gaps, feedback, documents, subscriptions, conversations, messages, analytics, writes, and private Storage.');
+  await assertPublicProjectionSafety(fixtures[0]);
+  console.log('Production isolation passed for private account data, security-invoker public projections, agents, private rules/history, drafts/publish snapshots, knowledge/gaps, feedback, documents, subscriptions, conversations, messages, analytics, writes, and private Storage.');
 } finally {
   for (const fixture of fixtures) {
     if (!fixture.id) continue;

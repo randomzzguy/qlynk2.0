@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Loader2, Send } from 'lucide-react';
 import { NORTHSTAR_DEMO } from '@/lib/demo/northstar-public';
+import { trackMarketingEvent } from '@/lib/marketing-events';
 
 const DEMO_SESSION_KEY = 'qlynk_home_demo_session';
 const DEMO_SESSION_LIFETIME_MS = 24 * 60 * 60 * 1000;
@@ -100,6 +101,10 @@ export default function HomepageAgentDemo() {
     sessionRef.current = session;
     saveDemoSession(session);
     setQuestionCount(nextCount);
+    trackMarketingEvent('homepage_demo_question_submitted', {
+      question_number: nextCount,
+      input_method: NORTHSTAR_DEMO.suggestedQuestions.includes(cleanQuestion) ? 'suggested' : 'typed',
+    });
 
     const nextQuestions = [...questions, cleanQuestion].slice(-MAX_QUESTIONS);
     const userMessage = { id: `user-${Date.now()}`, role: 'user', content: cleanQuestion };
@@ -163,6 +168,7 @@ export default function HomepageAgentDemo() {
       if (!assistantContent) throw new Error('The demo response was empty.');
       updateAssistantMessage(assistantId, assistantContent);
       setHasAnswered(true);
+      trackMarketingEvent('homepage_demo_answer_received', { question_number: nextCount });
     } catch (error) {
       updateAssistantMessage(
         assistantId,
@@ -182,13 +188,6 @@ export default function HomepageAgentDemo() {
 
   return (
     <div className="relative">
-      <div className="absolute -top-6 -right-6 p-4 rounded-2xl bg-gray-800/80 backdrop-blur-xl border border-white/10 shadow-2xl z-20 hidden sm:block">
-        <div className="flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-          <span className="text-xs font-bold text-white uppercase tracking-wider">Try the Live Demo</span>
-        </div>
-      </div>
-
       <div className="rounded-[2.5rem] bg-gray-900 shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden border-[8px] border-gray-800/80 relative">
         <div className="bg-gray-800/50 px-6 py-4 flex items-center gap-3 border-b border-white/5">
           <div className="flex gap-2">
@@ -257,7 +256,7 @@ export default function HomepageAgentDemo() {
           {hasAnswered && !limitReached && (
             <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-orange/20 bg-orange/5 px-4 py-3">
               <p className="text-xs text-gray-300">Want an agent that answers for your business?</p>
-              <Link href="/auth/signup" className="shrink-0 inline-flex items-center gap-1 text-xs font-bold text-orange hover:text-white transition-colors">
+              <Link href="/auth/signup" data-analytics-event="homepage_signup_click" data-analytics-placement="demo_answer" className="shrink-0 inline-flex items-center gap-1 text-xs font-bold text-orange hover:text-white transition-colors">
                 Create yours free <ArrowRight size={13} />
               </Link>
             </div>
@@ -267,7 +266,7 @@ export default function HomepageAgentDemo() {
             <div className="mt-5 rounded-2xl border border-orange/25 bg-orange/10 p-4 text-center">
               <p className="text-sm font-semibold text-white">You have tried all three demo questions.</p>
               <p className="mt-1 text-xs text-gray-400">Now give an agent your knowledge and let people ask their own questions.</p>
-              <Link href="/auth/signup" className="mt-3 inline-flex items-center justify-center gap-2 rounded-xl bg-orange px-5 py-3 text-sm font-bold text-white hover:bg-orange/90 transition-colors">
+              <Link href="/auth/signup" data-analytics-event="homepage_signup_click" data-analytics-placement="demo_limit" className="mt-3 inline-flex items-center justify-center gap-2 rounded-xl bg-orange px-5 py-3 text-sm font-bold text-white hover:bg-orange/90 transition-colors">
                 Create Your Agent for Free <ArrowRight size={16} />
               </Link>
             </div>

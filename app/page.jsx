@@ -119,8 +119,8 @@ const AgentDemoHero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            Turn What You Know Into <br />
-            <span className="bg-gradient-to-r from-orange via-[#f46530] to-[#c14f22] bg-clip-text text-transparent">an AI Agent</span>
+            Stop Answering the Same <br />
+            <span className="bg-gradient-to-r from-orange via-[#f46530] to-[#c14f22] bg-clip-text text-transparent">Questions Over and Over</span>
           </motion.h1>
 
           <motion.p
@@ -129,7 +129,7 @@ const AgentDemoHero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            Create an AI agent that answers questions about you, your business, property, product, or process. You decide what it knows, how it responds, and when a person should step in.
+            Turn what you know into an AI agent that answers for you — about your work, your business, or your process — through one simple link.
           </motion.p>
         </div>
 
@@ -144,18 +144,18 @@ const AgentDemoHero = () => {
               {[
                 {
                   icon: Brain,
-                  title: "Give It a Clear Job",
-                  desc: "Choose who it should help and the questions you want it to handle."
+                  title: "Pick What You're Tired of Repeating",
+                  desc: "The questions, the FAQs, the same explanation every time — decide what your agent should handle."
                 },
                 {
                   icon: MessageSquare,
-                  title: "Add the Right Information",
-                  desc: "Bring together your facts, FAQs, documents, links, and other useful details."
+                  title: "Feed It the Answers",
+                  desc: "Bring your facts, documents, links, and expertise into one place."
                 },
                 {
                   icon: BarChart3,
-                  title: "Stay in Control",
-                  desc: "Set its tone, limits, and what it should do when it cannot help."
+                  title: "Set the Limits",
+                  desc: "Choose the tone, what it can discuss, and when a real person should step in."
                 }
               ].map((feature, i) => (
                 <motion.div
@@ -221,6 +221,7 @@ const AgentDemoHero = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.7, delay: 0.8 }}
             >
+              <p className="mb-4 text-center text-sm font-medium text-gray-400">See how a business uses Qlynk to answer customer questions instantly ↓</p>
               <div className="relative">
                 {/* Floating Elements Around Demo */}
                 <motion.div 
@@ -322,8 +323,8 @@ const AgentDemoHero = () => {
             whileHover={{ y: -5 }}
           >
             <div className="text-3xl mb-3 text-[#f46530]"><Bot /></div>
-            <div className="font-bold mb-2 text-white">People & Professionals</div>
-            <div className="text-sm text-gray-400">Help visitors understand your experience, services, projects, and areas of expertise</div>
+            <div className="font-bold mb-2 text-white">For Freelancers & Experts</div>
+            <div className="text-sm text-gray-400">Instead of re-explaining your services on every call, let your agent answer client questions while you work.</div>
           </motion.div>
 
           <motion.div
@@ -331,8 +332,8 @@ const AgentDemoHero = () => {
             whileHover={{ y: -5 }}
           >
             <div className="text-3xl mb-3 text-[#f46530]"><Users /></div>
-            <div className="font-bold mb-2 text-white">Businesses & Products</div>
-            <div className="text-sm text-gray-400">Answer common questions, explain what you offer, and guide customers to the right next step</div>
+            <div className="font-bold mb-2 text-white">For Businesses</div>
+            <div className="text-sm text-gray-400">Answer "do you deliver," "what's included," and "how much" automatically — without a support team.</div>
           </motion.div>
 
           <motion.div
@@ -340,8 +341,8 @@ const AgentDemoHero = () => {
             whileHover={{ y: -5 }}
           >
             <div className="text-3xl mb-3 text-[#f46530]"><Sparkles /></div>
-            <div className="font-bold mb-2 text-white">Places & Operations</div>
-            <div className="text-sm text-gray-400">Give guests and teams reliable answers about locations, procedures, training, and daily work</div>
+            <div className="font-bold mb-2 text-white">For Teams & Properties</div>
+            <div className="text-sm text-gray-400">New hires, guests, or tenants get instant answers to routine questions, without pulling a person away from their day.</div>
           </motion.div>
         </motion.div>
       </div>
@@ -560,9 +561,9 @@ export default function App() {
   ];
 
   const steps = [
-    { num: "1", title: "Choose What It Should Do", desc: "Decide who the agent will help, what it should answer, and how it should sound." },
-    { num: "2", title: "Add Your Information", desc: "Add the facts, FAQs, documents, links, and instructions it needs to be useful." },
-    { num: "3", title: "Share It and Learn", desc: "Publish your Qlynk link, review the questions people ask, and improve the agent over time." }
+    { num: "1", title: "Pick What You're Tired of Repeating", desc: "The questions, the FAQs, the same explanation every time." },
+    { num: "2", title: "Feed It the Answers", desc: "Your docs, your facts, your voice." },
+    { num: "3", title: "Send the Link", desc: "Let it handle the rest." }
   ];
 
   return (

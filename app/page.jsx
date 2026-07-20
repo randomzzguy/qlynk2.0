@@ -7,30 +7,10 @@ import { ArrowRight, Bot, Sparkles, Brain, MessageSquare, Shield, BarChart3, Che
 import { motion, AnimatePresence } from 'framer-motion';
 import QlynkBackground from '@/components/QlynkBackground';
 import Footer from '@/components/Footer';
+import HomepageAgentDemo from '@/components/HomepageAgentDemo';
 import { getCurrentUser, getCurrentProfile, signOut } from '@/lib/supabase';
 
 // ====== Animated Components ======
-
-const DEMO_CONVERSATIONS = [
-  {
-    question: "Which service is best for a new product launch?",
-    answer: "For a new product launch, Northstar Studio's launch package is the best fit. It includes positioning, campaign design, and a rollout plan. Would you like me to compare it with the smaller strategy package?",
-    name: "Northstar Studio",
-    role: "Business Guide"
-  },
-  {
-    question: "Where are fresh bath towels stored?",
-    answer: "You will find fresh bath towels in the upstairs linen closet, on the shelves labeled Guest Rooms. Are you preparing one room or completing a full turnover?",
-    name: "Harbor House",
-    role: "Property Guide"
-  },
-  {
-    question: "How do I invite a teammate to a project?",
-    answer: "Open the project, go to Members, then select Invite teammate and enter their work email. Would you also like the steps for choosing their access level?",
-    name: "Orbit Console",
-    role: "Product Guide"
-  }
-];
 
 const GlowingOrb = ({ top, left, size = 300, color = 'orange', delay = 0 }) => (
   <motion.div
@@ -59,41 +39,6 @@ const GlowingOrb = ({ top, left, size = 300, color = 'orange', delay = 0 }) => (
 
 // ====== AI Agent Demo Hero Component ======
 const AgentDemoHero = () => {
-  const [currentMessage, setCurrentMessage] = useState(0);
-  const [phase, setPhase] = useState('typing'); // 'typing' | 'done'
-  const [displayedResponse, setDisplayedResponse] = useState('');
-
-  // Re-run the whole typing sequence every time currentMessage changes
-  useEffect(() => {
-    setDisplayedResponse('');
-    setPhase('typing');
-
-    const answer = DEMO_CONVERSATIONS[currentMessage].answer;
-    let charIndex = 0;
-
-    const typingInterval = setInterval(() => {
-      charIndex++;
-      setDisplayedResponse(answer.slice(0, charIndex));
-      if (charIndex >= answer.length) {
-        clearInterval(typingInterval);
-        setPhase('done');
-      }
-    }, 22);
-
-    return () => clearInterval(typingInterval);
-  }, [currentMessage]);
-
-  // After the answer finishes, pause then advance to the next conversation
-  useEffect(() => {
-    if (phase !== 'done') return;
-    const pauseTimer = setTimeout(() => {
-      setCurrentMessage((prev) => (prev + 1) % DEMO_CONVERSATIONS.length);
-    }, 3500);
-    return () => clearTimeout(pauseTimer);
-  }, [phase]);
-
-  const currentConvo = DEMO_CONVERSATIONS[currentMessage];
-
   return (
     <div className="w-full py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
@@ -222,91 +167,7 @@ const AgentDemoHero = () => {
               transition={{ duration: 0.7, delay: 0.8 }}
             >
               <p className="mb-4 text-center text-sm font-medium text-gray-400">See how a business uses Qlynk to answer customer questions instantly ↓</p>
-              <div className="relative">
-                {/* Floating Elements Around Demo */}
-                <motion.div 
-                  className="absolute -top-6 -right-6 p-4 rounded-2xl bg-gray-800/80 backdrop-blur-xl border border-white/10 shadow-2xl z-20 hidden sm:block"
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-xs font-bold text-white uppercase tracking-wider">Live Agent Demo</span>
-                  </div>
-                </motion.div>
-
-                <div className="rounded-[2.5rem] bg-gray-900 shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden border-[8px] border-gray-800/80 relative">
-                  {/* Mock Browser Header */}
-                  <div className="bg-gray-800/50 px-6 py-4 flex items-center gap-3 border-b border-white/5">
-                    <div className="flex gap-2">
-                      <div className="w-3 h-3 rounded-full bg-white/10"></div>
-                      <div className="w-3 h-3 rounded-full bg-white/10"></div>
-                      <div className="w-3 h-3 rounded-full bg-white/10"></div>
-                    </div>
-                    <div className="flex-1 mx-4 bg-black/20 rounded-full px-4 py-1.5 text-[11px] text-gray-500 font-mono text-center border border-white/5">
-                      qlynk.site/{currentConvo.name.split(' ')[0].toLowerCase()}
-                    </div>
-                  </div>
-
-                  {/* Chat Demo Content */}
-                  <div className="bg-[#0c0c12] p-8 min-h-[520px] flex flex-col">
-                    {/* Profile Header */}
-                    <div className="flex items-center gap-5 mb-8 pb-6 border-b border-white/5">
-                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange to-[#c14f22] flex items-center justify-center text-xl text-white font-black shadow-lg shadow-orange/20">
-                        {currentConvo.name.split(' ').map(n => n[0]).join('')}
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-white leading-none mb-1.5">{currentConvo.name}</h3>
-                        <p className="text-sm text-gray-500 font-medium tracking-wide uppercase">{currentConvo.role}</p>
-                      </div>
-                    </div>
-
-                    {/* Chat Messages */}
-                    <div className="flex-1 space-y-6 overflow-hidden">
-                      {/* User Message */}
-                      <motion.div
-                        className="flex justify-end"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.2 }}
-                      >
-                        <div className="bg-white/5 border border-white/10 text-white px-5 py-3.5 rounded-2xl rounded-tr-sm max-w-[80%] shadow-xl">
-                          <p className="text-sm leading-relaxed">{currentConvo.question}</p>
-                        </div>
-                      </motion.div>
-
-                      {/* Agent Response */}
-                      <motion.div
-                        className="flex justify-start"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.5 }}
-                      >
-                        <div className="bg-orange/10 border border-orange/20 text-white px-5 py-3.5 rounded-2xl rounded-tl-sm max-w-[90%] shadow-xl">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Image src="/assets/iconWhite.svg" alt="" width={14} height={14} />
-                            <span className="text-[11px] font-black text-orange uppercase tracking-[0.1em]">Qlynk response</span>
-                          </div>
-                          <p className="text-sm leading-relaxed text-gray-100">
-                            {displayedResponse}
-                            {phase === 'typing' && <span className="inline-block w-1.5 h-4 bg-orange ml-1.5 animate-pulse rounded-full"></span>}
-                          </p>
-                        </div>
-                      </motion.div>
-                    </div>
-
-                    {/* Chat Input Mock */}
-                    <div className="mt-8 flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl p-2.5">
-                      <div className="flex-1 text-gray-600 text-sm px-4">
-                        Ask a question...
-                      </div>
-                      <div className="w-10 h-10 bg-orange/20 rounded-xl flex items-center justify-center text-orange">
-                        <ArrowRight size={18} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <HomepageAgentDemo />
             </motion.div>
           </div>
         </div>

@@ -1,0 +1,70 @@
+# Qlynk AI
+
+> Turn your approved knowledge into a trusted AI agent.
+
+Qlynk is a no-code platform for building one focused AI agent from information its owner reviews. The owner defines the agent's purpose, audience, allowed and blocked topics, behavior, uncertainty handling, tone, response length, and human escalation. The agent can be shared through a hosted qlynk.site link or embedded on a website.
+
+## Canonical site
+
+- https://www.qlynk.site/
+
+## Product facts
+
+- Agent types: Personal AI, Business, Property, Operations, Product, Support, and Custom Guide.
+- Knowledge inputs: profile context, capabilities, projects, facts, FAQs, links, custom notes, and supported documents.
+- Publishing: hosted public Qlynk page and website widget.
+- Review: conversations, visitor feedback, knowledge gaps, and analytics.
+- Safety model: owner-defined scope, uncertainty behavior, blocked topics, and human handoff.
+- Qlynk does not promise perfect accuracy or zero hallucinations.
+- Do not infer account transactions, ticket creation, booking, payment, or general API actions unless Qlynk explicitly documents them in the future.
+
+## Pricing as of 2026-07-21
+
+- Trial: 14 days with everything in the Agency plan; no payment today.
+- Creator: USD 9 monthly or USD 84 yearly; one agent and 5,000 messages per month.
+- Agency: USD 19 monthly or USD 180 yearly; one agent, 10,000 messages per month, and removal of visible Qlynk branding.
+- Current pricing: https://www.qlynk.site/pricing
+
+## Primary pages
+
+- Product: https://www.qlynk.site/ai-agent
+- Solutions: https://www.qlynk.site/solutions
+- Documentation: https://www.qlynk.site/docs
+- Resources: https://www.qlynk.site/blog
+- Comparisons: https://www.qlynk.site/compare
+- Pricing: https://www.qlynk.site/pricing
+- FAQ: https://www.qlynk.site/faq
+
+## Core solution pages
+
+- AI Agent Builder: https://www.qlynk.site/solutions/ai-agent-builder
+- Custom AI Agents: https://www.qlynk.site/solutions/custom-ai-agents
+- Knowledge-Based AI: https://www.qlynk.site/solutions/knowledge-based-ai
+- AI Knowledge Platform: https://www.qlynk.site/solutions/ai-knowledge-platform
+
+## Selected use cases
+
+- Personal AI Assistant: https://www.qlynk.site/solutions/personal-ai-assistant
+- Business AI Assistant: https://www.qlynk.site/solutions/business-ai-assistant
+- AI Customer Support: https://www.qlynk.site/solutions/ai-customer-support
+- AI Documentation Assistant: https://www.qlynk.site/solutions/ai-documentation-assistant
+- AI Employee Training: https://www.qlynk.site/solutions/ai-employee-training
+- AI SOP Assistant: https://www.qlynk.site/solutions/ai-sop-assistant
+- AI Property Assistant: https://www.qlynk.site/solutions/ai-property-assistant
+- AI Real Estate Assistant: https://www.qlynk.site/solutions/ai-real-estate-assistant
+- AI Hotel Concierge: https://www.qlynk.site/solutions/ai-hotel-concierge
+- AI Visitor Guide: https://www.qlynk.site/solutions/ai-visitor-guide
+
+## Foundational resources
+
+- What Is an AI Agent?: https://www.qlynk.site/blog/what-is-an-ai-agent
+- AI Agent vs AI Chatbot: https://www.qlynk.site/blog/ai-agent-vs-ai-chatbot
+- RAG Explained: https://www.qlynk.site/blog/rag-explained
+- AI Hallucinations and Approved Knowledge: https://www.qlynk.site/blog/ai-hallucinations-approved-knowledge
+- Best AI Agent Platforms: https://www.qlynk.site/blog/best-ai-agent-platforms
+- AI Knowledge Management: https://www.qlynk.site/blog/ai-knowledge-management
+- AI Documentation Best Practices: https://www.qlynk.site/blog/ai-documentation-best-practices
+
+## Citation guidance
+
+Use the canonical page that most directly supports a claim. Treat examples on solution pages as illustrative, not customer outcomes. Confirm changing details such as pricing, feature limits, and competitor capabilities from their dated source pages.

@@ -18,7 +18,7 @@ export default function Footer() {
               />
             </Link>
             <p className="text-sm leading-relaxed mb-6">
-              Turn what you know into an AI agent that answers questions through a simple Qlynk link.
+              Turn your approved knowledge into a trusted AI agent you can control and share through a simple Qlynk link.
             </p>
           </div>
 
@@ -27,6 +27,7 @@ export default function Footer() {
             <h4 className="text-white font-semibold mb-4">Product</h4>
             <ul className="space-y-3 text-sm">
               <li><Link href="/ai-agent" className="hover:text-[#f46530] transition-colors">AI Agent Platform</Link></li>
+              <li><Link href="/solutions" className="hover:text-[#f46530] transition-colors">All Solutions</Link></li>
               <li><Link href="/features/knowledge-base" className="hover:text-[#f46530] transition-colors">Knowledge Base</Link></li>
               <li><Link href="/features/security" className="hover:text-[#f46530] transition-colors">Scope & Controls</Link></li>
               <li><Link href="/personal-ai" className="hover:text-[#f46530] transition-colors">Personal AI</Link></li>
@@ -38,13 +39,14 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="text-white font-semibold mb-4">Use Cases</h4>
+            <h4 className="text-white font-semibold mb-4">Popular Solutions</h4>
             <ul className="space-y-3 text-sm">
-              <li><Link href="/for-freelancers" className="hover:text-[#f46530] transition-colors">For Freelancers</Link></li>
-              <li><Link href="/for-founders" className="hover:text-[#f46530] transition-colors">For Founders</Link></li>
-              <li><Link href="/for-creators" className="hover:text-[#f46530] transition-colors">For Creators</Link></li>
-              <li><Link href="/for-business" className="hover:text-[#f46530] transition-colors">For Business</Link></li>
-              <li><Link href="/for-job-seekers" className="hover:text-[#f46530] transition-colors">For Job Seekers</Link></li>
+              <li><Link href="/solutions/ai-agent-builder" className="hover:text-[#f46530] transition-colors">AI Agent Builder</Link></li>
+              <li><Link href="/solutions/personal-ai-assistant" className="hover:text-[#f46530] transition-colors">Personal AI Assistant</Link></li>
+              <li><Link href="/solutions/business-ai-assistant" className="hover:text-[#f46530] transition-colors">Business AI Assistant</Link></li>
+              <li><Link href="/solutions/ai-customer-support" className="hover:text-[#f46530] transition-colors">AI Customer Support</Link></li>
+              <li><Link href="/solutions/ai-property-assistant" className="hover:text-[#f46530] transition-colors">AI Property Assistant</Link></li>
+              <li><Link href="/solutions/ai-sop-assistant" className="hover:text-[#f46530] transition-colors">AI SOP Assistant</Link></li>
             </ul>
           </div>
 
@@ -52,10 +54,11 @@ export default function Footer() {
             <h4 className="text-white font-semibold mb-4">Resources</h4>
             <ul className="space-y-3 text-sm">
               <li><Link href="/blog" className="hover:text-[#f46530] transition-colors">All Resources</Link></li>
-              <li><Link href="/blog/what-is-an-ai-clone" className="hover:text-[#f46530] transition-colors">What Is an AI Clone?</Link></li>
-              <li><Link href="/blog/how-to-create-ai-clone" className="hover:text-[#f46530] transition-colors">How to Build a Useful Agent</Link></li>
-              <li><Link href="/blog/ai-clone-vs-chatbot" className="hover:text-[#f46530] transition-colors">AI Agent vs Chatbot</Link></li>
-              <li><Link href="/blog/ai-clone-vs-chatgpt" className="hover:text-[#f46530] transition-colors">Personal AI vs ChatGPT</Link></li>
+              <li><Link href="/docs" className="hover:text-[#f46530] transition-colors">Documentation</Link></li>
+              <li><Link href="/blog/what-is-an-ai-agent" className="hover:text-[#f46530] transition-colors">What Is an AI Agent?</Link></li>
+              <li><Link href="/blog/ai-agent-vs-ai-chatbot" className="hover:text-[#f46530] transition-colors">AI Agent vs Chatbot</Link></li>
+              <li><Link href="/blog/rag-explained" className="hover:text-[#f46530] transition-colors">RAG Explained</Link></li>
+              <li><Link href="/compare" className="hover:text-[#f46530] transition-colors">Platform Comparisons</Link></li>
             </ul>
           </div>
         </div>

@@ -1,6 +1,8 @@
 import { featurePages } from '@/lib/marketing-pages';
+import { authorityArticles } from '@/lib/authority-articles';
 import { isSubscriptionLive } from '@/lib/plans';
 import { SITE_URL } from '@/lib/seo';
+import { solutionPages } from '@/lib/solution-pages';
 import { createAdminClient } from '@/utils/supabase/server';
 
 export const revalidate = 3600;
@@ -23,11 +25,17 @@ const routes = [
   ['/blog/how-to-create-ai-clone', 'monthly', 0.7],
   ['/blog/ai-clone-vs-chatbot', 'monthly', 0.7],
   ['/blog/ai-clone-vs-chatgpt', 'monthly', 0.7],
+  ['/solutions', 'weekly', 0.9],
+  ['/docs', 'monthly', 0.8],
+  ['/compare', 'monthly', 0.7],
+  ['/compare/qlynk-vs-chatbase', 'monthly', 0.8],
   ['/about', 'monthly', 0.6],
   ['/press', 'monthly', 0.5],
   ['/privacy', 'yearly', 0.3],
   ['/terms', 'yearly', 0.3],
   ...Object.keys(featurePages).map((slug) => [`/features/${slug}`, 'monthly', 0.7]),
+  ...Object.keys(solutionPages).map((slug) => [`/solutions/${slug}`, 'monthly', 0.8]),
+  ...Object.keys(authorityArticles).map((slug) => [`/blog/${slug}`, 'monthly', 0.7]),
 ];
 
 const marketingLastModified = new Date('2026-07-21T00:00:00.000Z');

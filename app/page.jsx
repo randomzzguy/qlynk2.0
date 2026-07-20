@@ -54,7 +54,7 @@ const AgentDemoHero = () => {
               <Image src="/assets/iconWhite.svg" alt="" width={20} height={20} />
             </div>
             <span className="text-xs font-black tracking-[0.2em] text-orange uppercase">
-              Your Knowledge, Ready to Answer
+              Approved Knowledge, Ready to Answer
             </span>
           </motion.div>
 
@@ -74,7 +74,7 @@ const AgentDemoHero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            Turn what you know into an AI agent that answers for you — about your work, your business, or your process — through one simple link.
+            Turn your approved knowledge into a trusted AI agent — for your work, your business, your property, or your process — and share it through one simple link.
           </motion.p>
         </div>
 

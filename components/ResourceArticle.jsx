@@ -4,6 +4,7 @@ import Footer from '@/components/Footer';
 import JsonLd from '@/components/JsonLd';
 import MarketingHeader from '@/components/MarketingHeader';
 import { breadcrumbSchema, SITE_URL } from '@/lib/seo';
+import { solutionPages } from '@/lib/solution-pages';
 
 export default function ResourceArticle({ article, slug }) {
   const path = `/blog/${slug}`;
@@ -18,7 +19,14 @@ export default function ResourceArticle({ article, slug }) {
         mainEntityOfPage: `${SITE_URL}${path}`,
         author: { '@type': 'Organization', name: 'Qlynk AI' },
         publisher: { '@type': 'Organization', name: 'Qlynk AI' },
+        datePublished: article.datePublished || '2026-07-21',
+        dateModified: article.dateModified || '2026-07-21',
       }} />
+      {article.faqs && <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: article.faqs.map(([question, answer]) => ({ '@type': 'Question', name: question, acceptedAnswer: { '@type': 'Answer', text: answer } })),
+      }} />}
       <JsonLd data={breadcrumbSchema([
         { name: 'Home', path: '/' },
         { name: 'Resources', path: '/blog' },
@@ -61,11 +69,37 @@ export default function ResourceArticle({ article, slug }) {
           ))}
         </article>
 
+        {article.faqs && (
+          <section className="mt-20 border-t border-white/10 pt-14">
+            <h2 className="text-3xl font-black tracking-tight">Frequently asked questions</h2>
+            <div className="mt-8 divide-y divide-white/10 border-y border-white/10">
+              {article.faqs.map(([question, answer]) => (
+                <details key={question} className="py-6">
+                  <summary className="cursor-pointer list-none text-lg font-bold">{question}</summary>
+                  <p className="mt-4 leading-relaxed text-gray-400">{answer}</p>
+                </details>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {article.relatedSolutions?.length > 0 && (
+          <section className="mt-16">
+            <h2 className="text-2xl font-black">Related Qlynk solutions</h2>
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              {article.relatedSolutions.filter((relatedSlug) => solutionPages[relatedSlug]).map((relatedSlug) => {
+                const related = solutionPages[relatedSlug];
+                return <Link key={relatedSlug} href={`/solutions/${relatedSlug}`} className="rounded-2xl border border-white/10 p-5 hover:border-orange/40"><strong>{related.shortTitle}</strong><span className="mt-2 block text-sm leading-relaxed text-gray-500">{related.description}</span></Link>;
+              })}
+            </div>
+          </section>
+        )}
+
         <section className="mt-20 rounded-3xl border border-orange/30 bg-orange/10 p-9 text-center md:p-12">
-          <h2 className="text-3xl font-black">Start with one question you are tired of repeating</h2>
+          <h2 className="text-3xl font-black">Turn your approved knowledge into a trusted AI agent</h2>
           <p className="mx-auto mt-4 max-w-2xl text-gray-300">Add the answer, define the limits, test the response, and build from there.</p>
           <Link href="/auth/signup" className="mt-8 inline-flex items-center gap-2 rounded-xl bg-orange px-7 py-4 font-bold text-white transition-colors hover:bg-[#c14f22]">
-            Create your agent <ArrowRight size={18} />
+            Start Building Free <ArrowRight size={18} />
           </Link>
         </section>
       </main>

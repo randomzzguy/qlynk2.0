@@ -15,7 +15,15 @@ export const metadata = {
       'AI clone',
       'personal AI',
       'AI agent builder',
+      'custom AI agent',
+      'knowledge-based AI',
+      'knowledge AI',
+      'AI knowledge platform',
+      'AI knowledge base',
+      'RAG AI platform',
       'business AI agent',
+      'business AI assistant',
+      'AI for small business',
       'property guide AI',
       'operations AI assistant',
       'product guide AI',
@@ -53,7 +61,7 @@ export default function RootLayout({ children }) {
           "width": 512,
           "height": 512
         },
-        "description": "Qlynk AI helps people and teams turn their information into AI agents they can control and share through a simple link.",
+        "description": "Qlynk AI helps people and teams turn approved knowledge into trusted AI agents they can control and share through a simple link.",
         "foundingDate": "2026"
       },
       {

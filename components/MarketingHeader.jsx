@@ -10,8 +10,8 @@ export default function MarketingHeader() {
         </Link>
 
         <nav aria-label="Primary navigation" className="flex items-center gap-3 sm:gap-6">
-          <Link href="/ai-agent" className="hidden text-sm font-medium text-gray-300 transition-colors hover:text-orange sm:block">
-            Product
+          <Link href="/solutions" className="hidden text-sm font-medium text-gray-300 transition-colors hover:text-orange sm:block">
+            Solutions
           </Link>
           <Link href="/pricing" className="text-sm font-medium text-gray-300 transition-colors hover:text-orange">
             Pricing

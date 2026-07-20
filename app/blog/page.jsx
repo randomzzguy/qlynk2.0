@@ -3,6 +3,7 @@ import { ArrowRight, BookOpen, HelpCircle, Lightbulb, MessagesSquare } from 'luc
 import Footer from '@/components/Footer';
 import MarketingHeader from '@/components/MarketingHeader';
 import { resourceArticles } from '@/lib/resource-articles';
+import { authorityArticles } from '@/lib/authority-articles';
 import { createMetadata } from '@/lib/seo';
 
 export const metadata = createMetadata({
@@ -19,6 +20,7 @@ const icons = {
 };
 
 export default function ResourcesPage() {
+  const allArticles = { ...authorityArticles, ...resourceArticles };
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <MarketingHeader />
@@ -33,8 +35,8 @@ export default function ResourcesPage() {
         </header>
 
         <section className="mx-auto grid max-w-6xl gap-6 px-6 py-20 md:grid-cols-2 md:py-24">
-          {Object.entries(resourceArticles).map(([slug, article]) => {
-            const Icon = icons[slug];
+          {Object.entries(allArticles).map(([slug, article]) => {
+            const Icon = icons[slug] || BookOpen;
             return (
               <Link key={slug} href={`/blog/${slug}`} className="group rounded-3xl border border-white/10 bg-white/5 p-8 transition-all hover:-translate-y-1 hover:border-orange/40 hover:bg-white/[0.07]">
                 <div className="mb-8 flex items-center justify-between">

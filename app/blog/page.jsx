@@ -1,144 +1,64 @@
 import Link from 'next/link';
-import Image from 'next/image';
+import { ArrowRight, BookOpen, HelpCircle, Lightbulb, MessagesSquare } from 'lucide-react';
 import Footer from '@/components/Footer';
-import { ArrowRight, BookOpen, Lightbulb, HelpCircle, MessagesSquare } from 'lucide-react';
+import MarketingHeader from '@/components/MarketingHeader';
+import { resourceArticles } from '@/lib/resource-articles';
 import { createMetadata } from '@/lib/seo';
 
 export const metadata = createMetadata({
-  title: 'Qlynk Resources & Blog | AI Clone Guides & Insights',
-  description: 'Learn about AI clones, how to create them, and why they\'re the future of personal professional presence.',
+  title: 'Qlynk Resources | Build a Useful, Focused AI Agent',
+  description: 'Practical guides to defining an AI agent’s job, choosing its knowledge, setting boundaries, testing answers, and improving it over time.',
   path: '/blog',
 });
 
-const resources = [
-  {
-    slug: 'what-is-an-ai-clone',
-    title: 'What Is an AI Clone?',
-    description: 'The complete guide to understanding personal AI agents and how they represent you online.',
-    icon: Lightbulb,
-    category: 'Guide',
-    readTime: '5 min read',
-    color: 'blue',
-  },
-  {
-    slug: 'how-to-create-ai-clone',
-    title: 'How to Create Your AI Clone',
-    description: 'Step-by-step tutorial to build your personal AI agent in 5 minutes. No coding required.',
-    icon: BookOpen,
-    category: 'Tutorial',
-    readTime: '5 min read',
-    color: 'purple',
-  },
-  {
-    slug: 'ai-clone-vs-chatbot',
-    title: 'AI Clone vs Chatbot',
-    description: 'Understanding the key differences between AI clones and traditional chatbots.',
-    icon: HelpCircle,
-    category: 'Comparison',
-    readTime: '4 min read',
-    color: 'orange',
-  },
-  {
-    slug: 'ai-clone-vs-chatgpt',
-    title: 'AI Clone vs ChatGPT',
-    description: 'When to use a personal AI clone and when a general-purpose AI assistant is the better fit.',
-    icon: MessagesSquare,
-    category: 'Comparison',
-    readTime: '5 min read',
-    color: 'blue',
-  },
-];
+const icons = {
+  'what-is-an-ai-clone': Lightbulb,
+  'how-to-create-ai-clone': BookOpen,
+  'ai-clone-vs-chatbot': HelpCircle,
+  'ai-clone-vs-chatgpt': MessagesSquare,
+};
 
-export default function BlogIndex() {
+export default function ResourcesPage() {
   return (
-    <div className="min-h-screen bg-black text-white relative overflow-hidden">
-      {/* Background gradients */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px] pointer-events-none" />
-
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 bg-gray-900/80 backdrop-blur-md border-b border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/" className="flex items-center group">
-              <Image src="/logoWhite.svg" alt="Qlynk AI logo" width={100} height={40} priority />
-            </Link>
-            <Link href="/" className="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-white transition-colors">
-              <ArrowRight size={16} className="rotate-180" />
-              Back to Home
-            </Link>
+    <div className="min-h-screen bg-gray-950 text-white">
+      <MarketingHeader />
+      <main>
+        <header className="relative overflow-hidden border-b border-white/10 px-6 py-24 text-center md:py-32">
+          <div className="absolute left-1/2 top-0 h-[28rem] w-[48rem] -translate-x-1/2 rounded-full bg-orange/10 blur-[140px]" />
+          <div className="relative mx-auto max-w-4xl">
+            <p className="mb-5 text-sm font-black uppercase tracking-[0.2em] text-orange">Qlynk resources</p>
+            <h1 className="text-5xl font-black tracking-tight md:text-7xl">Build an agent people can actually rely on</h1>
+            <p className="mx-auto mt-7 max-w-3xl text-xl leading-relaxed text-gray-300">Practical guidance for choosing the job, adding approved answers, setting limits, testing the edges, and improving from real questions.</p>
           </div>
-        </div>
-      </nav>
+        </header>
 
-      <main className="max-w-6xl mx-auto px-6 pt-32 pb-24 relative z-10">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <div className="inline-block px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-sm font-medium text-blue-400 mb-6">
-            Resources
-          </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight">
-            Learn About <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">AI Clones</span>
-          </h1>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Guides, tutorials, and insights to help you understand and create your personal AI agent.
-          </p>
-        </div>
-
-        {/* Resources Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {resources.map((resource) => {
-            const Icon = resource.icon;
-            const colorClasses = {
-              blue: 'from-blue-500/20 to-blue-600/20 border-blue-500/30 text-blue-400',
-              purple: 'from-purple-500/20 to-purple-600/20 border-purple-500/30 text-purple-400',
-              orange: 'from-orange-500/20 to-orange-600/20 border-orange-500/30 text-orange-400',
-            };
-            
+        <section className="mx-auto grid max-w-6xl gap-6 px-6 py-20 md:grid-cols-2 md:py-24">
+          {Object.entries(resourceArticles).map(([slug, article]) => {
+            const Icon = icons[slug];
             return (
-              <Link
-                key={resource.slug}
-                href={`/blog/${resource.slug}`}
-                className={`group block p-8 rounded-2xl bg-gradient-to-br ${colorClasses[resource.color]} border backdrop-blur-sm hover:scale-[1.02] transition-all duration-300`}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <span className={`text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-black/30 ${resource.color === 'blue' ? 'text-blue-400' : resource.color === 'purple' ? 'text-purple-400' : 'text-orange-400'}`}>
-                    {resource.category}
-                  </span>
-                  <Icon size={24} className="opacity-60" />
+              <Link key={slug} href={`/blog/${slug}`} className="group rounded-3xl border border-white/10 bg-white/5 p-8 transition-all hover:-translate-y-1 hover:border-orange/40 hover:bg-white/[0.07]">
+                <div className="mb-8 flex items-center justify-between">
+                  <span className="rounded-full bg-orange/10 px-3 py-1 text-xs font-black uppercase tracking-wider text-orange">{article.category}</span>
+                  <Icon className="text-orange" size={26} />
                 </div>
-                <h2 className="text-xl font-bold text-white mb-3 group-hover:text-gray-200 transition-colors">
-                  {resource.title}
-                </h2>
-                <p className="text-gray-400 text-sm leading-relaxed mb-4">
-                  {resource.description}
-                </p>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500">{resource.readTime}</span>
-                  <span className="text-sm font-medium text-white flex items-center gap-1 group-hover:gap-2 transition-all">
-                    Read More <ArrowRight size={16} />
-                  </span>
+                <h2 className="text-2xl font-black tracking-tight md:text-3xl">{article.title}</h2>
+                <p className="mt-4 leading-relaxed text-gray-400">{article.description}</p>
+                <div className="mt-8 flex items-center justify-between text-sm">
+                  <span className="text-gray-500">{article.readTime}</span>
+                  <span className="flex items-center gap-2 font-bold text-white transition-colors group-hover:text-orange">Read guide <ArrowRight size={16} /></span>
                 </div>
               </Link>
             );
           })}
-        </div>
+        </section>
 
-        {/* CTA Section */}
-        <div className="mt-20 text-center">
-          <div className="bg-gradient-to-br from-blue-900/40 to-purple-900/40 border border-white/10 rounded-3xl p-10">
-            <h2 className="text-3xl font-bold text-white mb-4">Ready to Create Your AI Clone?</h2>
-            <p className="text-gray-300 mb-8 max-w-lg mx-auto">
-              Put what you've learned into practice. Create your personal AI agent in less than 5 minutes.
-            </p>
-            <Link 
-              href="/auth/signup" 
-              className="inline-flex items-center justify-center px-8 py-4 text-base font-medium text-white bg-white/10 hover:bg-white/20 border border-white/20 rounded-full transition-all duration-300 hover:scale-105"
-            >
-              Get Started Free →
-            </Link>
+        <section className="mx-auto max-w-5xl px-6 pb-24 text-center">
+          <div className="rounded-3xl bg-gradient-to-r from-[#f46530] to-[#c14f22] p-10 md:p-14">
+            <h2 className="text-3xl font-black md:text-4xl">Ready to turn your answers into an agent?</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-orange-50">Start with one repeated question, add the answer you approve, and define when a person should step in.</p>
+            <Link href="/auth/signup" className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-4 font-bold text-orange-700">Start free <ArrowRight size={18} /></Link>
           </div>
-        </div>
+        </section>
       </main>
       <Footer />
     </div>

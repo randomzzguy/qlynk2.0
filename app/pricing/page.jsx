@@ -42,7 +42,7 @@ const faqs = [
     items: [
       {
         q: 'What exactly is a Qlynk Agent?',
-        a: 'A Qlynk Agent is a focused AI guide published at qlynk.site/yourname. It can represent a person, business, property, operation, product, support workflow, or custom purpose and answers from the knowledge and rules its owner provides.',
+        a: 'A Qlynk Agent is a focused AI guide published at qlynk.site/yourname. It answers repeated questions about a person, business, property, operation, product, support workflow, or custom purpose using the knowledge and rules its owner provides.',
       },
       {
         q: 'How does the agent know what to answer?',
@@ -54,7 +54,7 @@ const faqs = [
       },
       {
         q: 'Can I customize how my Qlynk Agent looks and sounds?',
-        a: 'Yes. You can choose the agent type, purpose, audience, response rules, name, avatar, welcome message, tone, response length, and visual colors. Agency branding options remain available according to the current plan details below.',
+        a: 'Yes. Every plan includes agent type, purpose, audience, response rules, name, avatar, welcome message, tone, response length, and visual colors. Agency removes the visible “Powered by Qlynk” label, and the 14-day trial includes that Agency feature too.',
       },
       {
         q: 'What does my public page look like?',
@@ -62,7 +62,7 @@ const faqs = [
       },
       {
         q: 'Is my Qlynk Agent available all the time?',
-        a: 'During your trial and on any paid plan, yes — your agent runs 24/7. If your trial expires and you have not upgraded, your agent goes offline and visitors will see a "temporarily unavailable" message until you resubscribe.',
+        a: 'During your active trial or paid subscription, visitors can use the published agent whenever the service is available. If your trial expires without an upgrade, the agent goes offline until you subscribe.',
       },
     ],
   },
@@ -71,11 +71,11 @@ const faqs = [
     items: [
       {
         q: 'Do I need a credit card for the free trial?',
-        a: "No. You can start your 14-day trial without entering any credit card information. You'll have full access to all features to see if qlynk is right for you.",
+        a: "No. The 14-day free trial includes everything in the Agency plan, including the 10,000-message allowance and removal of the visible “Powered by Qlynk” label. No credit card is required.",
       },
       {
         q: 'What happens when my trial expires?',
-        a: 'At the end of 14 days, your agent will go offline unless you choose a paid plan. You can also choose to "Pause" your account for an additional 14 days to keep your data while you decide.',
+        a: 'At the end of 14 days, your agent goes offline unless you choose a paid plan. If you pause instead, your account data remains available so you can return and upgrade later.',
       },
       {
         q: 'Can I cancel anytime?',
@@ -246,56 +246,59 @@ export default function PricingPage() {
   const plans = [
     {
       name: 'Trial',
-      description: '14 days to test everything',
+      description: 'Everything in Agency for 14 days',
       price: 'Free',
       period: 'for 14 days',
       cta: 'Start Free Trial',
       icon: Zap,
       color: 'from-[#f46530] to-[#c14f22]',
       features: [
-        { name: 'Full Pro features', included: true },
-        { name: 'Agent live for 14 days', included: true },
+        { name: 'All Agency features', included: true },
+        { name: '10,000 messages during the trial', included: true },
+        { name: 'Knowledge, documents, links & FAQs', included: true },
+        { name: 'Conversations, analytics & knowledge gaps', included: true },
+        { name: 'Website embed, access controls & customization', included: true },
+        { name: '“Powered by Qlynk” label removed', included: true },
         { name: 'No credit card required', included: true },
-        { name: 'Full dashboard access', included: true },
       ],
       highlight: true,
+      badge: 'Full Agency Access',
     },
     {
       name: 'Creator',
-      description: 'For content creators & professionals',
+      description: 'For one professional or focused use case',
       price: billingCycle === 'monthly' ? '$9' : '$84',
       period: billingCycle === 'monthly' ? '/month' : '/year',
       cta: 'Choose Plan',
       icon: Crown,
       color: 'from-emerald-500 to-emerald-600',
       features: [
-        { name: 'Agent live 24/7', included: true },
-        { name: '2,000 messages/month', included: true },
-        { name: 'Unlimited conversations', included: true },
-        { name: 'Forms + 5 documents', included: true },
-        { name: 'Custom colors & avatar', included: true },
-        { name: 'Full analytics', included: true },
-        { name: 'Email support', included: true },
+        { name: 'Published agent access', included: true },
+        { name: '5,000 messages/month', included: true },
+        { name: 'One Qlynk Agent', included: true },
+        { name: 'Knowledge, documents, links & FAQs', included: true },
+        { name: 'Conversation history, analytics & knowledge gaps', included: true },
+        { name: 'Website embed & visitor access controls', included: true },
+        { name: 'Custom identity, colors & avatar', included: true },
+        { name: '“Powered by Qlynk” label remains', included: true },
       ],
     },
     {
       name: 'Agency',
-      description: 'For agencies & businesses',
+      description: 'For higher-volume professional use',
       price: billingCycle === 'monthly' ? '$19' : '$180',
       period: billingCycle === 'monthly' ? '/month' : '/year (Save 21%)',
       cta: 'Upgrade Now',
       icon: Crown,
       color: 'from-purple-500 to-purple-600',
       features: [
-        { name: 'Agent live 24/7', included: true },
+        { name: 'Everything in Creator', included: true },
         { name: '10,000 messages/month', included: true },
-        { name: 'Unlimited conversations', included: true },
-        { name: 'Forms + 25 documents', included: true },
-        { name: 'Full white-label', included: true },
-        { name: 'Advanced analytics', included: true },
-        { name: 'Up to 3 agents', included: true },
-        { name: 'Priority support', included: true },
-        { name: 'Custom domain', included: true },
+        { name: '“Powered by Qlynk” label removed', included: true },
+        { name: 'Knowledge, documents, links & FAQs', included: true },
+        { name: 'Conversation history, analytics & knowledge gaps', included: true },
+        { name: 'Website embed & visitor access controls', included: true },
+        { name: 'Custom identity, colors & avatar', included: true },
       ],
     },
   ];
@@ -465,10 +468,10 @@ export default function PricingPage() {
           transition={{ duration: 0.6 }}
         >
           <h1 className="text-5xl md:text-6xl font-black text-white mb-6">
-            Simple, <span className="text-[#f46530]">Transparent</span> Pricing
+            Try every Agency feature <span className="text-[#f46530]">free for 14 days</span>
           </h1>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-            Start with a 14-day free trial. No credit card required.
+            Your trial includes everything in Agency. After 14 days, choose Creator or Agency to keep the agent live.
           </p>
         </motion.div>
 
@@ -521,7 +524,7 @@ export default function PricingPage() {
                   {plan.highlight && (
                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                       <span className="bg-[#f46530] text-white px-4 py-1 rounded-full text-sm font-bold">
-                        Most Popular
+                        {plan.badge}
                       </span>
                     </div>
                   )}
@@ -592,7 +595,7 @@ export default function PricingPage() {
           <h2 className="text-3xl font-black text-white mb-4 text-center">
             Frequently Asked <span className="text-[#f46530]">Questions</span>
           </h2>
-          <p className="text-gray-400 text-center mb-12">Everything you need to know about Qlynk Agent</p>
+          <p className="text-gray-400 text-center mb-12">What happens during the trial, after the trial, and when usage limits are reached.</p>
           <FAQAccordion />
         </motion.div>
 

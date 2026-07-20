@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Footer from '@/components/Footer';
 import JsonLd from '@/components/JsonLd';
+import MarketingHeader from '@/components/MarketingHeader';
 import { breadcrumbSchema } from '@/lib/seo';
 
 export default function FeatureLandingPage({ feature, slug }) {
@@ -11,6 +12,7 @@ export default function FeatureLandingPage({ feature, slug }) {
         { name: 'Features', path: '/#features' },
         { name: feature.title, path: `/features/${slug}` },
       ])} />
+      <MarketingHeader />
       <main className="max-w-5xl mx-auto px-6 py-28">
         <nav aria-label="Breadcrumb" className="text-sm text-gray-500 mb-12">
           <Link href="/" className="hover:text-white">Home</Link>
@@ -18,7 +20,7 @@ export default function FeatureLandingPage({ feature, slug }) {
           <span>Features</span>
         </nav>
         <header className="max-w-4xl mb-16">
-          <p className="text-orange uppercase tracking-[0.18em] font-bold text-sm mb-5">Qlynk AI Feature</p>
+          <p className="text-orange uppercase tracking-[0.18em] font-bold text-sm mb-5">Qlynk feature</p>
           <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-7">{feature.title}</h1>
           <p className="text-xl md:text-2xl text-gray-300 leading-relaxed">{feature.description}</p>
         </header>
@@ -31,7 +33,7 @@ export default function FeatureLandingPage({ feature, slug }) {
           ))}
         </section>
         <section className="border border-orange/30 bg-orange/10 rounded-3xl p-10 text-center">
-          <h2 className="text-3xl font-black mb-5">Put this feature to work</h2>
+          <h2 className="text-3xl font-black mb-5">Use it to answer the right questions</h2>
           <div className="flex flex-wrap justify-center gap-4">
             <Link href="/auth/signup" className="bg-orange text-white rounded-xl px-7 py-4 font-bold">Create Your Qlynk Agent</Link>
             <Link href="/ai-agent" className="border border-white/20 rounded-xl px-7 py-4 font-bold">Explore the AI Agent Platform</Link>

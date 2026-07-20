@@ -23,6 +23,7 @@ import {
 import QlynkBackground from '@/components/QlynkBackground';
 import AgentResponseIndicator from '@/components/AgentResponseIndicator';
 import { getAgentTypeDefinition } from '@/lib/agent-type-catalog';
+import { hasAgencyFeatures } from '@/lib/plans';
 import ReactMarkdown from 'react-markdown';
 
 export default function FullPageChat({ 
@@ -436,7 +437,7 @@ export default function FullPageChat({
             )}
 
             {/* Powered by Branding */}
-            {tier?.toLowerCase() !== 'agency' && tier?.toLowerCase() !== 'business' && (
+            {!hasAgencyFeatures(tier) && (
               <div className="mt-12 flex items-center gap-2 opacity-30 hover:opacity-100 transition-opacity duration-500">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Powered by</span>
                 <Image src="/logoWhite.svg" alt="Qlynk AI logo" width={60} height={18} className="h-auto" />

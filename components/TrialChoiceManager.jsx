@@ -15,7 +15,7 @@ export default function TrialChoiceManager({ subscription, userId }) {
     {
       id: 'pause',
       name: 'Pause Account',
-      description: 'Agent goes offline. Data saved for 14 extra days.',
+      description: 'Agent goes offline. Account data remains available while you decide.',
       icon: Pause,
       color: 'bg-gray-700',
       borderColor: 'border-gray-600',
@@ -24,7 +24,7 @@ export default function TrialChoiceManager({ subscription, userId }) {
     {
       id: 'creator',
       name: 'Creator Plan',
-      description: '$9/mo after trial. For pros & creators.',
+      description: '$9/mo after trial. For one professional or focused use case.',
       icon: Zap,
       color: 'bg-emerald-900/30',
       borderColor: 'border-emerald-500/30',
@@ -33,7 +33,7 @@ export default function TrialChoiceManager({ subscription, userId }) {
     {
       id: 'agency',
       name: 'Agency Plan',
-      description: '$19/mo after trial. For teams & agencies.',
+      description: '$19/mo after trial. For higher volume without the “Powered by Qlynk” label.',
       icon: Crown,
       color: 'bg-purple-900/30',
       borderColor: 'border-purple-500/30',

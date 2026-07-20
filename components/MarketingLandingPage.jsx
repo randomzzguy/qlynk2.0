@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Footer from '@/components/Footer';
 import JsonLd from '@/components/JsonLd';
+import MarketingHeader from '@/components/MarketingHeader';
 import { breadcrumbSchema, SITE_URL } from '@/lib/seo';
 
 export default function MarketingLandingPage({ page, path }) {
@@ -12,6 +13,7 @@ export default function MarketingLandingPage({ page, path }) {
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
       <JsonLd data={schema} />
+      <MarketingHeader />
       <div className="absolute top-0 right-0 w-[55%] h-[55%] bg-orange-500/10 rounded-full blur-[150px] pointer-events-none" />
       <main className="max-w-5xl mx-auto px-6 py-28 relative z-10">
         <nav aria-label="Breadcrumb" className="text-sm text-gray-500 mb-12">
@@ -27,12 +29,12 @@ export default function MarketingLandingPage({ page, path }) {
         </header>
 
         <section aria-labelledby="definition-heading" className="mb-20 rounded-3xl border border-white/10 bg-white/5 p-8 md:p-12">
-          <h2 id="definition-heading" className="text-3xl font-bold mb-5">What it means</h2>
+          <h2 id="definition-heading" className="text-3xl font-bold mb-5">What this means in Qlynk</h2>
           <p className="text-lg text-gray-300 leading-relaxed">{page.definition}</p>
         </section>
 
         <section aria-labelledby="benefits-heading" className="mb-20">
-          <h2 id="benefits-heading" className="text-3xl md:text-4xl font-bold mb-10">What you can do with Qlynk AI</h2>
+          <h2 id="benefits-heading" className="text-3xl md:text-4xl font-bold mb-10">From repeated question to useful answer</h2>
           <div className="grid md:grid-cols-3 gap-6">
             {page.benefits.map(([title, text]) => (
               <article key={title} className="rounded-2xl border border-white/10 bg-white/5 p-7">
@@ -44,10 +46,10 @@ export default function MarketingLandingPage({ page, path }) {
         </section>
 
         <section className="rounded-3xl bg-gradient-to-r from-[#f46530] to-[#c14f22] p-10 md:p-14 text-center">
-          <h2 className="text-3xl md:text-4xl font-black mb-4">Create your focused Qlynk Agent</h2>
-          <p className="text-orange-50 mb-8">Start with a 14-day free trial and publish at your own {SITE_URL.replace('https://www.', '')}/username link.</p>
+          <h2 className="text-3xl md:text-4xl font-black mb-4">Build the agent around what people need to know</h2>
+          <p className="text-orange-50 mb-8">Start with a 14-day free trial, choose its information and limits, then share your {SITE_URL.replace('https://www.', '')}/username link.</p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/auth/signup" className="rounded-xl bg-white text-orange-700 px-7 py-4 font-bold">Start Free</Link>
+            <Link href="/auth/signup" className="rounded-xl bg-white text-orange-700 px-7 py-4 font-bold">Start free</Link>
             <Link href="/pricing" className="rounded-xl border border-white/40 px-7 py-4 font-bold">View Pricing</Link>
             <Link href="/faq" className="rounded-xl border border-white/40 px-7 py-4 font-bold">Read the FAQ</Link>
           </div>

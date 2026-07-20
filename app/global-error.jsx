@@ -17,10 +17,10 @@ export default function GlobalError({ error, reset }) {
           </div>
 
           <h1 className="text-3xl font-black text-white mb-4">
-            Critical Error
+            Something went wrong
           </h1>
           <p className="text-gray-400 mb-8 leading-relaxed">
-            The application encountered a critical issue. Please refresh the page to try again.
+            Qlynk could not load this page. Try again, and contact support if the problem continues.
           </p>
 
           <button
@@ -28,7 +28,7 @@ export default function GlobalError({ error, reset }) {
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#f46530] text-white rounded-2xl font-bold hover:bg-[#c14f22] transition-all shadow-xl shadow-[#f46530]/20"
           >
             <RotateCcw size={18} />
-            Reload Application
+            Try Again
           </button>
         </div>
       </body>

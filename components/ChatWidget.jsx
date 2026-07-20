@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { MessageCircle, X, Send, Bot, User, Loader2 } from 'lucide-react';
 import AgentResponseIndicator from '@/components/AgentResponseIndicator';
 import { getAgentTypeDefinition } from '@/lib/agent-type-catalog';
+import { hasAgencyFeatures } from '@/lib/plans';
 
 export default function ChatWidget({ 
   username, 
@@ -421,7 +422,7 @@ export default function ChatWidget({
             <p className="text-[10px] text-gray-400 text-center mt-2">
               AI processed; shared with the agent owner. <a href="https://www.qlynk.site/privacy" target="_blank" rel="noreferrer" className="underline">Privacy</a>
             </p>
-            {tier?.toLowerCase() !== 'agency' && tier?.toLowerCase() !== 'business' && (
+            {!hasAgencyFeatures(tier) && (
               <p className="text-xs text-gray-400 text-center mt-2">
                 Powered by <span className="font-medium">qlynk</span>
               </p>

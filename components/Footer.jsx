@@ -27,7 +27,8 @@ export default function Footer() {
             <h4 className="text-white font-semibold mb-4">Product</h4>
             <ul className="space-y-3 text-sm">
               <li><Link href="/ai-agent" className="hover:text-[#f46530] transition-colors">AI Agent Platform</Link></li>
-              <li><Link href="/ai-clone" className="hover:text-[#f46530] transition-colors">AI Clone</Link></li>
+              <li><Link href="/features/knowledge-base" className="hover:text-[#f46530] transition-colors">Knowledge Base</Link></li>
+              <li><Link href="/features/security" className="hover:text-[#f46530] transition-colors">Scope & Controls</Link></li>
               <li><Link href="/personal-ai" className="hover:text-[#f46530] transition-colors">Personal AI</Link></li>
               <li><Link href="/pricing" className="hover:text-[#f46530] transition-colors">Pricing</Link></li>
               <li><Link href="/faq" className="hover:text-[#f46530] transition-colors">FAQ</Link></li>
@@ -51,10 +52,10 @@ export default function Footer() {
             <h4 className="text-white font-semibold mb-4">Resources</h4>
             <ul className="space-y-3 text-sm">
               <li><Link href="/blog" className="hover:text-[#f46530] transition-colors">All Resources</Link></li>
-              <li><Link href="/blog/what-is-an-ai-clone" className="hover:text-[#f46530] transition-colors">What is an AI Clone?</Link></li>
-              <li><Link href="/blog/how-to-create-ai-clone" className="hover:text-[#f46530] transition-colors">How to Create an AI Clone</Link></li>
-              <li><Link href="/blog/ai-clone-vs-chatbot" className="hover:text-[#f46530] transition-colors">AI Clone vs Chatbot</Link></li>
-              <li><Link href="/blog/ai-clone-vs-chatgpt" className="hover:text-[#f46530] transition-colors">AI Clone vs ChatGPT</Link></li>
+              <li><Link href="/blog/what-is-an-ai-clone" className="hover:text-[#f46530] transition-colors">What Is an AI Clone?</Link></li>
+              <li><Link href="/blog/how-to-create-ai-clone" className="hover:text-[#f46530] transition-colors">How to Build a Useful Agent</Link></li>
+              <li><Link href="/blog/ai-clone-vs-chatbot" className="hover:text-[#f46530] transition-colors">AI Agent vs Chatbot</Link></li>
+              <li><Link href="/blog/ai-clone-vs-chatgpt" className="hover:text-[#f46530] transition-colors">Personal AI vs ChatGPT</Link></li>
             </ul>
           </div>
         </div>

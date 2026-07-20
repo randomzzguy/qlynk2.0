@@ -2,11 +2,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Footer from '@/components/Footer';
 import JsonLd from '@/components/JsonLd';
+import MarketingHeader from '@/components/MarketingHeader';
 import { breadcrumbSchema, createMetadata } from '@/lib/seo';
 
 export const metadata = createMetadata({
   title: 'Qlynk AI Press Kit | Logos and Product Information',
-  description: 'Download Qlynk AI brand assets and find the official product description and company boilerplate.',
+  description: 'Download Qlynk brand assets and find the current official description of its focused AI agent platform.',
   path: '/press',
 });
 
@@ -14,6 +15,7 @@ export default function PressPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <JsonLd data={breadcrumbSchema([{ name: 'Home', path: '/' }, { name: 'Press Kit', path: '/press' }])} />
+      <MarketingHeader />
       <main className="max-w-5xl mx-auto px-6 py-28">
         <header className="max-w-3xl mb-16">
           <p className="text-orange font-bold uppercase tracking-[0.18em] text-sm mb-5">Press Kit</p>
@@ -42,11 +44,11 @@ export default function PressPage() {
         <section className="space-y-10">
           <div>
             <h2 className="text-3xl font-bold mb-4">Short product description</h2>
-            <p className="text-lg text-gray-300 leading-relaxed">Qlynk AI helps people and teams build focused AI agents from approved knowledge, clear rules, and a defined purpose.</p>
+            <p className="text-lg text-gray-300 leading-relaxed">Qlynk turns the information people choose to share into focused AI agents that answer repeated questions through one simple link.</p>
           </div>
           <div>
             <h2 className="text-3xl font-bold mb-4">Company boilerplate</h2>
-            <p className="text-lg text-gray-300 leading-relaxed">Qlynk is a no-code platform for building, governing, training, publishing, and improving focused AI agents. Owners can create personal, business, property, operations, product, support, or custom guides; define their boundaries; add approved knowledge; share a Qlynk link; and learn from real conversations.</p>
+            <p className="text-lg text-gray-300 leading-relaxed">Qlynk is a no-code platform for turning approved knowledge and clear response rules into a shareable AI agent. People and teams can create personal, business, property, operations, product, support, or custom guides; add facts, FAQs, links, and documents; define what the agent may discuss; publish a Qlynk link; review conversations; and improve the answers over time.</p>
           </div>
           <div>
             <h2 className="text-3xl font-bold mb-4">Media contact</h2>

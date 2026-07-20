@@ -25,7 +25,7 @@ export async function generateMetadata({ params }) {
   if (!profile) {
     return {
       title: `${username} | Qlynk`,
-      description: 'Create your own digital twin and AI representative.',
+      description: 'Turn the information you choose to share into a focused AI agent with Qlynk.',
       robots: { index: false, follow: false },
     };
   }

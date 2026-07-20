@@ -30,7 +30,7 @@ const routes = [
   ...Object.keys(featurePages).map((slug) => [`/features/${slug}`, 'monthly', 0.7]),
 ];
 
-const marketingLastModified = new Date('2026-07-18T00:00:00.000Z');
+const marketingLastModified = new Date('2026-07-21T00:00:00.000Z');
 
 async function getLiveAgentRoutes() {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {

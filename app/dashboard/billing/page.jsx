@@ -155,7 +155,7 @@ export default function BillingPage() {
               className="px-8 py-4 bg-white text-black rounded-2xl font-black flex items-center gap-3 hover:bg-gray-200 transition-all active:scale-95 disabled:opacity-50"
             >
               {portalLoading ? <Loader2 className="animate-spin" /> : <CreditCard size={20} />}
-              {isTrial ? 'Upgrade to Pro' : 'Manage Subscription'}
+              {isTrial ? 'Choose a Paid Plan' : 'Manage Subscription'}
             </button>
           </div>
         </div>
@@ -296,7 +296,7 @@ export default function BillingPage() {
             </div>
             <div>
               <h3 className="text-xl font-bold text-white">Unlock Full Potential</h3>
-              <p className="text-gray-400">Upgrade to Pro for unlimited messages and advanced features.</p>
+              <p className="text-gray-400">Upgrade your plan for more monthly messages and additional agent features.</p>
             </div>
           </div>
           <Link

@@ -120,7 +120,7 @@ export default function UpgradePrompt() {
         <div className="flex-1">
           <h3 className="font-bold text-white mb-1">Ready to Scale?</h3>
           <p className="text-emerald-200/70 text-sm mb-4 leading-relaxed">
-            Upgrade to the Agency plan to unlock 10,000 messages/month, white-label options, and more agents.
+            Upgrade to the Agency plan for 10,000 messages per month and removal of the “Powered by Qlynk” label.
           </p>
           <Link
             href="/pricing"

@@ -58,8 +58,7 @@ export default function NotFound() {
             Oops! This page is <span className="text-[#f46530]">missing</span>
           </h1>
           <p className="text-gray-400 text-lg mb-10 leading-relaxed">
-            The page you're looking for doesn't exist or has been moved. 
-            Maybe your Qlynk Agent knows where it went?
+            The page you&apos;re looking for does not exist or has moved. Use the links below to get back to Qlynk.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -75,14 +74,14 @@ export default function NotFound() {
               className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-white/5 text-white border border-white/10 rounded-2xl font-bold hover:bg-white/10 transition-all"
             >
               <Search size={20} />
-              Claim Your Handle
+              Create Your Agent
             </Link>
           </div>
 
           {/* Useful links */}
           <div className="mt-16 pt-8 border-t border-white/5 flex flex-wrap justify-center gap-x-8 gap-y-4 text-sm font-medium text-gray-500">
              <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
-             <Link href="/faq" className="hover:text-white transition-colors">Help Center</Link>
+             <Link href="/faq" className="hover:text-white transition-colors">FAQ</Link>
              <Link href="/auth/login" className="hover:text-white transition-colors">Sign In</Link>
           </div>
         </motion.div>

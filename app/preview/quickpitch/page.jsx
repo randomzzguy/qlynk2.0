@@ -1,5 +1,5 @@
-import QuickPitch from '@/components/templates/freelancers/QuickPitch';
+import { redirect } from 'next/navigation';
 
-export default function QuickPitchPreview() {
-    return <QuickPitch />;
+export default function LegacyQuickPitchPreviewPage() {
+  redirect('/ai-agent');
 }

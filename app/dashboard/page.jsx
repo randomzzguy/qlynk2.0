@@ -112,7 +112,7 @@ export default function DashboardPage() {
           theme_data: { 
             config_version: 'v1',
             headline: userProfile?.full_name || userProfile?.username || 'User',
-            subhead: 'Welcome to my digital twin.',
+            subhead: 'Ask me about the information I have been set up to share.',
             email: user.email || ''
           },
           is_published: true

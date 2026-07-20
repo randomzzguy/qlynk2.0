@@ -145,7 +145,7 @@ function SignupForm() {
         <div className="semi-translucent-card rounded-2xl p-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-black text-cream mb-2">Create Your Qlynk Agent</h1>
-            <p className="text-beige">Your AI ambassador starts here</p>
+            <p className="text-beige">Start with the questions you answer repeatedly</p>
           </div>
 
           {error && (

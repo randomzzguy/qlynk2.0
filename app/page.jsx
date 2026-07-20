@@ -423,7 +423,7 @@ export default function App() {
 
   const steps = [
     { num: "1", title: "Pick What You're Tired of Repeating", desc: "The questions, the FAQs, the same explanation every time." },
-    { num: "2", title: "Feed It the Answers", desc: "Your docs, your facts, your voice." },
+    { num: "2", title: "Feed It the Answers", desc: "Your approved facts, FAQs, links, and documents." },
     { num: "3", title: "Send the Link", desc: "Let it handle the rest." }
   ];
 

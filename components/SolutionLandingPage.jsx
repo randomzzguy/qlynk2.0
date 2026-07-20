@@ -145,7 +145,7 @@ export default function SolutionLandingPage({ page }) {
           <div className="mx-auto max-w-5xl rounded-3xl bg-gradient-to-r from-[#f46530] to-[#c14f22] p-10 text-center md:p-14">
             <h2 className="text-3xl font-black md:text-5xl">Turn your approved knowledge into a trusted AI agent.</h2>
             <p className="mx-auto mt-5 max-w-2xl text-orange-50">Start with one job, add what you know, define the limits, and share the result.</p>
-            <Link href="/auth/signup" className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-4 font-bold text-orange-700">Start Building Free <ArrowRight size={18} /></Link>
+            <Link href="/auth/signup" className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-4 font-bold text-[#9a3412] transition-colors hover:bg-orange-50 hover:text-[#7c2d12]">Start Building Free <ArrowRight size={18} /></Link>
           </div>
         </section>
       </main>

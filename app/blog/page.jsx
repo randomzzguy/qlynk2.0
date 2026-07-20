@@ -58,7 +58,7 @@ export default function ResourcesPage() {
           <div className="rounded-3xl bg-gradient-to-r from-[#f46530] to-[#c14f22] p-10 md:p-14">
             <h2 className="text-3xl font-black md:text-4xl">Ready to turn your answers into an agent?</h2>
             <p className="mx-auto mt-4 max-w-2xl text-orange-50">Start with one repeated question, add the answer you approve, and define when a person should step in.</p>
-            <Link href="/auth/signup" className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-4 font-bold text-orange-700">Start free <ArrowRight size={18} /></Link>
+            <Link href="/auth/signup" className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-4 font-bold text-[#9a3412] transition-colors hover:bg-orange-50 hover:text-[#7c2d12]">Start free <ArrowRight size={18} /></Link>
           </div>
         </section>
       </main>

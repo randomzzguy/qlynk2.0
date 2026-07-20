@@ -48,7 +48,7 @@ export default function SolutionsPage() {
           <div className="mx-auto max-w-5xl rounded-3xl bg-orange p-10 md:p-14">
             <h2 className="text-3xl font-black md:text-5xl">Start with everything in Agency for 14 days</h2>
             <p className="mx-auto mt-4 max-w-2xl text-orange-50">Build the full agent, test it, and choose the paid plan that fits after the trial.</p>
-            <Link href="/auth/signup" className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-4 font-bold text-orange-700">Start Building Free <ArrowRight size={18} /></Link>
+            <Link href="/auth/signup" className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-4 font-bold text-[#9a3412] transition-colors hover:bg-orange-50 hover:text-[#7c2d12]">Start Building Free <ArrowRight size={18} /></Link>
           </div>
         </section>
       </main>

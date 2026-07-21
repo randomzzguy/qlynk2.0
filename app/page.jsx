@@ -73,19 +73,28 @@ const AgentDemoHero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            Reclaim Your Time with an{' '}
-            <span className="bg-gradient-to-r from-orange via-[#f46530] to-[#c14f22] bg-clip-text text-transparent">on demand AI Agent</span>
+            Create a Trusted No-Code AI Agent
+            <span className="block bg-gradient-to-r from-orange via-[#f46530] to-[#c14f22] bg-clip-text text-transparent">That Helps From Day One</span>
           </motion.h1>
 
-          <motion.p
-            className="text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed text-gray-300"
+          <motion.div
+            className="mx-auto max-w-3xl"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            Train a reliable AI agent on your business knowledge in minutes. Deliver instant, accurate responses to client and team inquiries around the clock — so you never miss an opportunity.
-            <span className="mt-3 block">See exactly what people are asking, so you always know what to add next.</span>
-          </motion.p>
+            <p className="text-lg leading-relaxed text-gray-300 sm:text-xl">
+              Give customers, clients, and teams instant answers from the business knowledge you approve.
+            </p>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-bold text-gray-400" aria-label="Qlynk benefits">
+              {['Launch in minutes', 'Stay in control', 'Learn from every question'].map((benefit) => (
+                <span key={benefit} className="inline-flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-orange" aria-hidden="true" />
+                  {benefit}
+                </span>
+              ))}
+            </div>
+          </motion.div>
 
           <motion.div
             className="pt-2"
@@ -100,20 +109,40 @@ const AgentDemoHero = () => {
           </motion.div>
         </div>
 
-        <motion.div
-          className="relative mx-auto mt-14 max-w-5xl"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.7 }}
-        >
-          <div className="absolute inset-0 bg-orange/10 blur-[120px] rounded-full pointer-events-none" />
-          <p className="relative z-10 mb-8 text-center text-2xl font-black leading-tight text-white sm:text-3xl md:text-4xl">Try the live Qlynk demo with a fictional business ↓</p>
-          <div className="relative z-10"><HomepageAgentDemo /></div>
-        </motion.div>
       </div>
     </div>
   );
 };
+
+const LiveDemoSection = () => (
+  <section aria-labelledby="live-demo-title" className="relative z-10 overflow-hidden py-24 sm:py-32">
+    <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+      <div className="absolute left-1/2 top-1/2 h-[460px] w-[760px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange/[0.07] blur-[110px]" />
+    </div>
+    <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <motion.div
+        className="mx-auto mb-12 max-w-4xl text-center"
+        initial={{ opacity: 0, y: 22 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.5 }}
+        transition={{ duration: 0.55 }}
+      >
+        <p className="text-sm font-black tracking-[0.18em] text-[#ff8a5b]">LIVE PRODUCT DEMO</p>
+        <h2 id="live-demo-title" className="mt-4 text-3xl font-black leading-tight text-white sm:text-4xl md:text-5xl">Try the live Qlynk demo with a fictional business ↓</h2>
+        <p className="mx-auto mt-5 max-w-2xl leading-relaxed text-gray-400">See how a Qlynk agent turns approved business knowledge into clear, useful answers.</p>
+      </motion.div>
+      <motion.div
+        className="relative mx-auto max-w-5xl"
+        initial={{ opacity: 0, y: 30, scale: 0.98 }}
+        whileInView={{ opacity: 1, y: 0, scale: 1 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.65, ease: 'easeOut' }}
+      >
+        <HomepageAgentDemo />
+      </motion.div>
+    </div>
+  </section>
+);
 
 const productFacts = [
   { icon: ShieldCheck, title: '14-day free trial', description: 'Every feature included' },
@@ -375,7 +404,7 @@ const HomepageFAQ = () => (
     <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
       <div className="mb-10 text-center">
         <CircleHelp size={30} className="mx-auto text-orange" aria-hidden="true" />
-        <h2 className="mt-4 text-4xl font-black text-white md:text-5xl">Common questions</h2>
+        <h2 className="mt-4 text-4xl font-black text-white md:text-5xl">FAQs</h2>
       </div>
       <div className="space-y-4">
         {homepageFaqs.map(([question, answer]) => (
@@ -532,8 +561,6 @@ export default function App() {
             <div className="hidden md:flex items-center gap-5">
               <Link href="/ai-agent" className="text-gray-300 hover:text-orange font-medium transition-colors">Product</Link>
               <Link href="/pricing" className="text-gray-300 hover:text-orange font-medium transition-colors">Pricing</Link>
-              <Link href="/blog" className="text-gray-300 hover:text-orange font-medium transition-colors">Resources</Link>
-              <Link href="/faq" className="text-gray-300 hover:text-orange font-medium transition-colors">FAQ</Link>
               {user ? (
                 <div className="relative" ref={dropdownRef}>
                   <button
@@ -620,8 +647,6 @@ export default function App() {
               <div className="px-4 py-4 space-y-2">
                 <Link href="/ai-agent" className="block px-3 py-2 text-gray-300 font-medium rounded-lg hover:bg-gray-700/50 transition-colors">Product</Link>
                 <Link href="/pricing" className="block px-3 py-2 text-gray-300 font-medium rounded-lg hover:bg-gray-700/50 transition-colors">Pricing</Link>
-                <Link href="/blog" className="block px-3 py-2 text-gray-300 font-medium rounded-lg hover:bg-gray-700/50 transition-colors">Resources</Link>
-                <Link href="/faq" className="block px-3 py-2 text-gray-300 font-medium rounded-lg hover:bg-gray-700/50 transition-colors">FAQ</Link>
                 {user ? (
                   <>
                     <div className="flex items-center gap-3 px-3 py-3 rounded-lg bg-gray-700/40 border border-gray-700">
@@ -669,6 +694,7 @@ export default function App() {
 
         <ProofStrip />
         <WhyQlynk />
+        <LiveDemoSection />
         <ProductShowcase />
         <HomepageFAQ />
 

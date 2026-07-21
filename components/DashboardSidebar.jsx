@@ -56,7 +56,7 @@ const navGroups = [
   }
 ];
 
-export default function DashboardSidebar({ onSignOut, isOpen, onClose, username, avatarUrl, isCollapsed, onCollapseToggle, tier, accountDeletionScheduledFor }) {
+export default function DashboardSidebar({ onSignOut, onNavigate, isOpen, onClose, username, avatarUrl, isCollapsed, onCollapseToggle, tier, accountDeletionScheduledFor }) {
   const profileInitial = username?.trim()?.charAt(0)?.toUpperCase() || '?';
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -72,7 +72,10 @@ export default function DashboardSidebar({ onSignOut, isOpen, onClose, username,
     return (
       <Link
         href={item.href}
-        onClick={onClose}
+        onClick={() => {
+          onNavigate?.(item.href);
+          onClose?.();
+        }}
         data-tour={item.tourKey}
         className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all group relative ${
           isActive

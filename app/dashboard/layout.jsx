@@ -1,25 +1,45 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { getCurrentProfile, signOut, getCurrentUser, createClientBrowser } from '@/lib/supabase';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import DashboardWalkthrough from '@/components/DashboardWalkthrough';
+import DashboardRouteLoader from '@/components/DashboardRouteLoader';
 import QlynkBackground from '@/components/QlynkBackground';
 import { Menu } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Toaster } from 'react-hot-toast';
+import { AnimatePresence, motion } from 'framer-motion';
 
 export default function DashboardLayout({ children }) {
+  return (
+    <Suspense fallback={(
+      <div className="flex min-h-screen items-center justify-center bg-[#0f0f14] px-6">
+        <DashboardRouteLoader label="Preparing your dashboard…" />
+      </div>
+    )}>
+      <DashboardLayoutContent>{children}</DashboardLayoutContent>
+    </Suspense>
+  );
+}
+
+function DashboardLayoutContent({ children }) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchString = searchParams.toString();
+  const routeKey = searchString ? `${pathname}?${searchString}` : pathname;
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [routeLoading, setRouteLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile
   const [isCollapsed, setIsCollapsed] = useState(false); // Desktop
   const [profile, setProfile] = useState(null);
   const sidebarWasCollapsedBeforeTourRef = useRef(null);
+  const previousRouteKeyRef = useRef(routeKey);
+  const contentRef = useRef(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -111,6 +131,39 @@ export default function DashboardLayout({ children }) {
     setIsSidebarOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    if (previousRouteKeyRef.current === routeKey) return;
+
+    previousRouteKeyRef.current = routeKey;
+    const frame = window.requestAnimationFrame(() => {
+      setRouteLoading(false);
+
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        contentRef.current?.animate(
+          [
+            { opacity: 0, transform: 'translateY(14px)', filter: 'blur(3px)' },
+            { opacity: 1, transform: 'translateY(0)', filter: 'blur(0)' },
+          ],
+          { duration: 360, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'both' }
+        );
+      }
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [routeKey]);
+
+  useEffect(() => {
+    if (!routeLoading) return undefined;
+    const safetyTimer = window.setTimeout(() => setRouteLoading(false), 8000);
+    return () => window.clearTimeout(safetyTimer);
+  }, [routeLoading]);
+
+  const handleDashboardNavigate = useCallback((targetHref) => {
+    const targetUrl = new URL(targetHref, window.location.origin);
+    const targetKey = `${targetUrl.pathname}${targetUrl.search}`;
+    if (targetKey !== routeKey) setRouteLoading(true);
+  }, [routeKey]);
+
   const handleSignOut = async () => {
     await signOut();
     router.push('/');
@@ -119,10 +172,7 @@ export default function DashboardLayout({ children }) {
   if (initialLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0f0f14]">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-[#f46530] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-400 font-semibold">Loading...</p>
-        </div>
+        <DashboardRouteLoader label="Preparing your dashboard…" />
       </div>
     );
   }
@@ -192,6 +242,7 @@ export default function DashboardLayout({ children }) {
           avatarUrl={profile?.avatar_url}
           tier={profile?.tier}
           accountDeletionScheduledFor={profile?.account_deletion_scheduled_for}
+          onNavigate={handleDashboardNavigate}
         />
 
         <DashboardWalkthrough
@@ -206,7 +257,20 @@ export default function DashboardLayout({ children }) {
           flex-1 overflow-y-auto relative z-10 transition-all duration-300 ease-in-out motion-reduce:transition-none
           ${isCollapsed ? 'lg:ml-20' : 'lg:ml-64'}
         `}>
-          <div className="min-h-full pb-20">
+          <AnimatePresence>
+            {routeLoading && (
+              <motion.div
+                className={`fixed bottom-0 left-0 right-0 top-16 z-30 flex items-center justify-center bg-[#0a0a0f]/85 px-6 backdrop-blur-md lg:top-0 ${isCollapsed ? 'lg:left-20' : 'lg:left-64'}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.18 }}
+              >
+                <DashboardRouteLoader />
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <div ref={contentRef} className="min-h-full pb-20">
             {children}
           </div>
         </main>

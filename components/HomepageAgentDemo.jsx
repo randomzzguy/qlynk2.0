@@ -182,10 +182,10 @@ export default function HomepageAgentDemo() {
 
   return (
     <div className="relative">
-      <div className="pointer-events-none absolute right-4 top-0 z-20 -translate-y-1/2 rounded-xl border border-orange/40 bg-gray-800 px-3 py-2 shadow-2xl sm:right-6">
+      <div className="pointer-events-none absolute right-2 top-0 z-20 -translate-y-1/2 rounded-2xl border-2 border-orange/50 bg-gray-800 px-5 py-3 shadow-2xl shadow-black/40 sm:right-6 sm:px-6 sm:py-4">
         <div className="flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-          <span className="text-xs font-bold text-white uppercase tracking-wider">Try the Live Demo</span>
+          <div className="h-3 w-3 shrink-0 animate-pulse rounded-full bg-green-500" />
+          <span className="text-base font-black uppercase tracking-wider text-white sm:text-xl">Try the Live Demo</span>
         </div>
       </div>
 

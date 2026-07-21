@@ -106,7 +106,7 @@ const AgentDemoHero = () => {
           transition={{ duration: 0.7, delay: 0.7 }}
         >
           <div className="absolute inset-0 bg-orange/10 blur-[120px] rounded-full pointer-events-none" />
-          <p className="relative z-10 mb-5 text-center text-sm font-medium text-gray-400">Try the live Qlynk demo with a fictional business ↓</p>
+          <p className="relative z-10 mb-8 text-center text-2xl font-black leading-tight text-white sm:text-3xl md:text-4xl">Try the live Qlynk demo with a fictional business ↓</p>
           <div className="relative z-10"><HomepageAgentDemo /></div>
         </motion.div>
       </div>

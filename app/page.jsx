@@ -63,7 +63,7 @@ const AgentDemoHero = () => {
             transition={{ duration: 0.5 }}
           >
             <ShieldCheck size={17} className="text-orange" aria-hidden="true" />
-            <span className="text-sm font-bold text-orange">No-code AI agent builder</span>
+            <span className="text-sm font-bold text-[#ff8a5b]">No-code AI agent builder</span>
           </motion.div>
 
           <motion.h1
@@ -72,8 +72,8 @@ const AgentDemoHero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            Train an AI Agent on Your Business Knowledge—
-            <span className="bg-gradient-to-r from-orange via-[#f46530] to-[#c14f22] bg-clip-text text-transparent">in Minutes</span>
+            Reclaim Your Time with an{' '}
+            <span className="bg-gradient-to-r from-orange via-[#f46530] to-[#c14f22] bg-clip-text text-transparent">on demand AI Agent</span>
           </motion.h1>
 
           <motion.p
@@ -82,7 +82,8 @@ const AgentDemoHero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            Stop repeating the same answers. Upload your FAQs, documents, and links, share one link, and let Qlynk answer routine customer, client, and team questions any time.
+            Train a reliable AI agent on your business knowledge in minutes. Deliver instant, accurate responses to client and team inquiries around the clock — so you never miss an opportunity.
+            <span className="mt-3 block">See exactly what people are asking, so you always know what to add next.</span>
           </motion.p>
 
           <motion.div
@@ -94,7 +95,7 @@ const AgentDemoHero = () => {
             <Link href="/auth/signup" className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange px-8 py-4 text-lg font-black text-white shadow-lg shadow-orange/25 transition-colors hover:bg-[#c14f22]">
               Start Free <ArrowRight size={20} aria-hidden="true" />
             </Link>
-            <p className="mt-4 text-sm text-gray-500">14-day free trial with every Agency feature · No payment today</p>
+            <p className="mt-4 text-[15px] leading-relaxed text-gray-300">14-day free trial · Every feature included · No payment today</p>
           </motion.div>
         </div>
 
@@ -114,7 +115,7 @@ const AgentDemoHero = () => {
 };
 
 const productFacts = [
-  ['14-day trial', 'Every Agency feature included'],
+  ['14-day free trial', 'Every feature included'],
   ['No payment today', 'Try the complete product first'],
   ['One link or embed', 'Share it wherever people need answers'],
   ['Human handoff', 'Choose when a person should step in'],
@@ -131,7 +132,7 @@ const homepageFaqs = [
   ['What files can I upload?', 'Qlynk supports PDF, DOCX, and TXT files. You can also add FAQs, facts, links, notes, profile details, and other structured knowledge from the dashboard.'],
   ['Can I update my AI later?', 'Yes. Add, edit, or remove knowledge whenever your information changes. You do not need to retrain the underlying model.'],
   ['Does it work on my website?', 'Yes. Share the hosted qlynk.site link or embed the Qlynk agent on an existing website.'],
-  ['Is there a free plan?', 'Qlynk offers a 14-day free trial with every Agency feature and no payment today. After the trial, choose the paid plan that fits your needs.'],
+  ['Is there a free plan?', 'Qlynk offers a 14-day free trial with every feature included and no payment today. After the trial, choose the paid plan that fits your needs.'],
 ];
 
 const ProofStrip = () => (
@@ -151,7 +152,7 @@ const WhyQlynk = () => (
   <section className="relative z-10 py-20">
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div className="mx-auto mb-12 max-w-3xl text-center">
-        <p className="mb-3 text-sm font-bold text-orange">WHY QLYNK?</p>
+        <p className="mb-3 text-sm font-bold text-[#ff8a5b]">WHY QLYNK?</p>
         <h2 className="text-4xl font-black text-white md:text-5xl">A useful agent without the complicated setup</h2>
       </div>
       <div className="grid gap-6 md:grid-cols-3">
@@ -226,7 +227,7 @@ const ProductShowcase = () => {
     <section className="relative z-10 bg-gray-900/55 py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto mb-12 max-w-3xl text-center">
-          <p className="mb-3 text-sm font-bold text-orange">SEE QLYNK IN ACTION</p>
+          <p className="mb-3 text-sm font-bold text-[#ff8a5b]">SEE QLYNK IN ACTION</p>
           <h2 className="text-4xl font-black text-white md:text-5xl">Everything you need to launch and improve your agent</h2>
           <p className="mt-4 text-sm text-gray-500 md:hidden">Swipe to explore the product workflow →</p>
         </div>
@@ -253,12 +254,12 @@ const HomepageFAQ = () => (
       <div className="space-y-4">
         {homepageFaqs.map(([question, answer]) => (
           <details key={question} className="group rounded-2xl border border-gray-700 bg-gray-800/45 open:border-orange/30">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-5 px-6 py-5 font-bold text-white marker:content-none">{question}<span className="text-2xl font-light text-orange transition-transform group-open:rotate-45" aria-hidden="true">+</span></summary>
+            <summary className="flex min-h-14 w-full cursor-pointer list-none items-center justify-between gap-5 px-6 py-5 font-bold text-white marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#ff8a5b]">{question}<span className="text-2xl font-light text-[#ff8a5b] transition-transform group-open:rotate-45" aria-hidden="true">+</span></summary>
             <p className="px-6 pb-6 leading-relaxed text-gray-400">{answer}</p>
           </details>
         ))}
       </div>
-      <p className="mt-7 text-center text-gray-400">More questions? <Link href="/faq" className="font-bold text-orange hover:underline">Read the full FAQ</Link>.</p>
+      <p className="mt-7 text-center text-gray-400">More questions? <Link href="/faq" className="font-bold text-[#ff8a5b] hover:underline">Read the full FAQ</Link>.</p>
     </div>
   </section>
 );
@@ -555,10 +556,10 @@ export default function App() {
             </motion.p>
             <motion.div className="mt-9" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }}>
               <Link href="/auth/signup" className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-10 py-5 text-xl font-black text-[#9a3412] shadow-lg transition-colors hover:bg-gray-100 hover:text-[#7c2d12]">
-                Start Building Free <ArrowRight size={23} aria-hidden="true" />
+                Start Free <ArrowRight size={23} aria-hidden="true" />
               </Link>
             </motion.div>
-            <p className="mt-7 text-sm text-[#ffecd9]">Every Agency feature included · No payment today</p>
+            <p className="mt-7 text-[15px] leading-relaxed text-white">14-day free trial · Every feature included · No payment today</p>
           </div>
         </section>
       </main>

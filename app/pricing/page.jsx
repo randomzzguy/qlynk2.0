@@ -249,7 +249,7 @@ export default function PricingPage() {
       description: 'Everything in Agency for 14 days',
       price: 'Free',
       period: 'for 14 days',
-      cta: 'Start Free Trial',
+      cta: 'Start Free',
       icon: Zap,
       color: 'from-[#f46530] to-[#c14f22]',
       features: [
@@ -392,7 +392,7 @@ export default function PricingPage() {
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    Get Started
+                    Start Free
                   </motion.a>
                 </>
               )}
@@ -448,7 +448,7 @@ export default function PricingPage() {
                       href="/auth/signup"
                       className="block bg-[#f46530] text-white text-center px-4 py-2.5 rounded-lg font-medium mt-1 hover:bg-[#c14f22] transition-colors"
                     >
-                      Get Started
+                      Start Free
                     </Link>
                   </>
                 )}
@@ -613,8 +613,8 @@ export default function PricingPage() {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.98 }}
           >
-            Start Your Free Trial
-            <ArrowRight size={20} />
+            Start Free
+            <ArrowRight size={20} aria-hidden="true" />
           </motion.a>
         </motion.div>
 

@@ -74,7 +74,7 @@ export default function NotFound() {
               className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-white/5 text-white border border-white/10 rounded-2xl font-bold hover:bg-white/10 transition-all"
             >
               <Search size={20} />
-              Create Your Agent
+              Start Free
             </Link>
           </div>
 

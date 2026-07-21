@@ -182,7 +182,7 @@ export default function HomepageAgentDemo() {
 
   return (
     <div className="relative">
-      <div className="absolute -top-6 -right-6 p-4 rounded-2xl bg-gray-800/80 backdrop-blur-xl border border-white/10 shadow-2xl z-20 hidden sm:block">
+      <div className="pointer-events-none absolute right-4 top-0 z-20 -translate-y-1/2 rounded-xl border border-orange/40 bg-gray-800 px-3 py-2 shadow-2xl sm:right-6">
         <div className="flex items-center gap-3">
           <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
           <span className="text-xs font-bold text-white uppercase tracking-wider">Try the Live Demo</span>
@@ -222,7 +222,7 @@ export default function HomepageAgentDemo() {
                   {message.role === 'assistant' && (
                     <div className="flex items-center gap-2 mb-2">
                       <Image src="/assets/iconWhite.svg" alt="" width={14} height={14} />
-                      <span className="text-[11px] font-black text-orange uppercase tracking-[0.1em]">Qlynk response</span>
+                      <span className="text-[11px] font-black text-[#ff8a5b] uppercase tracking-[0.1em]">Qlynk response</span>
                     </div>
                   )}
                   {message.content ? (
@@ -257,8 +257,8 @@ export default function HomepageAgentDemo() {
           {hasAnswered && !limitReached && (
             <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-orange/20 bg-orange/5 px-4 py-3">
               <p className="text-xs text-gray-300">Want an agent that answers for your business?</p>
-              <Link href="/auth/signup" className="shrink-0 inline-flex items-center gap-1 text-xs font-bold text-orange hover:text-white transition-colors">
-                Create yours free <ArrowRight size={13} />
+              <Link href="/auth/signup" className="shrink-0 inline-flex items-center gap-1 text-xs font-bold text-[#ff8a5b] hover:text-white transition-colors">
+                Start Free <ArrowRight size={13} aria-hidden="true" />
               </Link>
             </div>
           )}
@@ -268,7 +268,7 @@ export default function HomepageAgentDemo() {
               <p className="text-sm font-semibold text-white">You have tried all three demo questions.</p>
               <p className="mt-1 text-xs text-gray-400">Now give an agent your knowledge and let people ask their own questions.</p>
               <Link href="/auth/signup" className="mt-3 inline-flex items-center justify-center gap-2 rounded-xl bg-orange px-5 py-3 text-sm font-bold text-white hover:bg-orange/90 transition-colors">
-                Create Your Agent for Free <ArrowRight size={16} />
+                Start Free <ArrowRight size={16} aria-hidden="true" />
               </Link>
             </div>
           ) : (
@@ -280,7 +280,7 @@ export default function HomepageAgentDemo() {
                 onChange={(event) => setInput(event.target.value)}
                 maxLength={500}
                 disabled={isLoading}
-                placeholder={`Ask a question · ${MAX_QUESTIONS - questionCount} remaining`}
+                placeholder="Ask a question"
                 className="min-w-0 flex-1 bg-transparent text-white placeholder-gray-600 text-sm px-3 py-2 outline-none disabled:opacity-60"
               />
               <button
@@ -294,7 +294,9 @@ export default function HomepageAgentDemo() {
             </form>
           )}
 
-          <p className="mt-3 text-center text-[10px] text-gray-600">Demo conversations are not saved.</p>
+          <p className="mt-3 text-center text-xs leading-relaxed text-gray-400">
+            Free demo · {MAX_QUESTIONS - questionCount} of {MAX_QUESTIONS} questions remaining · Conversations are not saved.
+          </p>
         </div>
       </div>
     </div>

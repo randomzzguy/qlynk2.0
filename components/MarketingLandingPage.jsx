@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Footer from '@/components/Footer';
 import JsonLd from '@/components/JsonLd';
 import MarketingHeader from '@/components/MarketingHeader';
-import { breadcrumbSchema, SITE_URL } from '@/lib/seo';
+import { breadcrumbSchema } from '@/lib/seo';
 
 export default function MarketingLandingPage({ page, path }) {
   const schema = breadcrumbSchema([
@@ -47,9 +47,9 @@ export default function MarketingLandingPage({ page, path }) {
 
         <section className="rounded-3xl bg-gradient-to-r from-[#f46530] to-[#c14f22] p-10 md:p-14 text-center">
           <h2 className="text-3xl md:text-4xl font-black mb-4">Build the agent around what people need to know</h2>
-          <p className="text-orange-50 mb-8">Start with a 14-day free trial, choose its information and limits, then share your {SITE_URL.replace('https://www.', '')}/username link.</p>
+          <p className="mb-8 text-orange-50">14-day free trial · Every feature included · No payment today</p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/auth/signup" className="rounded-xl bg-white px-7 py-4 font-bold text-[#9a3412] transition-colors hover:bg-orange-50 hover:text-[#7c2d12]">Start free</Link>
+            <Link href="/auth/signup" className="rounded-xl bg-white px-7 py-4 font-bold text-[#9a3412] transition-colors hover:bg-orange-50 hover:text-[#7c2d12]">Start Free</Link>
             <Link href="/pricing" className="rounded-xl border border-white/40 px-7 py-4 font-bold">View Pricing</Link>
             <Link href="/faq" className="rounded-xl border border-white/40 px-7 py-4 font-bold">Read the FAQ</Link>
           </div>

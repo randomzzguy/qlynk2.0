@@ -23,7 +23,7 @@ export default function MarketingHeader() {
             Log in
           </Link>
           <Link href="/auth/signup" className="rounded-lg bg-orange px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-[#c14f22]">
-            Start free
+            Start Free
           </Link>
         </nav>
       </div>

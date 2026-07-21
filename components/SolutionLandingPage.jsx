@@ -53,11 +53,11 @@ export default function SolutionLandingPage({ page }) {
             <p className="mx-auto mt-7 max-w-3xl text-xl leading-relaxed text-gray-300">{page.description}</p>
             <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link href="/auth/signup" className="inline-flex items-center gap-2 rounded-xl bg-orange px-7 py-4 font-bold text-white transition-colors hover:bg-[#c14f22]">
-                Start Building Free <ArrowRight size={18} />
+                Start Free <ArrowRight size={18} aria-hidden="true" />
               </Link>
               <Link href="/pricing" className="rounded-xl border border-white/15 px-7 py-4 font-bold text-white hover:border-orange/50">See transparent pricing</Link>
             </div>
-            <p className="mt-4 text-sm text-gray-500">14-day trial includes everything in Agency. No payment today.</p>
+            <p className="mt-4 text-[15px] leading-relaxed text-gray-300">14-day free trial · Every feature included · No payment today</p>
           </div>
         </header>
 
@@ -145,7 +145,7 @@ export default function SolutionLandingPage({ page }) {
           <div className="mx-auto max-w-5xl rounded-3xl bg-gradient-to-r from-[#f46530] to-[#c14f22] p-10 text-center md:p-14">
             <h2 className="text-3xl font-black md:text-5xl">Turn your approved knowledge into a trusted AI agent.</h2>
             <p className="mx-auto mt-5 max-w-2xl text-orange-50">Start with one job, add what you know, define the limits, and share the result.</p>
-            <Link href="/auth/signup" className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-4 font-bold text-[#9a3412] transition-colors hover:bg-orange-50 hover:text-[#7c2d12]">Start Building Free <ArrowRight size={18} /></Link>
+            <Link href="/auth/signup" className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-4 font-bold text-[#9a3412] transition-colors hover:bg-orange-50 hover:text-[#7c2d12]">Start Free <ArrowRight size={18} aria-hidden="true" /></Link>
           </div>
         </section>
       </main>

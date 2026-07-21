@@ -99,7 +99,7 @@ export default function ResourceArticle({ article, slug }) {
           <h2 className="text-3xl font-black">Turn your approved knowledge into a trusted AI agent</h2>
           <p className="mx-auto mt-4 max-w-2xl text-gray-300">Add the answer, define the limits, test the response, and build from there.</p>
           <Link href="/auth/signup" className="mt-8 inline-flex items-center gap-2 rounded-xl bg-orange px-7 py-4 font-bold text-white transition-colors hover:bg-[#c14f22]">
-            Start Building Free <ArrowRight size={18} />
+            Start Free <ArrowRight size={18} aria-hidden="true" />
           </Link>
         </section>
       </main>

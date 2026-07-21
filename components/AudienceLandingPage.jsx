@@ -23,7 +23,7 @@ export default function AudienceLandingPage({ page, path }) {
             <p className="mx-auto mt-7 max-w-3xl text-xl leading-relaxed text-gray-300 md:text-2xl">{page.description}</p>
             <div className="mt-10 flex flex-wrap justify-center gap-4">
               <Link href="/auth/signup" className="inline-flex items-center gap-2 rounded-xl bg-orange px-7 py-4 font-bold text-white transition-colors hover:bg-[#c14f22]">
-                Create your agent <ArrowRight size={18} />
+                Start Free <ArrowRight size={18} aria-hidden="true" />
               </Link>
               <Link href="/ai-agent" className="rounded-xl border border-white/20 px-7 py-4 font-bold text-white transition-colors hover:border-orange/60">
                 See how Qlynk works
@@ -68,9 +68,9 @@ export default function AudienceLandingPage({ page, path }) {
           <h2 className="text-3xl font-black md:text-5xl">{page.ctaTitle}</h2>
           <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-gray-300">{page.ctaText}</p>
           <Link href="/auth/signup" className="mt-9 inline-flex items-center gap-2 rounded-xl bg-orange px-8 py-4 font-bold text-white transition-colors hover:bg-[#c14f22]">
-            Start your 14-day free trial <ArrowRight size={18} />
+            Start Free <ArrowRight size={18} aria-hidden="true" />
           </Link>
-          <p className="mt-4 text-sm text-gray-500">No credit card required.</p>
+          <p className="mt-4 text-[15px] leading-relaxed text-gray-300">14-day free trial · Every feature included · No payment today</p>
         </section>
       </main>
 

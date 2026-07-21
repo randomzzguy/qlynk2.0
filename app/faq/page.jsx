@@ -167,12 +167,12 @@ export default function FAQPage() {
 
         <div className="mt-20 text-center bg-gradient-to-r from-blue-900/40 to-purple-900/40 border border-white/10 rounded-3xl p-10 backdrop-blur-md">
           <h3 className="text-2xl font-bold text-white mb-4">Ready to create your Qlynk Agent?</h3>
-          <p className="text-gray-300 mb-8">14-day free trial · No credit card required · Build at your own pace</p>
+          <p className="mb-8 text-[15px] leading-relaxed text-gray-300">14-day free trial · Every feature included · No payment today</p>
           <Link 
             href="/auth/signup"
             className="inline-flex items-center justify-center px-8 py-4 text-base font-medium text-white bg-white/10 hover:bg-white/20 border border-white/20 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]"
           >
-            Get Started Free
+            Start Free
           </Link>
         </div>
       </div>

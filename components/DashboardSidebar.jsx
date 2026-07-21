@@ -19,7 +19,6 @@ import {
   CreditCard,
   ExternalLink,
   Sparkles,
-  Bell,
   Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -50,7 +49,6 @@ const navGroups = [
     title: 'Configuration',
     items: [
       { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
-      { href: '/dashboard/settings#notifications', icon: Bell, label: 'Notifications' },
       { href: '/dashboard/billing', icon: CreditCard, label: 'Billing' },
     ]
   }
@@ -250,7 +248,15 @@ export default function DashboardSidebar({ onSignOut, onNavigate, isOpen, onClos
 
           {/* User Profile Summary */}
           {!isCollapsed ? (
-            <div className="flex items-center gap-3 px-3 py-4 bg-white/5 rounded-2xl border border-white/5 mb-2">
+            <Link
+              href="/dashboard/settings"
+              onClick={() => {
+                onNavigate?.('/dashboard/settings');
+                onClose?.();
+              }}
+              aria-label="Open account settings"
+              className="group flex items-center gap-3 px-3 py-4 bg-white/5 rounded-2xl border border-white/5 mb-2 transition-all hover:bg-white/10 hover:border-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f46530]"
+            >
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg overflow-hidden border border-white/10">
                 {avatarUrl ? (
                   <Image src={avatarUrl} alt={username || 'Profile'} width={40} height={40} className="w-full h-full object-cover" />
@@ -262,18 +268,26 @@ export default function DashboardSidebar({ onSignOut, onNavigate, isOpen, onClos
                 <p className="text-sm font-bold text-white truncate capitalize">{username || 'User'}</p>
                 <p className="text-[10px] text-gray-500 uppercase tracking-widest font-black">{tier || 'Pro'} Member</p>
               </div>
-            </div>
+            </Link>
           ) : (
-            <div className="flex justify-center py-4 relative group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg overflow-hidden border border-white/10 group-hover:scale-110 transition-transform cursor-help">
+            <Link
+              href="/dashboard/settings"
+              onClick={() => {
+                onNavigate?.('/dashboard/settings');
+                onClose?.();
+              }}
+              aria-label="Open account settings"
+              className="flex justify-center py-4 relative group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f46530]"
+            >
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg overflow-hidden border border-white/10 group-hover:scale-110 transition-transform">
                  {avatarUrl ? (
                    <Image src={avatarUrl} alt={username || 'Profile'} width={40} height={40} className="w-full h-full object-cover" />
                  ) : <span aria-label={`${username || 'User'} profile initial`}>{profileInitial}</span>}
               </div>
               <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap border border-gray-800 font-bold uppercase tracking-widest">
-                Account: @{username}
+                Open Settings
               </div>
-            </div>
+            </Link>
           )}
 
           <button

@@ -593,7 +593,7 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
       {!embedded && <UpgradePrompt />}
 
       {/* Header */}
-      <div className={`${embedded ? 'rounded-2xl border border-white/10 bg-white/[0.035] px-5' : 'sticky top-16 lg:top-0 z-30 -mx-5 -mt-8 px-5 sm:-mx-7 sm:-mt-10 sm:px-7 lg:-mx-9 lg:px-9 border-b border-white/10 bg-[#0a0a0f]/95'} flex flex-col md:flex-row justify-between items-start md:items-center mb-7 py-5 gap-4 backdrop-blur-xl`}>
+      <div className={`${embedded ? 'rounded-2xl border border-white/10 bg-white/[0.035] px-5 py-5 backdrop-blur-xl' : ''} flex flex-col md:flex-row justify-between items-start md:items-center mb-7 gap-4`}>
         <div>
           <h1 className={`${embedded ? 'text-xl' : 'text-3xl'} font-black text-white mb-1 flex items-center gap-3`}>
             {section === 'visual' ? 'Visual Style' : section === 'profile' ? (embedded ? 'Profile & Background' : 'Agent Knowledge') : 'Agent Setup'}
@@ -1066,7 +1066,7 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
               </div>
 
               {/* Live Preview column */}
-              <div className="sticky top-6">
+              <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">Live Preview</p>
                 <div
                   className="rounded-2xl overflow-hidden border border-white/10 shadow-2xl"

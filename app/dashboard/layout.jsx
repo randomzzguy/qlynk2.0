@@ -135,21 +135,27 @@ function DashboardLayoutContent({ children }) {
     if (previousRouteKeyRef.current === routeKey) return;
 
     previousRouteKeyRef.current = routeKey;
-    const frame = window.requestAnimationFrame(() => {
-      setRouteLoading(false);
+    let frame;
+    const revealTimer = window.setTimeout(() => {
+      frame = window.requestAnimationFrame(() => {
+        setRouteLoading(false);
 
-      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        contentRef.current?.animate(
-          [
-            { opacity: 0, transform: 'translateY(14px)', filter: 'blur(3px)' },
-            { opacity: 1, transform: 'translateY(0)', filter: 'blur(0)' },
-          ],
-          { duration: 360, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'both' }
-        );
-      }
-    });
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          contentRef.current?.animate(
+            [
+              { opacity: 0, transform: 'translateY(14px)', filter: 'blur(3px)' },
+              { opacity: 1, transform: 'translateY(0)', filter: 'blur(0)' },
+            ],
+            { duration: 360, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'both' }
+          );
+        }
+      });
+    }, 900);
 
-    return () => window.cancelAnimationFrame(frame);
+    return () => {
+      window.clearTimeout(revealTimer);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
   }, [routeKey]);
 
   useEffect(() => {

@@ -73,8 +73,8 @@ const AgentDemoHero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            Create a Trusted No-Code AI Agent
-            <span className="block bg-gradient-to-r from-orange via-[#f46530] to-[#c14f22] bg-clip-text text-transparent">That Helps From Day One</span>
+            Build a Trusted AI Agent
+            <span className="block bg-gradient-to-r from-orange via-[#f46530] to-[#c14f22] bg-clip-text text-transparent">No Code Required</span>
           </motion.h1>
 
           <motion.div
@@ -115,7 +115,7 @@ const AgentDemoHero = () => {
 };
 
 const LiveDemoSection = () => (
-  <section aria-labelledby="live-demo-title" className="relative z-10 overflow-hidden py-24 sm:py-32">
+  <section aria-labelledby="live-demo-title" className="relative z-10 mt-10 overflow-hidden border-t border-white/[0.06] py-20 sm:mt-14 sm:py-24">
     <div className="pointer-events-none absolute inset-0" aria-hidden="true">
       <div className="absolute left-1/2 top-1/2 h-[460px] w-[760px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange/[0.07] blur-[110px]" />
     </div>
@@ -692,9 +692,9 @@ export default function App() {
           <AgentDemoHero />
         </section>
 
+        <LiveDemoSection />
         <ProofStrip />
         <WhyQlynk />
-        <LiveDemoSection />
         <ProductShowcase />
         <HomepageFAQ />
 

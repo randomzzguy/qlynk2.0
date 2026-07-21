@@ -195,27 +195,107 @@ const ProofStrip = () => (
 );
 
 const WhyQlynk = () => (
-  <section className="relative z-10 py-20">
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div className="mx-auto mb-12 max-w-3xl text-center">
-        <p className="mb-3 text-sm font-bold text-[#ff8a5b]">WHY QLYNK?</p>
-        <h2 className="text-4xl font-black text-white md:text-5xl">A useful agent without the complicated setup</h2>
+  <section className="relative z-10 overflow-hidden py-24 sm:py-28">
+    <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+      <div className="absolute left-1/2 top-1/2 h-[460px] w-[460px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-orange/[0.07]" />
+      <div className="absolute left-1/2 top-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.04]" />
+      <div className="absolute left-1/2 top-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange/[0.06] blur-[80px]" />
+    </div>
+
+    <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <motion.div
+        className="mx-auto max-w-4xl text-center"
+        initial={{ opacity: 0, y: 22 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.5 }}
+        transition={{ duration: 0.55 }}
+      >
+        <p className="text-sm font-black tracking-[0.18em] text-[#ff8a5b]">WHY QLYNK?</p>
+        <h2 className="mt-4 text-4xl font-black leading-tight text-white md:text-5xl">Simple to launch. Easy to control. Ready to share.</h2>
+      </motion.div>
+
+      <div className="relative mx-auto mt-16 hidden max-w-6xl pb-8 lg:block">
+        <svg className="pointer-events-none absolute left-0 top-0 h-44 w-full" viewBox="0 0 1200 180" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M 200 124 C 335 124, 455 44, 600 44 C 745 44, 865 124, 1000 124" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="2" strokeDasharray="8 10" />
+          <motion.path
+            d="M 200 124 C 335 124, 455 44, 600 44 C 745 44, 865 124, 1000 124"
+            fill="none"
+            stroke="url(#whyQlynkGradient)"
+            strokeWidth="3"
+            strokeLinecap="round"
+            initial={{ pathLength: 0, opacity: 0 }}
+            whileInView={{ pathLength: 1, opacity: 1 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 1.2, ease: 'easeInOut' }}
+          />
+          <defs>
+            <linearGradient id="whyQlynkGradient" x1="0" x2="1">
+              <stop offset="0%" stopColor="#eb5e28" stopOpacity="0.18" />
+              <stop offset="50%" stopColor="#ff8a5b" stopOpacity="0.95" />
+              <stop offset="100%" stopColor="#2AB59E" stopOpacity="0.25" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        <div className="grid grid-cols-3 gap-14">
+          {whyQlynk.map((item, index) => (
+            <motion.article
+              key={item.title}
+              className={`group relative text-center ${index === 1 ? '' : 'pt-20'}`}
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.5, delay: 0.35 + index * 0.13 }}
+            >
+              <div className="relative mx-auto h-24 w-24">
+                <span className="absolute -right-8 -top-10 select-none text-7xl font-black text-white/[0.045]">0{index + 1}</span>
+                <motion.div
+                  className="relative z-10 flex h-24 w-24 items-center justify-center rounded-full border border-orange/40 bg-[#151923] text-[#ff8a5b] shadow-[0_0_45px_rgba(235,94,40,0.16)]"
+                  whileHover={{ scale: 1.1, rotate: index === 1 ? 5 : -5 }}
+                  transition={{ type: 'spring', stiffness: 260, damping: 18 }}
+                >
+                  <span className="absolute inset-2 rounded-full border border-dashed border-white/15 transition-transform duration-700 group-hover:rotate-90" />
+                  <item.icon className="relative z-10" size={30} aria-hidden="true" />
+                </motion.div>
+              </div>
+              <p className="mt-7 font-mono text-xs font-bold tracking-[0.22em] text-[#ff8a5b]">STEP 0{index + 1}</p>
+              <h3 className="mt-3 text-2xl font-black text-white transition-colors group-hover:text-[#ff8a5b]">{item.title}</h3>
+              <p className="mx-auto mt-3 max-w-xs leading-relaxed text-gray-400">{item.desc}</p>
+            </motion.article>
+          ))}
+        </div>
       </div>
-      <div className="grid gap-6 md:grid-cols-3">
-        {whyQlynk.map((item, index) => (
-          <motion.article
-            key={item.title}
-            className="rounded-3xl border border-gray-700 bg-gray-800/45 p-8"
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange/10 text-orange"><item.icon size={24} aria-hidden="true" /></div>
-            <h3 className="mt-6 text-2xl font-black text-white">{item.title}</h3>
-            <p className="mt-3 leading-relaxed text-gray-400">{item.desc}</p>
-          </motion.article>
-        ))}
+
+      <div className="relative mx-auto mt-14 max-w-xl lg:hidden">
+        <motion.div
+          className="absolute bottom-7 left-7 top-7 w-px origin-top bg-gradient-to-b from-orange via-[#ff8a5b] to-[#2AB59E]"
+          initial={{ scaleY: 0 }}
+          whileInView={{ scaleY: 1 }}
+          viewport={{ once: true, amount: 0.25 }}
+          transition={{ duration: 0.9, ease: 'easeInOut' }}
+          aria-hidden="true"
+        />
+        <div className="space-y-12">
+          {whyQlynk.map((item, index) => (
+            <motion.article
+              key={item.title}
+              className="group relative flex gap-5"
+              initial={{ opacity: 0, x: -24 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, amount: 0.55 }}
+              transition={{ duration: 0.48, delay: index * 0.12 }}
+            >
+              <div className="relative z-10 flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-orange/40 bg-[#151923] text-[#ff8a5b] shadow-[0_0_30px_rgba(235,94,40,0.16)]">
+                <item.icon size={22} aria-hidden="true" />
+              </div>
+              <div className="pt-1">
+                <p className="font-mono text-xs font-bold tracking-[0.2em] text-[#ff8a5b]">STEP 0{index + 1}</p>
+                <h3 className="mt-2 text-2xl font-black text-white">{item.title}</h3>
+                <p className="mt-2 leading-relaxed text-gray-400">{item.desc}</p>
+              </div>
+            </motion.article>
+          ))}
+        </div>
       </div>
     </div>
   </section>

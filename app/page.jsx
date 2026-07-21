@@ -9,6 +9,7 @@ import {
   ChevronUp,
   CircleHelp,
   Code2,
+  CreditCard,
   FileText,
   Link2,
   MessageSquare,
@@ -115,10 +116,10 @@ const AgentDemoHero = () => {
 };
 
 const productFacts = [
-  ['14-day free trial', 'Every feature included'],
-  ['No payment today', 'Try the complete product first'],
-  ['One link or embed', 'Share it wherever people need answers'],
-  ['Human handoff', 'Choose when a person should step in'],
+  { icon: ShieldCheck, title: '14-day free trial', description: 'Every feature included' },
+  { icon: CreditCard, title: 'No payment today', description: 'Try the complete product first' },
+  { icon: Link2, title: 'One link or embed', description: 'Share it wherever people need answers' },
+  { icon: MessageSquare, title: 'Human handoff', description: 'Choose when a person should step in' },
 ];
 
 const whyQlynk = [
@@ -136,14 +137,59 @@ const homepageFaqs = [
 ];
 
 const ProofStrip = () => (
-  <section aria-label="Qlynk trial and product facts" className="relative z-10 border-y border-white/5 bg-gray-900/60">
-    <div className="mx-auto grid max-w-7xl grid-cols-2 gap-2 px-4 py-4 sm:px-6 lg:grid-cols-4 lg:px-8">
-      {productFacts.map(([title, description]) => (
-        <div key={title} className="rounded-xl border border-white/5 bg-white/[0.025] px-3 py-4 text-center sm:px-5">
-          <p className="font-black text-white">{title}</p>
-          <p className="mt-1 text-sm text-gray-400">{description}</p>
+  <section aria-label="Qlynk trial and product facts" className="relative z-10 overflow-hidden border-y border-white/10 bg-[#0d111b] py-12 sm:py-14">
+    <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+      <div className="absolute left-1/2 top-0 h-px w-2/3 -translate-x-1/2 bg-gradient-to-r from-transparent via-orange/70 to-transparent" />
+      <div className="absolute -left-20 top-1/2 h-56 w-56 -translate-y-1/2 rounded-full bg-orange/10 blur-[90px]" />
+      <div className="absolute -right-24 bottom-0 h-64 w-64 rounded-full bg-[#2AB59E]/10 blur-[100px]" />
+    </div>
+
+    <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <motion.div
+        className="mb-9 grid gap-4 text-center lg:grid-cols-[1fr_0.8fr] lg:items-end lg:text-left"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.4 }}
+        transition={{ duration: 0.55 }}
+      >
+        <div>
+          <p className="text-sm font-black tracking-[0.18em] text-[#ff8a5b]">START WITH CONFIDENCE</p>
+          <h2 className="mt-3 text-3xl font-black leading-tight text-white sm:text-4xl">Try the complete Qlynk experience before you pay</h2>
         </div>
-      ))}
+        <p className="mx-auto max-w-xl leading-relaxed text-gray-400 lg:mx-0 lg:justify-self-end lg:text-right">
+          Build it, share it, and see how it handles real questions before choosing a paid plan.
+        </p>
+      </motion.div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {productFacts.map((item, index) => (
+          <motion.article
+            key={item.title}
+            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.075] to-white/[0.025] p-6 shadow-xl shadow-black/10 backdrop-blur-sm"
+            initial={{ opacity: 0, y: 28, scale: 0.97 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            whileHover={{ y: -7, borderColor: 'rgba(235, 94, 40, 0.5)' }}
+            viewport={{ once: true, amount: 0.35 }}
+            transition={{ duration: 0.45, delay: index * 0.08, ease: 'easeOut' }}
+          >
+            <motion.div
+              className="absolute inset-x-0 top-0 h-0.5 origin-left bg-gradient-to-r from-orange via-[#ff8a5b] to-transparent"
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.18 + index * 0.08 }}
+            />
+            <div className="flex items-center justify-between">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-orange/25 bg-orange/10 text-[#ff8a5b] shadow-lg shadow-orange/5 transition-transform duration-300 group-hover:-rotate-3 group-hover:scale-110">
+                <item.icon size={23} aria-hidden="true" />
+              </div>
+              <span className="font-mono text-xs font-bold tracking-[0.2em] text-gray-600">0{index + 1}</span>
+            </div>
+            <h3 className="mt-6 text-xl font-black text-white">{item.title}</h3>
+            <p className="mt-2 text-sm leading-relaxed text-gray-400">{item.description}</p>
+          </motion.article>
+        ))}
+      </div>
     </div>
   </section>
 );

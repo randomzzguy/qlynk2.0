@@ -6,6 +6,7 @@ import { MessageCircle, X, Send, Bot, User, Loader2 } from 'lucide-react';
 import AgentResponseIndicator from '@/components/AgentResponseIndicator';
 import { getAgentTypeDefinition } from '@/lib/agent-type-catalog';
 import { hasAgencyFeatures } from '@/lib/plans';
+import { isOriginAllowed } from '@/lib/widget-installations';
 
 export default function ChatWidget({ 
   username, 
@@ -17,7 +18,15 @@ export default function ChatWidget({
   accessLevel = 'public',
   agentType = 'personal',
   tier,
-  parentOrigin
+  widgetId,
+  allowedOrigins = [],
+  chatBgColor = '#0a0a0f',
+  userBubbleColor = '#ffffff1a',
+  aiBubbleColor = '#3b82f620',
+  ctaButtonColor,
+  ctaTextColor = '#ffffff',
+  gatekeeperTextColor = '#9ca3af',
+  fontFamily = 'Inter'
 }) {
   const agentTypeDefinition = getAgentTypeDefinition(agentType);
   const [isOpen, setIsOpen] = useState(false);
@@ -37,6 +46,9 @@ export default function ChatWidget({
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [responsePhase, setResponsePhase] = useState('idle');
+  const [embedReady, setEmbedReady] = useState(!widgetId);
+  const [embedBlocked, setEmbedBlocked] = useState(false);
+  const [sourceOrigin, setSourceOrigin] = useState(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -47,23 +59,50 @@ export default function ChatWidget({
     }
   }, [visitorId]);
 
-  // Handle iframe communication
+  // Handshake with the loader. event.origin is the actual parent website and
+  // cannot be supplied through a query parameter.
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      let targetOrigin = parentOrigin;
-      if (!targetOrigin && document.referrer) {
-        try {
-          targetOrigin = new URL(document.referrer).origin;
-        } catch {
-          return;
-        }
+    const handleInit = (event) => {
+      if (event.source !== window.parent || event.data?.type !== 'qlynk_widget_init') return;
+      if (widgetId && !isOriginAllowed(event.origin, allowedOrigins)) {
+        setEmbedBlocked(true);
+        window.parent.postMessage({ type: 'qlynk_widget_denied' }, event.origin);
+        return;
       }
-      if (!targetOrigin) return;
+      setSourceOrigin(event.origin);
+      setEmbedReady(true);
+      window.parent.postMessage({ type: 'qlynk_widget_position', position }, event.origin);
+      window.parent.postMessage({ type: 'qlynk_chat_closed' }, event.origin);
+    };
+    window.addEventListener('message', handleInit);
+    return () => window.removeEventListener('message', handleInit);
+  }, [allowedOrigins, position, widgetId]);
 
-      const msg = isOpen ? 'qlynk_chat_open' : 'qlynk_chat_closed';
-      window.parent.postMessage(msg, targetOrigin);
-    }
-  }, [isOpen, parentOrigin]);
+  useEffect(() => {
+    if (!embedReady || !sourceOrigin) return;
+    window.parent.postMessage(
+      { type: isOpen ? 'qlynk_chat_open' : 'qlynk_chat_closed' },
+      sourceOrigin
+    );
+  }, [embedReady, isOpen, sourceOrigin]);
+
+  useEffect(() => {
+    if (!embedReady || !widgetId || !sourceOrigin) return;
+    const sessionKey = `qlynk_widget_viewed_${widgetId}`;
+    if (sessionStorage.getItem(sessionKey)) return;
+    sessionStorage.setItem(sessionKey, '1');
+    fetch('/api/track-view', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username,
+        visitor_id: visitorId,
+        referrer: sourceOrigin,
+        widget_id: widgetId,
+        source_origin: sourceOrigin,
+      }),
+    }).catch(() => {});
+  }, [embedReady, sourceOrigin, username, visitorId, widgetId]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -109,6 +148,8 @@ export default function ChatWidget({
           visitorName: gatekeeperForm.name,
           visitorEmail: gatekeeperForm.email,
           accessPassword,
+          widgetId,
+          sourceOrigin,
         }),
       });
 
@@ -217,13 +258,15 @@ export default function ChatWidget({
     return message.content || '';
   };
 
+  if (embedBlocked || !embedReady) return null;
+
   return (
-    <div className={`fixed ${positionClasses[position] || positionClasses['bottom-right']} z-50`}>
+    <div className={`fixed ${positionClasses[position] || positionClasses['bottom-right']} z-50`} style={{ fontFamily }}>
       {/* Chat Window */}
       {isOpen && (
         <div 
-          className="mb-4 w-[360px] h-[520px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-100"
-          style={{ boxShadow: `0 25px 50px -12px ${primaryColor}20` }}
+          className="mb-4 h-[min(520px,calc(100dvh-100px))] w-[min(360px,calc(100vw-32px))] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-white/10"
+          style={{ backgroundColor: chatBgColor, boxShadow: `0 25px 50px -12px ${primaryColor}20` }}
         >
           {/* Header */}
           <div 
@@ -271,39 +314,39 @@ export default function ChatWidget({
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50" aria-live="polite" aria-busy={isLoading}>
+          <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ backgroundColor: chatBgColor }} aria-live="polite" aria-busy={isLoading}>
             {!isAuthorized && accessLevel !== 'public' ? (
               <form onSubmit={handleGatekeeperSubmit} className="space-y-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Your name</label>
+                    <label className="block text-xs font-semibold mb-1" style={{ color: gatekeeperTextColor }}>Your name</label>
                   <input
                     type="text"
                     value={gatekeeperForm.name}
                     onChange={(e) => setGatekeeperForm(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2"
+                    className="w-full px-3 py-2 bg-white/10 border border-white/15 rounded-xl text-sm text-white focus:outline-none focus:ring-2"
                     style={{ '--tw-ring-color': primaryColor }}
                   />
                 </div>
                 {accessLevel === 'email' && (
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">Email</label>
+                    <label className="block text-xs font-semibold mb-1" style={{ color: gatekeeperTextColor }}>Email</label>
                     <input
                       type="email"
                       value={gatekeeperForm.email}
                       onChange={(e) => setGatekeeperForm(prev => ({ ...prev, email: e.target.value }))}
-                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2"
+                      className="w-full px-3 py-2 bg-white/10 border border-white/15 rounded-xl text-sm text-white focus:outline-none focus:ring-2"
                       style={{ '--tw-ring-color': primaryColor }}
                     />
                   </div>
                 )}
                 {accessLevel === 'password' && (
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">Access password</label>
+                    <label className="block text-xs font-semibold mb-1" style={{ color: gatekeeperTextColor }}>Access password</label>
                     <input
                       type="password"
                       value={gatekeeperForm.password}
                       onChange={(e) => setGatekeeperForm(prev => ({ ...prev, password: e.target.value }))}
-                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2"
+                      className="w-full px-3 py-2 bg-white/10 border border-white/15 rounded-xl text-sm text-white focus:outline-none focus:ring-2"
                       style={{ '--tw-ring-color': primaryColor }}
                     />
                   </div>
@@ -316,7 +359,7 @@ export default function ChatWidget({
                 <button
                   type="submit"
                   className="w-full py-2.5 rounded-xl text-white text-sm font-semibold"
-                  style={{ backgroundColor: primaryColor }}
+                  style={{ backgroundColor: ctaButtonColor || primaryColor, color: ctaTextColor }}
                 >
                   Continue
                 </button>
@@ -333,9 +376,10 @@ export default function ChatWidget({
                   <Bot size={16} style={{ color: primaryColor }} />
                 </div>
                 <div 
-                  className="bg-white rounded-2xl rounded-tl-sm px-4 py-3 max-w-[80%] shadow-sm"
+                  className="rounded-2xl rounded-tl-sm px-4 py-3 max-w-[80%] shadow-sm text-white"
+                  style={{ backgroundColor: aiBubbleColor }}
                 >
-                  <p className="text-sm text-gray-700">{welcomeMessage}</p>
+                  <p className="text-sm">{welcomeMessage}</p>
                 </div>
               </div>
             )}
@@ -367,11 +411,11 @@ export default function ChatWidget({
                     className={`rounded-2xl px-4 py-3 max-w-[80%] shadow-sm ${
                       isUser 
                         ? 'rounded-tr-sm text-white' 
-                        : 'bg-white rounded-tl-sm'
+                        : 'rounded-tl-sm text-white'
                     }`}
-                    style={isUser ? { backgroundColor: primaryColor } : {}}
+                    style={{ backgroundColor: isUser ? userBubbleColor : aiBubbleColor }}
                   >
-                    <p className={`text-sm whitespace-pre-wrap ${isUser ? '' : 'text-gray-700'}`}>
+                    <p className="text-sm whitespace-pre-wrap text-white">
                       {text}
                     </p>
                   </div>
@@ -395,7 +439,7 @@ export default function ChatWidget({
           </div>
 
           {/* Input Area */}
-          <form onSubmit={handleSubmit} className="p-4 bg-white border-t border-gray-100">
+          <form onSubmit={handleSubmit} className="p-4 border-t border-white/10" style={{ backgroundColor: chatBgColor }}>
             <div className="flex gap-2">
               <input
                 ref={inputRef}
@@ -404,14 +448,14 @@ export default function ChatWidget({
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={isLoading ? 'The agent is responding...' : 'Type a message...'}
                 disabled={isLoading || !isAuthorized}
-                className="flex-1 px-4 py-2.5 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 disabled:opacity-50"
+                className="flex-1 px-4 py-2.5 bg-white/10 text-white placeholder:text-gray-500 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 disabled:opacity-50"
                 style={{ '--tw-ring-color': primaryColor }}
               />
               <button
                 type="submit"
                 disabled={!input.trim() || isLoading || !isAuthorized}
                 className="p-2.5 rounded-full text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
-                style={{ backgroundColor: primaryColor }}
+                style={{ backgroundColor: ctaButtonColor || primaryColor, color: ctaTextColor }}
                 aria-label="Send message"
               >
                 {isLoading

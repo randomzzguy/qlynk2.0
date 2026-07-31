@@ -73,13 +73,13 @@ export default function AnalyticsPage() {
       const [convoRes, viewRes, feedbackRes, gapsRes] = await Promise.all([
         supabase
           .from('agent_conversations')
-          .select('id, visitor_id, visitor_name, visitor_email, message_count, sentiment, created_at')
+          .select('id, visitor_id, visitor_name, visitor_email, message_count, sentiment, channel, source_origin, created_at')
           .eq('agent_owner_id', user.id)
           .order('created_at', { ascending: false })
           .limit(500),
         supabase
           .from('page_views')
-          .select('id, visitor_id, referrer, created_at')
+          .select('id, visitor_id, referrer, channel, source_origin, created_at')
           .eq('page_owner_id', user.id)
           .order('created_at', { ascending: false })
           .limit(2000),
@@ -320,6 +320,11 @@ export default function AnalyticsPage() {
                       <div className="text-left">
                         <p className={`font-medium ${isSelected ? 'text-[#f46530]' : 'text-white'}`}>{visitorLabel}</p>
                         {convo.visitor_email && <p className="text-xs text-gray-500">{convo.visitor_email}</p>}
+                        {convo.channel === 'widget' && (
+                          <p className="mt-1 max-w-[220px] truncate text-[10px] font-semibold uppercase tracking-wide text-blue-400">
+                            Website widget{convo.source_origin ? ` · ${convo.source_origin.replace(/^https?:\/\//, '')}` : ''}
+                          </p>
+                        )}
                         <p className="text-xs text-gray-500 flex items-center gap-2 mt-0.5">
                           <span className="flex items-center gap-1"><MessageCircle size={12} />{convo.message_count || 0} msgs</span>
                           <span>•</span>

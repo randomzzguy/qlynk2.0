@@ -331,6 +331,7 @@ const rlsTables = [
   'agent_publish_versions',
   'profiles_public_data',
   'agent_configs_public_data',
+  'widget_installations',
 ];
 const enabledRlsCount = await scalar(`
   SELECT count(*)::int AS value
@@ -343,7 +344,7 @@ const enabledRlsCount = await scalar(`
 assert(enabledRlsCount === rlsTables.length, 'RLS is not enabled on every sensitive table.');
 
 await db.exec('SET ROLE anon;');
-for (const table of ['agent_configs', 'agent_knowledge', 'profiles', 'subscriptions', 'stripe_webhook_events', 'api_rate_limits', 'agent_rule_configs', 'agent_rule_config_versions', 'agent_security_events', 'agent_knowledge_gaps', 'agent_message_feedback', 'agent_config_drafts', 'agent_publish_versions']) {
+for (const table of ['agent_configs', 'agent_knowledge', 'profiles', 'subscriptions', 'stripe_webhook_events', 'api_rate_limits', 'agent_rule_configs', 'agent_rule_config_versions', 'agent_security_events', 'agent_knowledge_gaps', 'agent_message_feedback', 'agent_config_drafts', 'agent_publish_versions', 'widget_installations']) {
   let count = 0;
   try {
     count = await scalar(`SELECT count(*)::int AS value FROM public.${table}`);
@@ -542,6 +543,10 @@ assert(
 assert(
   await scalar(`SELECT has_table_privilege('authenticated', 'public.agent_publish_versions', 'SELECT') AS value`) === false,
   'Authenticated clients can read private publish snapshots directly.'
+);
+assert(
+  await scalar(`SELECT has_table_privilege('authenticated', 'public.widget_installations', 'SELECT') AS value`) === false,
+  'Authenticated clients can read private widget-installation configuration directly.'
 );
 for (const table of ['profiles_public_data', 'agent_configs_public_data']) {
   assert(

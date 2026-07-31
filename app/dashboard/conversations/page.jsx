@@ -84,7 +84,7 @@ export default function ConversationsPage() {
       // Fetch conversation details for visitor info
       const { data: convoData } = await supabase
         .from('agent_conversations')
-        .select('visitor_name, visitor_email, visitor_id')
+        .select('visitor_name, visitor_email, visitor_id, channel, source_origin')
         .eq('id', conversationId)
         .single();
 
@@ -176,6 +176,8 @@ export default function ConversationsPage() {
       'Visitor Email',
       'Visitor Location',
       'Visitor Device',
+      'Channel',
+      'Source Website',
       'Message Count',
       'Sentiment',
       'Created At'
@@ -188,6 +190,8 @@ export default function ConversationsPage() {
       convo.visitor_email || 'N/A',
       convo.visitor_location || 'N/A',
       convo.visitor_device || 'N/A',
+      convo.channel || 'hosted',
+      convo.source_origin || 'N/A',
       convo.message_count || 0,
       convo.sentiment || 'neutral',
       new Date(convo.created_at).toISOString()
@@ -318,6 +322,11 @@ export default function ConversationsPage() {
                     {convo.visitor_email && (
                       <p className="text-xs text-gray-500 truncate">{convo.visitor_email}</p>
                     )}
+                    {convo.channel === 'widget' && (
+                      <p className="mt-1 max-w-[260px] truncate text-[10px] font-semibold uppercase tracking-wide text-blue-400">
+                        Website widget{convo.source_origin ? ` · ${convo.source_origin.replace(/^https?:\/\//, '')}` : ''}
+                      </p>
+                    )}
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm text-gray-400">
                       <span className="flex items-center gap-1">
                         <MessageSquare size={14} />
@@ -368,6 +377,11 @@ export default function ConversationsPage() {
                           </p>
                           {visitorInfo.visitor_email && (
                             <p className="text-xs text-gray-500">{visitorInfo.visitor_email}</p>
+                          )}
+                          {visitorInfo.channel === 'widget' && (
+                            <p className="mt-1 max-w-[260px] truncate text-xs text-blue-400">
+                              From {visitorInfo.source_origin || 'website widget'}
+                            </p>
                           )}
                         </div>
                       </div>

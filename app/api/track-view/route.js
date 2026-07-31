@@ -1,6 +1,7 @@
 import { createAdminClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 import { rateLimitResponse } from '@/lib/rate-limit';
+import { isOriginAllowed, isWidgetId, normalizeWidgetOrigin } from '@/lib/widget-installations';
 
 const USERNAME_PATTERN = /^[a-z0-9_-]{3,30}$/i;
 const VISITOR_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -17,7 +18,7 @@ export async function POST(request) {
   if (rateLimit) return rateLimit;
 
   try {
-    const { username, visitor_id, referrer } = await request.json();
+    const { username, visitor_id, referrer, widget_id, source_origin } = await request.json();
 
     if (!USERNAME_PATTERN.test(username || '') || !VISITOR_ID_PATTERN.test(visitor_id || '')) {
       return NextResponse.json({ error: 'Invalid tracking fields' }, { status: 400 });
@@ -48,6 +49,25 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
     }
 
+    let widgetContext = null;
+    const safeSourceOrigin = source_origin == null ? null : normalizeWidgetOrigin(source_origin);
+    if (widget_id != null) {
+      if (!isWidgetId(widget_id) || !safeSourceOrigin) {
+        return NextResponse.json({ error: 'Invalid widget tracking fields' }, { status: 400 });
+      }
+      const { data: installation } = await supabase
+        .from('widget_installations')
+        .select('id, owner_id, is_enabled, allowed_origins')
+        .eq('id', widget_id)
+        .maybeSingle();
+      if (!installation?.is_enabled ||
+          installation.owner_id !== profile.id ||
+          !isOriginAllowed(safeSourceOrigin, installation.allowed_origins)) {
+        return NextResponse.json({ error: 'Widget is not allowed on this website' }, { status: 403 });
+      }
+      widgetContext = installation;
+    }
+
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const { data: existingView } = await supabase
       .from('page_views')
@@ -68,6 +88,9 @@ export async function POST(request) {
         page_owner_id: profile.id,
         visitor_id,
         referrer: safeReferrer,
+        channel: widgetContext ? 'widget' : 'hosted',
+        widget_installation_id: widgetContext?.id || null,
+        source_origin: widgetContext ? safeSourceOrigin : null,
       });
 
     if (insertError) {

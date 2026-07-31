@@ -11,9 +11,11 @@
 
   if (!currentScript) return;
 
+  const widgetId = currentScript.getAttribute('data-widget-id');
   const username = currentScript.getAttribute('data-username');
-  if (!username) {
-    console.error('Qlynk Agent: Missing data-username attribute on script tag.');
+  const identifier = widgetId || username;
+  if (!identifier) {
+    console.error('Qlynk Agent: Missing data-widget-id attribute.');
     return;
   }
 
@@ -25,15 +27,16 @@
 
   // Create the iframe
   const iframe = document.createElement('iframe');
-  iframe.id = 'qlynk-chat-widget';
+  iframe.id = `qlynk-chat-widget-${identifier}`;
+  iframe.title = 'Qlynk website chat';
 
   // Initial styles - small enough for the floating button but large enough for the tooltip/shadow
   const initialStyles = {
     position: 'fixed',
     bottom: '0',
     right: '0',
-    width: '120px',
-    height: '120px',
+    width: '96px',
+    height: '96px',
     border: 'none',
     zIndex: '2147483647',
     transition: 'width 0.3s ease, height 0.3s ease',
@@ -43,22 +46,38 @@
 
   Object.assign(iframe.style, initialStyles);
 
-  iframe.src = `${origin}/embed/${encodeURIComponent(username)}?parentOrigin=${encodeURIComponent(window.location.origin)}`;
+  iframe.src = `${origin}/embed/${encodeURIComponent(identifier)}`;
   iframe.setAttribute('allow', 'clipboard-read; clipboard-write');
+  iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups');
 
   document.body.appendChild(iframe);
+
+  iframe.addEventListener('load', () => {
+    iframe.contentWindow?.postMessage({ type: 'qlynk_widget_init' }, origin);
+  });
 
   // Listen for messages from the iframe to resize
   window.addEventListener('message', (event) => {
     // Basic security check: ensure message is from our origin
-    if (event.origin !== origin) return;
+    if (event.origin !== origin || event.source !== iframe.contentWindow) return;
 
-    if (event.data === 'qlynk_chat_open') {
-      iframe.style.width = '420px';
-      iframe.style.height = '620px';
-    } else if (event.data === 'qlynk_chat_closed') {
-      iframe.style.width = '120px';
-      iframe.style.height = '120px';
+    const type = typeof event.data === 'string' ? event.data : event.data?.type;
+
+    if (type === 'qlynk_widget_position') {
+      const position = event.data?.position === 'bottom-left' ? 'bottom-left' : 'bottom-right';
+      iframe.style.left = position === 'bottom-left' ? '0' : 'auto';
+      iframe.style.right = position === 'bottom-right' ? '0' : 'auto';
+      return;
+    }
+
+    if (type === 'qlynk_chat_open') {
+      iframe.style.width = 'min(420px, 100vw)';
+      iframe.style.height = 'min(620px, 100dvh)';
+    } else if (type === 'qlynk_chat_closed') {
+      iframe.style.width = '96px';
+      iframe.style.height = '96px';
+    } else if (type === 'qlynk_widget_denied') {
+      iframe.remove();
     }
   });
 })();

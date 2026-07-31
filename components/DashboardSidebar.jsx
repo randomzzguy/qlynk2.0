@@ -19,7 +19,8 @@ import {
   CreditCard,
   ExternalLink,
   Sparkles,
-  Clock
+  Clock,
+  Code2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -36,6 +37,7 @@ const navGroups = [
       { href: '/dashboard/agent?section=general', icon: SlidersHorizontal, label: 'Agent Setup', section: 'general', tourKey: 'agent-setup' },
       { href: '/dashboard/agent?section=visual', icon: Palette, label: 'Visual Style', section: 'visual', tourKey: 'visual-style' },
       { href: '/dashboard/knowledge', icon: Database, label: 'Knowledge Base', tourKey: 'knowledge' },
+      { href: '/dashboard/widget', icon: Code2, label: 'Website Widget' },
       { href: '/dashboard/conversations', icon: MessageSquare, label: 'Conversations' },
     ]
   },

@@ -15,6 +15,7 @@ import {
 } from '@/lib/agent-prompt';
 import { normalizeAgentRules } from '@/lib/agent-rules';
 import { normalizeKnowledgeGapQuestion, shouldRecordKnowledgeGap } from '@/lib/knowledge-gaps';
+import { isOriginAllowed, isWidgetId, normalizeWidgetOrigin } from '@/lib/widget-installations';
 
 export const maxDuration = 30;
 
@@ -123,6 +124,8 @@ async function parseChatRequest(req) {
     visitorName,
     visitorEmail,
     accessPassword,
+    widgetId,
+    sourceOrigin,
   } = body || {};
 
   if (typeof username !== 'string' || !USERNAME_PATTERN.test(username)) {
@@ -136,6 +139,15 @@ async function parseChatRequest(req) {
   if (conversationId != null &&
       (typeof conversationId !== 'string' || !UUID_PATTERN.test(conversationId))) {
     return { error: 'Invalid conversation identifier', status: 400 };
+  }
+
+  if (widgetId != null && !isWidgetId(widgetId)) {
+    return { error: 'Invalid widget identifier', status: 400 };
+  }
+
+  const normalizedSourceOrigin = sourceOrigin == null ? null : normalizeWidgetOrigin(sourceOrigin);
+  if (sourceOrigin != null && !normalizedSourceOrigin) {
+    return { error: 'Invalid widget source origin', status: 400 };
   }
 
   if (!Array.isArray(messages) || messages.length === 0 || messages.length > MAX_HISTORY_MESSAGES) {
@@ -180,6 +192,8 @@ async function parseChatRequest(req) {
       visitorName: typeof visitorName === 'string' ? visitorName.trim().slice(0, 100) : '',
       visitorEmail: typeof visitorEmail === 'string' ? visitorEmail.trim().slice(0, 254) : '',
       accessPassword: typeof accessPassword === 'string' ? accessPassword.slice(0, 200) : '',
+      widgetId: widgetId || null,
+      sourceOrigin: normalizedSourceOrigin,
       latestMessage,
     },
   };
@@ -331,6 +345,8 @@ export async function POST(req) {
       visitorName,
       visitorEmail,
       accessPassword,
+      widgetId,
+      sourceOrigin,
       latestMessage,
     } = parsedRequest.value;
 
@@ -376,6 +392,22 @@ export async function POST(req) {
 
     if (!isSubscriptionLive(subscription)) {
       return jsonError('Agent is not active on the current plan', 403);
+    }
+
+    let widgetContext = null;
+    if (widgetId) {
+      const { data: installation, error: widgetError } = await adminSupabase
+        .from('widget_installations')
+        .select('id, owner_id, is_enabled, allowed_origins')
+        .eq('id', widgetId)
+        .maybeSingle();
+      if (widgetError || !installation?.is_enabled || installation.owner_id !== profile.id) {
+        return jsonError('Website widget is not available', 403);
+      }
+      if (!sourceOrigin || !isOriginAllowed(sourceOrigin, installation.allowed_origins)) {
+        return jsonError('This website is not allowed to use the widget', 403);
+      }
+      widgetContext = installation;
     }
 
     const messageLimit = getMessageLimit(tier);
@@ -453,7 +485,7 @@ export async function POST(req) {
     if (activeConversationId) {
       const { data: existingConversation, error: conversationError } = await adminSupabase
         .from('agent_conversations')
-        .select('id, agent_owner_id, visitor_id')
+        .select('id, agent_owner_id, visitor_id, channel, widget_installation_id')
         .eq('id', activeConversationId)
         .maybeSingle();
 
@@ -464,6 +496,11 @@ export async function POST(req) {
       if (existingConversation.agent_owner_id !== profile.id ||
           existingConversation.visitor_id !== visitorId) {
         return jsonError('Conversation does not belong to this visitor and agent', 403);
+      }
+      const expectedChannel = widgetContext ? 'widget' : 'hosted';
+      if (existingConversation.channel !== expectedChannel ||
+          (widgetContext && existingConversation.widget_installation_id !== widgetContext.id)) {
+        return jsonError('Conversation does not belong to this chat channel', 403);
       }
 
       const { data: storedMessages, error: historyError } = await adminSupabase
@@ -508,6 +545,9 @@ export async function POST(req) {
           visitor_id: visitorId,
           visitor_name: visitorName || null,
           visitor_email: visitorEmail || null,
+          channel: widgetContext ? 'widget' : 'hosted',
+          widget_installation_id: widgetContext?.id || null,
+          source_origin: widgetContext ? sourceOrigin : null,
         })
         .select('id')
         .single();

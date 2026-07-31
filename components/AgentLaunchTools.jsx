@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
+import Link from 'next/link';
 import { Check, Clipboard, Code2, ExternalLink, FlaskConical, Mail, QrCode, Share2 } from 'lucide-react';
 import { getAgentTypeDefinition } from '@/lib/agent-type-catalog';
 
@@ -22,7 +23,6 @@ export default function AgentLaunchTools({ username, agentType = 'personal', age
 
   const origin = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.qlynk.site').replace(/\/$/, '');
   const publicUrl = `${origin}/${username}`;
-  const embedCode = `<script src="${origin}/qlynk-agent.js" data-username="${username}" async></script>`;
   const socialCopy = `Ask ${agentName} anything within its approved knowledge and purpose: ${publicUrl}`;
   const emailSignature = `${agentName} — Ask my Qlynk Agent: ${publicUrl}`;
   const questions = useMemo(() => TEST_QUESTIONS[type.id] || TEST_QUESTIONS.custom, [type.id]);
@@ -84,7 +84,6 @@ export default function AgentLaunchTools({ username, agentType = 'personal', age
               { key: 'link', icon: QrCode, label: 'Public agent link', value: publicUrl },
               { key: 'social', icon: Share2, label: 'Social post', value: socialCopy },
               { key: 'signature', icon: Mail, label: 'Email signature', value: emailSignature },
-              { key: 'embed', icon: Code2, label: 'Website embed code', value: embedCode },
             ].map((item) => (
               <div key={item.key} className="rounded-xl border border-white/10 bg-black/20 p-4">
                 <div className="flex items-center justify-between gap-4 mb-2">
@@ -94,6 +93,17 @@ export default function AgentLaunchTools({ username, agentType = 'personal', age
                 <code className="block text-xs text-gray-500 break-all leading-relaxed">{item.value}</code>
               </div>
             ))}
+            <div className="rounded-xl border border-[#f46530]/25 bg-[#f46530]/[0.07] p-4">
+              <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                <div>
+                  <span className="flex items-center gap-2 text-sm font-bold text-white"><Code2 size={15} className="text-[#f46530]" />Website Widget</span>
+                  <p className="mt-1 text-xs text-gray-500">Customize domains, position, branding, and installation code in one place.</p>
+                </div>
+                <Link href="/dashboard/widget" className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-bold text-black hover:bg-gray-200">
+                  Configure <ExternalLink size={13} />
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       )}

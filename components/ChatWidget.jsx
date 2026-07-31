@@ -26,14 +26,21 @@ export default function ChatWidget({
   ctaButtonColor,
   ctaTextColor = '#ffffff',
   gatekeeperTextColor = '#9ca3af',
-  fontFamily = 'Inter'
+  fontFamily = 'Inter',
+  preChatEnabled = false,
+  preChatEmailEnabled = true,
+  preChatEmailRequired = false,
+  preChatIntro = 'Tell us who you are so we can better assist you.'
 }) {
   const agentTypeDefinition = getAgentTypeDefinition(agentType);
+  const needsVisitorForm = accessLevel !== 'public' || preChatEnabled;
+  const showsEmailField = accessLevel === 'email' || (preChatEnabled && preChatEmailEnabled);
+  const requiresEmail = accessLevel === 'email' || (preChatEnabled && preChatEmailEnabled && preChatEmailRequired);
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [gatekeeperForm, setGatekeeperForm] = useState({ name: '', email: '', password: '' });
   const [gatekeeperError, setGatekeeperError] = useState('');
-  const [isAuthorized, setIsAuthorized] = useState(accessLevel === 'public');
+  const [isAuthorized, setIsAuthorized] = useState(!needsVisitorForm);
   const [accessPassword, setAccessPassword] = useState('');
   const [visitorId] = useState(() => {
     const storedId = typeof window !== 'undefined'
@@ -231,8 +238,14 @@ export default function ChatWidget({
       return;
     }
 
-    if (accessLevel === 'email' && (!gatekeeperForm.email.trim() || !gatekeeperForm.email.includes('@'))) {
-      setGatekeeperError('Please enter a valid email.');
+    const email = gatekeeperForm.email.trim();
+    if (requiresEmail && !email) {
+      setGatekeeperError('Please enter your email.');
+      return;
+    }
+
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setGatekeeperError('Please enter a valid email or leave it blank.');
       return;
     }
 
@@ -315,23 +328,41 @@ export default function ChatWidget({
 
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ backgroundColor: chatBgColor }} aria-live="polite" aria-busy={isLoading}>
-            {!isAuthorized && accessLevel !== 'public' ? (
+            {!isAuthorized && needsVisitorForm ? (
               <form onSubmit={handleGatekeeperSubmit} className="space-y-3">
+                {preChatEnabled && (
+                  <div className="mb-4">
+                    <h4 className="text-base font-bold text-white">Before we start</h4>
+                    <p className="mt-1 text-xs leading-relaxed" style={{ color: gatekeeperTextColor }}>
+                      {preChatIntro}
+                    </p>
+                  </div>
+                )}
                 <div>
-                    <label className="block text-xs font-semibold mb-1" style={{ color: gatekeeperTextColor }}>Your name</label>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: gatekeeperTextColor }}>Your name</label>
                   <input
                     type="text"
+                    name="name"
+                    autoComplete="name"
+                    maxLength={100}
+                    required
                     value={gatekeeperForm.name}
                     onChange={(e) => setGatekeeperForm(prev => ({ ...prev, name: e.target.value }))}
                     className="w-full px-3 py-2 bg-white/10 border border-white/15 rounded-xl text-sm text-white focus:outline-none focus:ring-2"
                     style={{ '--tw-ring-color': primaryColor }}
                   />
                 </div>
-                {accessLevel === 'email' && (
+                {showsEmailField && (
                   <div>
-                    <label className="block text-xs font-semibold mb-1" style={{ color: gatekeeperTextColor }}>Email</label>
+                    <label className="block text-xs font-semibold mb-1" style={{ color: gatekeeperTextColor }}>
+                      Email {!requiresEmail && <span className="font-normal opacity-70">(optional)</span>}
+                    </label>
                     <input
                       type="email"
+                      name="email"
+                      autoComplete="email"
+                      maxLength={254}
+                      required={requiresEmail}
                       value={gatekeeperForm.email}
                       onChange={(e) => setGatekeeperForm(prev => ({ ...prev, email: e.target.value }))}
                       className="w-full px-3 py-2 bg-white/10 border border-white/15 rounded-xl text-sm text-white focus:outline-none focus:ring-2"
@@ -356,12 +387,17 @@ export default function ChatWidget({
                     {gatekeeperError}
                   </p>
                 )}
+                {preChatEnabled && (
+                  <p className="text-[10px] leading-relaxed text-gray-500">
+                    Your details and chat will be shared with the agent owner. <a href="https://www.qlynk.site/privacy" target="_blank" rel="noreferrer" className="underline hover:text-gray-300">Privacy</a>
+                  </p>
+                )}
                 <button
                   type="submit"
                   className="w-full py-2.5 rounded-xl text-white text-sm font-semibold"
                   style={{ backgroundColor: ctaButtonColor || primaryColor, color: ctaTextColor }}
                 >
-                  Continue
+                  {preChatEnabled ? 'Start chat' : 'Continue'}
                 </button>
               </form>
             ) : (

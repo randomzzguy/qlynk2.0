@@ -398,7 +398,7 @@ export async function POST(req) {
     if (widgetId) {
       const { data: installation, error: widgetError } = await adminSupabase
         .from('widget_installations')
-        .select('id, owner_id, is_enabled, allowed_origins')
+        .select('id, owner_id, is_enabled, allowed_origins, pre_chat_enabled, pre_chat_email_enabled, pre_chat_email_required')
         .eq('id', widgetId)
         .maybeSingle();
       if (widgetError || !installation?.is_enabled || installation.owner_id !== profile.id) {
@@ -413,6 +413,20 @@ export async function POST(req) {
     const messageLimit = getMessageLimit(tier);
 
     const accessLevel = config.access_level || 'public';
+
+    if (visitorEmail && !isValidEmail(visitorEmail)) {
+      return jsonError('Please enter a valid email or leave it blank', 400);
+    }
+    if (widgetContext?.pre_chat_enabled && !visitorName) {
+      return jsonError('Your name is required to start this chat', 400);
+    }
+    if (widgetContext?.pre_chat_enabled &&
+        widgetContext.pre_chat_email_enabled &&
+        widgetContext.pre_chat_email_required &&
+        !visitorEmail) {
+      return jsonError('Your email is required to start this chat', 400);
+    }
+
     if (accessLevel === 'password') {
       const { data: credential, error: credentialError } = await adminSupabase
         .from('agent_access_credentials')
@@ -428,7 +442,7 @@ export async function POST(req) {
       }
     }
 
-    if (accessLevel === 'email' && !isValidEmail(visitorEmail)) {
+    if (accessLevel === 'email' && !visitorEmail) {
       return jsonError('A valid email is required to chat with this agent', 403);
     }
 

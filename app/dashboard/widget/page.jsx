@@ -32,10 +32,35 @@ const DEFAULT_FORM = {
   allowed_origins: '',
   position: 'bottom-right',
   launcher_color: '#f46530',
+  pre_chat_enabled: false,
+  pre_chat_email_enabled: true,
+  pre_chat_email_required: false,
+  pre_chat_intro: 'Tell us who you are so we can better assist you.',
 };
+
+function formFromWidget(widget, agent) {
+  return {
+    name: widget.name,
+    is_enabled: widget.is_enabled,
+    allowed_origins: (widget.allowed_origins || []).join('\n'),
+    position: widget.position,
+    launcher_color: widget.launcher_color || agent?.primary_color || '#f46530',
+    pre_chat_enabled: widget.pre_chat_enabled === true,
+    pre_chat_email_enabled: widget.pre_chat_email_enabled !== false,
+    pre_chat_email_required: widget.pre_chat_email_required === true,
+    pre_chat_intro: widget.pre_chat_intro || DEFAULT_FORM.pre_chat_intro,
+  };
+}
+
+function formSnapshot(form) {
+  return JSON.stringify({ ...form, allowed_origins: form.allowed_origins.trim() });
+}
 
 function WidgetPreview({ form, agent, mobile }) {
   const color = form.launcher_color || agent?.primary_color || '#f46530';
+  const emailAccessRequired = agent?.access_level === 'email';
+  const showsEmail = emailAccessRequired || form.pre_chat_email_enabled;
+  const requiresEmail = emailAccessRequired || form.pre_chat_email_required;
   return (
     <div className={`relative mx-auto overflow-hidden rounded-[28px] border border-white/10 bg-[#f7f7f8] shadow-2xl transition-all ${mobile ? 'h-[500px] w-[280px]' : 'h-[500px] w-full max-w-[680px]'}`}>
       <div className="h-12 border-b border-black/5 bg-white px-4 flex items-center gap-2">
@@ -66,10 +91,20 @@ function WidgetPreview({ form, agent, mobile }) {
             <p className="text-[11px] text-white/75">Online</p>
           </div>
         </div>
-        <div className="h-40 bg-gray-50 p-4">
-          <div className="max-w-[82%] rounded-2xl rounded-tl-sm bg-white px-3 py-2 text-xs leading-relaxed text-gray-600 shadow-sm">
-            {agent?.welcome_message || 'Hi! How can I help you today?'}
-          </div>
+        <div className="h-40 overflow-hidden bg-gray-50 p-4">
+          {form.pre_chat_enabled ? (
+            <div className="mx-auto max-w-[260px]">
+              <p className="text-xs font-bold text-gray-800">Before we start</p>
+              <p className="mt-1 line-clamp-2 text-[9px] leading-relaxed text-gray-500">{form.pre_chat_intro}</p>
+              <div className="mt-2 h-7 rounded-lg border border-gray-200 bg-white px-2 text-[9px] leading-7 text-gray-400">Your name</div>
+              {showsEmail && <div className="mt-1.5 h-7 rounded-lg border border-gray-200 bg-white px-2 text-[9px] leading-7 text-gray-400">Email{requiresEmail ? '' : ' (optional)'}</div>}
+              <div className="mt-2 h-7 rounded-lg text-center text-[9px] font-bold leading-7 text-white" style={{ backgroundColor: color }}>Start chat</div>
+            </div>
+          ) : (
+            <div className="max-w-[82%] rounded-2xl rounded-tl-sm bg-white px-3 py-2 text-xs leading-relaxed text-gray-600 shadow-sm">
+              {agent?.welcome_message || 'Hi! How can I help you today?'}
+            </div>
+          )}
         </div>
         <div className="border-t border-gray-100 p-3">
           <div className="h-9 rounded-full bg-gray-100" />
@@ -90,6 +125,7 @@ export default function WebsiteWidgetPage() {
   const [agent, setAgent] = useState(null);
   const [subscription, setSubscription] = useState(null);
   const [form, setForm] = useState(DEFAULT_FORM);
+  const [savedForm, setSavedForm] = useState(null);
   const [previewMode, setPreviewMode] = useState('desktop');
   const [copied, setCopied] = useState(false);
 
@@ -99,6 +135,11 @@ export default function WebsiteWidgetPage() {
     [origin, widget?.id]
   );
   const agencyBranding = hasAgencyFeatures(subscription?.tier);
+  const emailAccessRequired = agent?.access_level === 'email';
+  const isDirty = useMemo(
+    () => !widget || !savedForm || formSnapshot(form) !== formSnapshot(savedForm),
+    [form, savedForm, widget]
+  );
 
   useEffect(() => {
     const load = async () => {
@@ -110,13 +151,9 @@ export default function WebsiteWidgetPage() {
         setAgent(data.agent);
         setSubscription(data.subscription);
         if (data.widget) {
-          setForm({
-            name: data.widget.name,
-            is_enabled: data.widget.is_enabled,
-            allowed_origins: (data.widget.allowed_origins || []).join('\n'),
-            position: data.widget.position,
-            launcher_color: data.widget.launcher_color || data.agent?.primary_color || '#f46530',
-          });
+          const nextForm = formFromWidget(data.widget, data.agent);
+          setForm(nextForm);
+          setSavedForm(nextForm);
         } else if (data.agent?.primary_color) {
           setForm((current) => ({ ...current, launcher_color: data.agent.primary_color }));
         }
@@ -128,6 +165,16 @@ export default function WebsiteWidgetPage() {
     };
     load();
   }, []);
+
+  useEffect(() => {
+    const warnAboutUnsavedChanges = (event) => {
+      if (!isDirty || !widget) return;
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', warnAboutUnsavedChanges);
+    return () => window.removeEventListener('beforeunload', warnAboutUnsavedChanges);
+  }, [isDirty, widget]);
 
   const payload = () => ({
     ...form,
@@ -148,10 +195,9 @@ export default function WebsiteWidgetPage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Unable to save the widget.');
       setWidget(data.widget);
-      setForm((current) => ({
-        ...current,
-        allowed_origins: (data.widget.allowed_origins || []).join('\n'),
-      }));
+      const nextForm = formFromWidget(data.widget, agent);
+      setForm(nextForm);
+      setSavedForm(nextForm);
       toast.success(widget ? 'Widget changes published' : 'Website widget created');
     } catch (error) {
       toast.error(error.message);
@@ -194,11 +240,11 @@ export default function WebsiteWidgetPage() {
         <button
           type="button"
           onClick={save}
-          disabled={saving || !subscription?.is_live}
+          disabled={saving || !subscription?.is_live || (Boolean(widget) && !isDirty)}
           className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#f46530] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#f46530]/20 transition hover:bg-[#df5929] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {saving ? <Loader2 size={17} className="animate-spin" /> : widget ? <Save size={17} /> : <Sparkles size={17} />}
-          {widget ? 'Publish changes' : 'Create widget'}
+          {saving ? <Loader2 size={17} className="animate-spin" /> : widget && !isDirty ? <Check size={17} /> : widget ? <Save size={17} /> : <Sparkles size={17} />}
+          {widget ? (isDirty ? 'Publish changes' : 'Saved') : 'Create widget'}
         </button>
       </div>
 
@@ -283,6 +329,84 @@ export default function WebsiteWidgetPage() {
                   One exact website origin per line. Leave blank to allow any website.
                 </span>
               </label>
+
+              <div className="border-t border-white/10 pt-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <span className="block text-sm font-semibold text-gray-300">Pre-chat customer details</span>
+                    <span className="mt-1 block text-xs leading-relaxed text-gray-500">Ask for a name before chat. Customer details are saved only after their first message.</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setForm((current) => ({ ...current, pre_chat_enabled: !current.pre_chat_enabled }))}
+                    className={form.pre_chat_enabled ? 'shrink-0 text-emerald-400' : 'shrink-0 text-gray-500'}
+                    aria-label={form.pre_chat_enabled ? 'Disable pre-chat customer details' : 'Enable pre-chat customer details'}
+                  >
+                    {form.pre_chat_enabled ? <ToggleRight size={34} /> : <ToggleLeft size={34} />}
+                  </button>
+                </div>
+
+                {form.pre_chat_enabled && (
+                  <div className="mt-5 space-y-4 rounded-2xl border border-white/10 bg-black/20 p-4">
+                    <label className="block">
+                      <span className="mb-2 block text-xs font-semibold text-gray-400">Form introduction</span>
+                      <textarea
+                        value={form.pre_chat_intro}
+                        onChange={(event) => setForm((current) => ({ ...current, pre_chat_intro: event.target.value }))}
+                        maxLength={240}
+                        rows={3}
+                        className="w-full resize-none rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-sm text-white outline-none transition focus:border-[#f46530]/60"
+                      />
+                      <span className="mt-1 block text-right text-[10px] text-gray-600">{form.pre_chat_intro.length}/240</span>
+                    </label>
+
+                    <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 px-3 py-3">
+                      <div>
+                        <p className="text-xs font-semibold text-gray-300">Name</p>
+                        <p className="mt-0.5 text-[10px] text-gray-600">Always required when this form is enabled</p>
+                      </div>
+                      <span className="rounded-full bg-[#f46530]/10 px-2 py-1 text-[10px] font-bold text-[#ff8a5f]">Required</span>
+                    </div>
+
+                    <div className="rounded-xl border border-white/10 px-3 py-3">
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <p className="text-xs font-semibold text-gray-300">Show email field</p>
+                          <p className="mt-0.5 text-[10px] text-gray-600">Let visitors share an email address</p>
+                        </div>
+                        <button
+                          type="button"
+                          disabled={emailAccessRequired}
+                          onClick={() => setForm((current) => ({
+                            ...current,
+                            pre_chat_email_enabled: !current.pre_chat_email_enabled,
+                            pre_chat_email_required: current.pre_chat_email_enabled ? false : current.pre_chat_email_required,
+                          }))}
+                          className={`${form.pre_chat_email_enabled || emailAccessRequired ? 'text-emerald-400' : 'text-gray-500'} disabled:cursor-not-allowed disabled:opacity-60`}
+                          aria-label={emailAccessRequired ? 'Email field required by access control' : form.pre_chat_email_enabled ? 'Hide email field' : 'Show email field'}
+                        >
+                          {form.pre_chat_email_enabled || emailAccessRequired ? <ToggleRight size={30} /> : <ToggleLeft size={30} />}
+                        </button>
+                      </div>
+                      {emailAccessRequired ? (
+                        <p className="mt-3 border-t border-white/10 pt-3 text-[10px] leading-relaxed text-amber-400/80">
+                          Email is required because this agent uses Email access control.
+                        </p>
+                      ) : form.pre_chat_email_enabled && (
+                        <label className="mt-3 flex cursor-pointer items-center gap-2 border-t border-white/10 pt-3 text-xs text-gray-400">
+                          <input
+                            type="checkbox"
+                            checked={form.pre_chat_email_required}
+                            onChange={(event) => setForm((current) => ({ ...current, pre_chat_email_required: event.target.checked }))}
+                            className="h-4 w-4 accent-[#f46530]"
+                          />
+                          Require an email before chat
+                        </label>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </section>
 

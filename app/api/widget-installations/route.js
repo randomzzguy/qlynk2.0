@@ -5,6 +5,8 @@ import { isSubscriptionLive } from '@/lib/plans';
 import { rateLimitResponse } from '@/lib/rate-limit';
 import { sanitizeWidgetInput } from '@/lib/widget-installations';
 
+const WIDGET_SELECT = 'id, name, is_enabled, allowed_origins, position, launcher_color, pre_chat_enabled, pre_chat_email_enabled, pre_chat_email_required, pre_chat_intro, created_at, updated_at';
+
 async function getAuthenticatedUser() {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
@@ -36,7 +38,7 @@ export async function GET(request) {
 
   const { data: widget, error } = await admin
     .from('widget_installations')
-    .select('id, name, is_enabled, allowed_origins, position, launcher_color, created_at, updated_at')
+    .select(WIDGET_SELECT)
     .eq('owner_id', user.id)
     .maybeSingle();
   if (error) return NextResponse.json({ error: 'Unable to load the website widget.' }, { status: 500 });
@@ -85,7 +87,7 @@ export async function POST(request) {
       agent_config_id: context.agentConfig.id,
       ...input.value,
     })
-    .select('id, name, is_enabled, allowed_origins, position, launcher_color, created_at, updated_at')
+    .select(WIDGET_SELECT)
     .single();
   if (error || !widget) {
     return NextResponse.json({ error: 'Unable to create the website widget.' }, { status: 500 });
@@ -116,7 +118,7 @@ export async function PUT(request) {
     .from('widget_installations')
     .update({ ...input.value, updated_at: updatedAt })
     .eq('owner_id', user.id)
-    .select('id, name, is_enabled, allowed_origins, position, launcher_color, created_at, updated_at')
+    .select(WIDGET_SELECT)
     .maybeSingle();
   if (error || !widget) {
     return NextResponse.json({ error: 'Unable to update the website widget.' }, { status: error ? 500 : 404 });

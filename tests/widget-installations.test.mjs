@@ -38,6 +38,10 @@ test('widget configuration is bounded and safe', () => {
     allowed_origins: ['client.example'],
     position: 'bottom-left',
     launcher_color: '#F46530',
+    pre_chat_enabled: true,
+    pre_chat_email_enabled: true,
+    pre_chat_email_required: false,
+    pre_chat_intro: 'Tell us who you are.',
   });
   assert.deepEqual(valid.value, {
     name: 'Client support',
@@ -45,6 +49,10 @@ test('widget configuration is bounded and safe', () => {
     allowed_origins: ['https://client.example'],
     position: 'bottom-left',
     launcher_color: '#F46530',
+    pre_chat_enabled: true,
+    pre_chat_email_enabled: true,
+    pre_chat_email_required: false,
+    pre_chat_intro: 'Tell us who you are.',
   });
 
   assert.match(sanitizeWidgetInput({ name: '', allowed_origins: [] }).error, /name/i);
@@ -53,6 +61,28 @@ test('widget configuration is bounded and safe', () => {
     sanitizeWidgetInput({ name: 'Widget', allowed_origins: Array.from({ length: 11 }, (_, index) => `site${index}.example`) }).error,
     /up to 10/i
   );
+  assert.match(
+    sanitizeWidgetInput({ name: 'Widget', allowed_origins: [], pre_chat_intro: '   ' }).error,
+    /introduction/i
+  );
+});
+
+test('pre-chat capture keeps email optional by default and cannot require a hidden field', () => {
+  const defaults = sanitizeWidgetInput({ name: 'Widget', allowed_origins: [] });
+  assert.equal(defaults.value.pre_chat_enabled, false);
+  assert.equal(defaults.value.pre_chat_email_enabled, true);
+  assert.equal(defaults.value.pre_chat_email_required, false);
+
+  const hiddenEmail = sanitizeWidgetInput({
+    name: 'Widget',
+    allowed_origins: [],
+    pre_chat_enabled: true,
+    pre_chat_email_enabled: false,
+    pre_chat_email_required: true,
+    pre_chat_intro: 'Introduce yourself.',
+  });
+  assert.equal(hiddenEmail.value.pre_chat_email_enabled, false);
+  assert.equal(hiddenEmail.value.pre_chat_email_required, false);
 });
 
 test('embed snippets use opaque widget ids rather than usernames', () => {

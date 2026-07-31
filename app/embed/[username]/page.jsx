@@ -20,7 +20,7 @@ export default async function EmbedPage({ params }) {
   if (isWidgetId(identifier)) {
     const { data: installation } = await adminSupabase
       .from('widget_installations')
-      .select('id, owner_id, agent_config_id, is_enabled, allowed_origins, position, launcher_color')
+      .select('id, owner_id, agent_config_id, is_enabled, allowed_origins, position, launcher_color, pre_chat_enabled, pre_chat_email_enabled, pre_chat_email_required, pre_chat_intro')
       .eq('id', identifier)
       .eq('is_enabled', true)
       .maybeSingle();
@@ -105,6 +105,10 @@ export default async function EmbedPage({ params }) {
           tier={subscription?.tier}
           widgetId={widget?.id || null}
           allowedOrigins={widget?.allowed_origins || []}
+          preChatEnabled={widget?.pre_chat_enabled === true}
+          preChatEmailEnabled={widget?.pre_chat_email_enabled !== false}
+          preChatEmailRequired={widget?.pre_chat_email_required === true}
+          preChatIntro={widget?.pre_chat_intro}
         />
       </div>
     </div>

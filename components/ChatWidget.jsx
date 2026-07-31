@@ -78,10 +78,14 @@ export default function ChatWidget({
       }
       setSourceOrigin(event.origin);
       setEmbedReady(true);
+      window.parent.postMessage({ type: 'qlynk_widget_initialized' }, event.origin);
       window.parent.postMessage({ type: 'qlynk_widget_position', position }, event.origin);
       window.parent.postMessage({ type: 'qlynk_chat_closed' }, event.origin);
     };
     window.addEventListener('message', handleInit);
+    // The parent cannot know when React hydration has attached this listener,
+    // so announce readiness only after it is safe to receive initialization.
+    window.parent.postMessage({ type: 'qlynk_widget_ready' }, '*');
     return () => window.removeEventListener('message', handleInit);
   }, [allowedOrigins, position, widgetId]);
 

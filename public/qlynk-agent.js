@@ -50,10 +50,35 @@
   iframe.setAttribute('allow', 'clipboard-read; clipboard-write');
   iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups');
 
-  document.body.appendChild(iframe);
+  let initAttempts = 0;
+  let initRetryTimer = null;
+  const maxInitAttempts = 40;
+
+  const stopInitRetries = () => {
+    if (initRetryTimer !== null) {
+      window.clearInterval(initRetryTimer);
+      initRetryTimer = null;
+    }
+  };
+
+  const sendInit = () => {
+    if (!iframe.isConnected || initAttempts >= maxInitAttempts) {
+      stopInitRetries();
+      return;
+    }
+    initAttempts += 1;
+    iframe.contentWindow?.postMessage({ type: 'qlynk_widget_init' }, origin);
+  };
+
+  const startInitRetries = () => {
+    sendInit();
+    if (initRetryTimer === null && initAttempts < maxInitAttempts) {
+      initRetryTimer = window.setInterval(sendInit, 250);
+    }
+  };
 
   iframe.addEventListener('load', () => {
-    iframe.contentWindow?.postMessage({ type: 'qlynk_widget_init' }, origin);
+    startInitRetries();
   });
 
   // Listen for messages from the iframe to resize
@@ -62,6 +87,16 @@
     if (event.origin !== origin || event.source !== iframe.contentWindow) return;
 
     const type = typeof event.data === 'string' ? event.data : event.data?.type;
+
+    if (type === 'qlynk_widget_ready') {
+      sendInit();
+      return;
+    }
+
+    if (type === 'qlynk_widget_initialized') {
+      stopInitRetries();
+      return;
+    }
 
     if (type === 'qlynk_widget_position') {
       const position = event.data?.position === 'bottom-left' ? 'bottom-left' : 'bottom-right';
@@ -77,7 +112,20 @@
       iframe.style.width = '96px';
       iframe.style.height = '96px';
     } else if (type === 'qlynk_widget_denied') {
+      stopInitRetries();
       iframe.remove();
     }
   });
+
+  const mountIframe = () => {
+    if (!iframe.isConnected && document.body) {
+      document.body.appendChild(iframe);
+    }
+  };
+
+  if (document.body) {
+    mountIframe();
+  } else {
+    document.addEventListener('DOMContentLoaded', mountIframe, { once: true });
+  }
 })();

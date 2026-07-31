@@ -1,7 +1,7 @@
 import { createClient, createAdminClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import ChatWidget from '@/components/ChatWidget';
-import { isAgentLive } from '@/lib/subscriptionHelpers';
+import { isSubscriptionLive } from '@/lib/plans';
 import { isWidgetId } from '@/lib/widget-installations';
 
 export const dynamic = 'force-dynamic';
@@ -15,6 +15,7 @@ export default async function EmbedPage({ params }) {
   let widget = null;
   let profile = null;
   let agentConfig = null;
+  let subscription = null;
   let username = identifier;
 
   if (isWidgetId(identifier)) {
@@ -26,7 +27,7 @@ export default async function EmbedPage({ params }) {
       .maybeSingle();
     if (!installation) return null;
 
-    const [{ data: privateConfig }, { data: ownerProfile }] = await Promise.all([
+    const [{ data: privateConfig }, { data: ownerProfile }, { data: ownerSubscription }] = await Promise.all([
       adminSupabase
         .from('agent_configs')
         .select('id, user_id, agent_name, agent_avatar, welcome_message, primary_color, access_level, agent_type, chat_bg_color, user_bubble_color, ai_bubble_color, cta_button_color, cta_text_color, gatekeeper_text_color, font_family, is_enabled')
@@ -34,11 +35,17 @@ export default async function EmbedPage({ params }) {
         .eq('user_id', installation.owner_id)
         .maybeSingle(),
       adminSupabase.from('profiles').select('id, username').eq('id', installation.owner_id).maybeSingle(),
+      adminSupabase
+        .from('subscriptions')
+        .select('tier, status, trial_ends_at, post_trial_choice')
+        .eq('user_id', installation.owner_id)
+        .maybeSingle(),
     ]);
     if (!privateConfig?.is_enabled || !ownerProfile?.username) return null;
     widget = installation;
     profile = ownerProfile;
     agentConfig = privateConfig;
+    subscription = ownerSubscription;
     username = ownerProfile.username;
   }
 
@@ -56,32 +63,30 @@ export default async function EmbedPage({ params }) {
   }
 
   if (!agentConfig) {
-    const { data: publicConfig } = await supabase
-      .from('agent_configs_public')
-      .select('*')
-      .eq('user_id', profile.id)
-      .eq('is_enabled', true)
-      .single();
+    const [{ data: publicConfig }, { data: publicSubscription }] = await Promise.all([
+      supabase
+        .from('agent_configs_public')
+        .select('*')
+        .eq('user_id', profile.id)
+        .eq('is_enabled', true)
+        .single(),
+      adminSupabase
+        .from('subscriptions')
+        .select('tier, status, trial_ends_at, post_trial_choice')
+        .eq('user_id', profile.id)
+        .maybeSingle(),
+    ]);
     agentConfig = publicConfig;
+    subscription = publicSubscription;
   }
 
   if (!agentConfig) {
     return null;
   }
 
-  // Check if agent is live
-  const agentIsLive = await isAgentLive(profile.id, adminSupabase);
-
-  if (!agentIsLive) {
+  if (!isSubscriptionLive(subscription)) {
     return null;
   }
-
-  // Fetch subscription to check for white-labeling
-  const { data: subscription } = await adminSupabase
-    .from('subscriptions')
-    .select('tier')
-    .eq('user_id', profile.id)
-    .maybeSingle();
 
   return (
     <div className="fixed inset-0 bg-transparent flex items-end justify-end pointer-events-none">

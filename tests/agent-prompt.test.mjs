@@ -90,6 +90,38 @@ test('scope classifier explicitly blocks free-LLM and prompt-extraction use', ()
   assert.match(classifier, /strict mode/i);
 });
 
+test('professional service enquiries are distinguished from personalized professional decisions', () => {
+  const config = {
+    agent_name: "Eissya's AI",
+    agent_type: 'business',
+    profession: 'Home visit physiotherapist',
+    bio: 'Provides physiotherapy assessments and home rehabilitation services in Ipoh.',
+    skills: ['Low back pain support', 'Stroke recovery', 'Geriatric rehabilitation'],
+  };
+  const rules = {
+    purpose: 'Explain the physiotherapy services available and help visitors book an assessment.',
+    allowed_topics: ['physiotherapy services', 'assessment process', 'booking'],
+    scope_mode: 'standard',
+  };
+  const classifier = buildScopeClassifierPrompt({
+    config,
+    rules,
+    message: 'I have back pain, what treatment do you recommend?',
+    recentUserMessages: [],
+  });
+  const responsePrompt = buildAgentSystemPrompt(config, [], rules);
+
+  assert.match(classifier, /back pain, what treatment do you recommend.*ALLOW/is);
+  assert.match(classifier, /Do not block merely because a relevant service enquiry concerns medicine/i);
+  assert.match(classifier, /Home visit physiotherapist/i);
+  assert.match(classifier, /Low back pain support/i);
+  assert.match(classifier, /diagnosis, medication or dosage, changing prescribed care, emergency triage/i);
+  assert.match(responsePrompt, /Do not refuse solely because the visitor mentioned a symptom/i);
+  assert.match(responsePrompt, /lead with the useful verified service information/i);
+  assert.match(responsePrompt, /qualified professional must assess the individual/i);
+  assert.match(responsePrompt, /Never diagnose the visitor, prescribe exercises, medication, dosage/i);
+});
+
 test('invalid classifier output fails closed only for strict agents', () => {
   assert.equal(parseScopeDecision('unexpected', 'strict'), 'BLOCK_SCOPE');
   assert.equal(parseScopeDecision('unexpected', 'standard'), 'ALLOW');

@@ -22,10 +22,13 @@ import {
   Clock,
   AlertTriangle,
   Compass,
-  ArrowRight
+  ArrowRight,
+  Link2,
+  ExternalLink
 } from 'lucide-react';
 import UpgradePrompt from '@/components/UpgradePrompt';
 import { toast, Toaster } from 'react-hot-toast';
+import { getUsernameChangeAvailability, validateUsername } from '@/lib/usernames';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -38,6 +41,10 @@ export default function SettingsPage() {
   const [bio, setBio] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#f46530');
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [pendingUsername, setPendingUsername] = useState('');
+  const [usernameChangedAt, setUsernameChangedAt] = useState(null);
+  const [changingUsername, setChangingUsername] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -61,6 +68,9 @@ export default function SettingsPage() {
   };
   const isDirty = savedSettingsRef.current !== null
     && JSON.stringify(currentSettings) !== savedSettingsRef.current;
+  const usernameAvailability = getUsernameChangeAvailability(usernameChangedAt);
+  const usernameValidation = validateUsername(pendingUsername);
+  const usernameIsDifferent = usernameValidation.username !== username;
 
   useEffect(() => {
     const loadData = async () => {
@@ -73,11 +83,15 @@ export default function SettingsPage() {
         const currentProfile = await getCurrentProfile();
         const loadedFullName = currentProfile?.full_name || '';
         const loadedAvatarUrl = currentProfile?.avatar_url || '';
+        const loadedUsername = currentProfile?.username || '';
         const loadedNotifNewMessage = currentProfile?.notif_new_message !== false;
         const loadedNotifTrialExpiry = currentProfile?.notif_trial_expiry !== false;
         const loadedNotifSubscription = currentProfile?.notif_subscription !== false;
         setFullName(loadedFullName);
         setAvatarUrl(loadedAvatarUrl);
+        setUsername(loadedUsername);
+        setPendingUsername(loadedUsername);
+        setUsernameChangedAt(currentProfile?.username_changed_at || null);
         setNotifNewMessage(loadedNotifNewMessage);
         setNotifTrialExpiry(loadedNotifTrialExpiry);
         setNotifSubscription(loadedNotifSubscription);
@@ -226,6 +240,56 @@ export default function SettingsPage() {
     }
   };
 
+  const handleUsernameChange = async () => {
+    if (usernameValidation.error) {
+      toast.error(usernameValidation.error);
+      return;
+    }
+
+    if (!usernameIsDifferent) {
+      toast.error('Choose a username different from your current one.');
+      return;
+    }
+
+    if (!usernameAvailability.canChange) {
+      toast.error('Your username can only be changed once every 30 days.');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Change your public AI URL to qlynk.site/${usernameValidation.username}? Your old URL will stop working immediately, and you cannot change it again for 30 days.`
+    );
+    if (!confirmed) return;
+
+    setChangingUsername(true);
+    try {
+      const response = await fetch('/api/account/username', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: usernameValidation.username }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        if (data.usernameChangedAt) setUsernameChangedAt(data.usernameChangedAt);
+        throw new Error(data.error || 'Unable to change your Qlynk URL.');
+      }
+
+      setUsername(data.username);
+      setPendingUsername(data.username);
+      setUsernameChangedAt(data.usernameChangedAt);
+      window.dispatchEvent(new CustomEvent('qlynk:profile-updated', {
+        detail: { username: data.username },
+      }));
+      router.refresh();
+      toast.success(`Your public AI URL is now qlynk.site/${data.username}`);
+    } catch (error) {
+      console.error('Error changing username:', error);
+      toast.error(error.message || 'Unable to change your Qlynk URL.');
+    } finally {
+      setChangingUsername(false);
+    }
+  };
+
   const handleDeleteAccount = async (mode) => {
     if (!user) return;
 
@@ -356,6 +420,71 @@ export default function SettingsPage() {
           </div>
 
           <div className="space-y-6">
+            <div className="rounded-2xl border border-purple-500/20 bg-purple-500/5 p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Link2 size={18} className="text-purple-400" />
+                    <h3 className="font-bold text-white">Public AI URL</h3>
+                  </div>
+                  <a
+                    href={`/${encodeURIComponent(username)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-2 inline-flex items-center gap-1.5 text-sm font-mono text-purple-300 hover:text-purple-200"
+                  >
+                    qlynk.site/{username}
+                    <ExternalLink size={13} />
+                  </a>
+                </div>
+                <span className={`w-fit rounded-full border px-3 py-1 text-[11px] font-bold ${
+                  usernameAvailability.canChange
+                    ? 'border-emerald-400/25 bg-emerald-400/10 text-emerald-300'
+                    : 'border-amber-400/25 bg-amber-400/10 text-amber-200'
+                }`}>
+                  {usernameAvailability.canChange ? 'Change available' : '30-day cooldown active'}
+                </span>
+              </div>
+
+              <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                <div className="flex min-w-0 flex-1 items-center rounded-xl border border-white/10 bg-white/5 focus-within:border-purple-400/50">
+                  <span className="shrink-0 pl-4 text-sm text-gray-500">qlynk.site/</span>
+                  <input
+                    type="text"
+                    value={pendingUsername}
+                    onChange={(event) => setPendingUsername(event.target.value.toLowerCase())}
+                    disabled={!usernameAvailability.canChange || changingUsername}
+                    maxLength={30}
+                    autoComplete="off"
+                    spellCheck={false}
+                    className="min-w-0 flex-1 bg-transparent px-1 py-3 pr-4 font-mono text-white outline-none disabled:cursor-not-allowed disabled:opacity-60"
+                    aria-label="New public AI username"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleUsernameChange}
+                  disabled={changingUsername || !usernameAvailability.canChange || !usernameIsDifferent || Boolean(usernameValidation.error)}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-purple-500 px-5 py-3 text-sm font-bold text-white transition-all hover:bg-purple-400 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {changingUsername && <Loader2 size={16} className="animate-spin" />}
+                  {changingUsername ? 'Changing…' : 'Change URL'}
+                </button>
+              </div>
+
+              {usernameValidation.error && pendingUsername !== username ? (
+                <p className="mt-2 text-xs text-red-300">{usernameValidation.error}</p>
+              ) : (
+                <p className="mt-2 text-xs leading-relaxed text-gray-500">
+                  Letters, numbers, hyphens, and underscores only. Your old URL stops working immediately after a change.
+                </p>
+              )}
+              {!usernameAvailability.canChange && usernameAvailability.nextChangeAt && (
+                <p className="mt-2 text-xs font-medium text-amber-200/90">
+                  You can change it again on {new Date(usernameAvailability.nextChangeAt).toLocaleString()}.
+                </p>
+              )}
+            </div>
             <div>
               <label className="block text-sm font-bold text-gray-400 mb-2">Full Name</label>
               <input 

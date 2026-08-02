@@ -208,6 +208,29 @@ assert(
   'Agent public projection did not synchronize.'
 );
 
+await db.exec(`UPDATE public.profiles SET username = 'renamed_fixture' WHERE id = '${fixtureUserId}'`);
+assert(
+  await scalar(`SELECT username_changed_at IS NOT NULL AS value FROM public.profiles WHERE id = '${fixtureUserId}'`) === true,
+  'A successful username change did not start the cooldown.'
+);
+assert(
+  await scalar(`SELECT username = 'renamed_fixture' AS value FROM public.profiles_public WHERE id = '${fixtureUserId}'`) === true,
+  'A username change did not synchronize to the public profile projection.'
+);
+let repeatedUsernameChangeRejected = false;
+try {
+  await db.exec(`UPDATE public.profiles SET username = 'renamed_again' WHERE id = '${fixtureUserId}'`);
+} catch (error) {
+  repeatedUsernameChangeRejected = String(error.message).includes('once every 30 days');
+}
+assert(repeatedUsernameChangeRejected, 'The database allowed a second username change inside 30 days.');
+const usernameChangedAt = await scalar(`SELECT username_changed_at AS value FROM public.profiles WHERE id = '${fixtureUserId}'`);
+await db.exec(`UPDATE public.profiles SET username_changed_at = NULL WHERE id = '${fixtureUserId}'`);
+assert(
+  String(await scalar(`SELECT username_changed_at AS value FROM public.profiles WHERE id = '${fixtureUserId}'`)) === String(usernameChangedAt),
+  'An owner can tamper with the username cooldown timestamp.'
+);
+
 const profileEmailWasBackfilled = await scalar(`
   SELECT email = 'migration-test@example.com' AS value
   FROM public.profiles

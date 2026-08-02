@@ -85,6 +85,15 @@ function DashboardLayoutContent({ children }) {
     }
   }, []);
 
+  useEffect(() => {
+    const syncProfileUpdate = (event) => {
+      if (!event.detail || typeof event.detail !== 'object') return;
+      setProfile((current) => current ? { ...current, ...event.detail } : current);
+    };
+    window.addEventListener('qlynk:profile-updated', syncProfileUpdate);
+    return () => window.removeEventListener('qlynk:profile-updated', syncProfileUpdate);
+  }, []);
+
   const handleCollapseToggle = () => {
     const newState = !isCollapsed;
     setIsCollapsed(newState);

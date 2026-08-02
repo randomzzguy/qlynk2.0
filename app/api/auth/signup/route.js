@@ -7,6 +7,7 @@ import { welcomeEmail } from '@/lib/email/templates/welcome';
 import { buildEmailPreferencesUrl } from '@/lib/email/preferences';
 import { verifyHCaptchaToken } from '@/lib/hcaptcha';
 import { authEmailExists, isDuplicateSignupResult } from '@/lib/signup-availability';
+import { validateUsername } from '@/lib/usernames';
 
 const EMAIL_ALREADY_EXISTS_MESSAGE = 'An account with this email already exists. Please log in or use a different email.';
 const USERNAME_ALREADY_EXISTS_MESSAGE = 'This username is already taken. Please choose a different username.';
@@ -28,20 +29,17 @@ export async function POST(request) {
     const { email, password, username, hcaptchaToken, profession = 'Creative Professional' } = body;
 
     const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
-    const normalizedUsername = typeof username === 'string' ? username.trim().toLowerCase() : '';
+    const usernameValidation = validateUsername(username);
+    const normalizedUsername = usernameValidation.username;
     const normalizedProfession = typeof profession === 'string' ? profession.trim() : '';
-    const reservedUsernames = new Set([
-      'admin', 'api', 'auth', 'dashboard', 'embed', 'login', 'signup',
-      'account', 'settings', 'support', 'help', 'pricing', 'www',
-    ]);
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail) || normalizedEmail.length > 254) {
       return NextResponse.json({ message: 'Please enter a valid email address.' }, { status: 400 });
     }
 
-    if (!/^[a-z0-9_-]{3,30}$/.test(normalizedUsername) || reservedUsernames.has(normalizedUsername)) {
+    if (usernameValidation.error) {
       return NextResponse.json(
-        { message: 'Username must be 3-30 characters, use only letters, numbers, hyphens, or underscores, and cannot be reserved.' },
+        { message: usernameValidation.error },
         { status: 400 }
       );
     }

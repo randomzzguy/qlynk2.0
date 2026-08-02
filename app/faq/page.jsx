@@ -7,7 +7,7 @@ import { breadcrumbSchema, createMetadata } from '@/lib/seo';
 
 export const metadata = createMetadata({
   title: 'Qlynk AI FAQ | AI Agent Platform Questions',
-  description: 'Answers about what Qlynk does, how agents use approved knowledge, how owners set limits, and how publishing, privacy, and pricing work.',
+  description: 'Answers about Qlynk agent context, approved knowledge, website embedding, username changes, owner controls, privacy, and pricing.',
   path: '/faq',
 });
 
@@ -71,6 +71,14 @@ const faqs = [
       {
         q: "Can I update my AI agent's knowledge?",
         a: "Yes. You can add, edit, or remove knowledge from your dashboard as your work and priorities change."
+      },
+      {
+        q: "Can the agent understand follow-up questions?",
+        a: "Yes. Qlynk uses trusted recent messages from the same visitor conversation to interpret follow-up questions and to select relevant approved knowledge. It still stays within the owner-defined scope and should acknowledge when required information is missing."
+      },
+      {
+        q: "Can I add my Qlynk Agent to an existing website?",
+        a: "Yes. Create a Website Widget installation in the dashboard, choose its position and appearance, optionally configure a pre-chat form and allowed website origins, then paste the generated script into your site."
       }
     ]
   },
@@ -101,6 +109,10 @@ const faqs = [
       {
         q: "Can I use my own domain?",
         a: "Not currently. Published agents use a qlynk.site/username address. You can also embed the Qlynk Agent on an existing website."
+      },
+      {
+        q: "Can I change my Qlynk username?",
+        a: "Yes. You can change the username and public AI URL from Account Settings once every 30 days. The old URL stops working immediately, so update links and bookmarks after confirming the change."
       }
     ]
   }

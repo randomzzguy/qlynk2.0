@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, BookOpen, HelpCircle, Lightbulb, MessagesSquare } from 'lucide-react';
+import { ArrowRight, BookOpen, Globe2, HelpCircle, Lightbulb, MessagesSquare, RefreshCw, Sparkles } from 'lucide-react';
 import Footer from '@/components/Footer';
 import MarketingHeader from '@/components/MarketingHeader';
 import { resourceArticles } from '@/lib/resource-articles';
@@ -17,6 +17,9 @@ const icons = {
   'how-to-create-ai-clone': BookOpen,
   'ai-clone-vs-chatbot': HelpCircle,
   'ai-clone-vs-chatgpt': MessagesSquare,
+  'qlynk-agent-understands-questions-better': Sparkles,
+  'embed-ai-agent-on-website': Globe2,
+  'how-to-change-qlynk-username': RefreshCw,
 };
 
 export default function ResourcesPage() {

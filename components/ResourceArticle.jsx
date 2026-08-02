@@ -5,6 +5,7 @@ import JsonLd from '@/components/JsonLd';
 import MarketingHeader from '@/components/MarketingHeader';
 import { breadcrumbSchema, SITE_URL } from '@/lib/seo';
 import { solutionPages } from '@/lib/solution-pages';
+import { authorityArticles } from '@/lib/authority-articles';
 
 export default function ResourceArticle({ article, slug }) {
   const path = `/blog/${slug}`;
@@ -90,6 +91,18 @@ export default function ResourceArticle({ article, slug }) {
               {article.relatedSolutions.filter((relatedSlug) => solutionPages[relatedSlug]).map((relatedSlug) => {
                 const related = solutionPages[relatedSlug];
                 return <Link key={relatedSlug} href={`/solutions/${relatedSlug}`} className="rounded-2xl border border-white/10 p-5 hover:border-orange/40"><strong>{related.shortTitle}</strong><span className="mt-2 block text-sm leading-relaxed text-gray-500">{related.description}</span></Link>;
+              })}
+            </div>
+          </section>
+        )}
+
+        {article.relatedArticles?.length > 0 && (
+          <section className="mt-16">
+            <h2 className="text-2xl font-black">Related Qlynk resources</h2>
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              {article.relatedArticles.filter((relatedSlug) => authorityArticles[relatedSlug]).map((relatedSlug) => {
+                const related = authorityArticles[relatedSlug];
+                return <Link key={relatedSlug} href={`/blog/${relatedSlug}`} className="rounded-2xl border border-white/10 p-5 transition-colors hover:border-orange/40"><strong>{related.shortTitle}</strong><span className="mt-2 block text-sm leading-relaxed text-gray-500">{related.description}</span></Link>;
               })}
             </div>
           </section>

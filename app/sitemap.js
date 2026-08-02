@@ -8,25 +8,25 @@ import { createAdminClient } from '@/utils/supabase/server';
 export const revalidate = 3600;
 
 const routes = [
-  ['/', 'weekly', 1],
+  ['/', 'weekly', 1, '2026-08-02'],
   ['/pricing', 'monthly', 0.9],
   ['/ai-clone', 'monthly', 0.9],
   ['/personal-ai', 'monthly', 0.9],
-  ['/ai-agent', 'monthly', 0.9],
+  ['/ai-agent', 'monthly', 0.9, '2026-08-02'],
   ['/digital-twin', 'monthly', 0.8],
   ['/for-business', 'monthly', 0.8],
   ['/for-freelancers', 'monthly', 0.8],
   ['/for-founders', 'monthly', 0.8],
   ['/for-creators', 'monthly', 0.8],
   ['/for-job-seekers', 'monthly', 0.7],
-  ['/faq', 'monthly', 0.8],
-  ['/blog', 'weekly', 0.8],
+  ['/faq', 'monthly', 0.8, '2026-08-02'],
+  ['/blog', 'weekly', 0.8, '2026-08-02'],
   ['/blog/what-is-an-ai-clone', 'monthly', 0.7],
   ['/blog/how-to-create-ai-clone', 'monthly', 0.7],
   ['/blog/ai-clone-vs-chatbot', 'monthly', 0.7],
   ['/blog/ai-clone-vs-chatgpt', 'monthly', 0.7],
   ['/solutions', 'weekly', 0.9],
-  ['/docs', 'monthly', 0.8],
+  ['/docs', 'monthly', 0.8, '2026-08-02'],
   ['/compare', 'monthly', 0.7],
   ['/compare/qlynk-vs-chatbase', 'monthly', 0.8],
   ['/about', 'monthly', 0.6],
@@ -35,7 +35,7 @@ const routes = [
   ['/terms', 'yearly', 0.3],
   ...Object.keys(featurePages).map((slug) => [`/features/${slug}`, 'monthly', 0.7]),
   ...Object.keys(solutionPages).map((slug) => [`/solutions/${slug}`, 'monthly', 0.8]),
-  ...Object.keys(authorityArticles).map((slug) => [`/blog/${slug}`, 'monthly', 0.7]),
+  ...Object.entries(authorityArticles).map(([slug, article]) => [`/blog/${slug}`, 'monthly', 0.7, article.dateModified]),
 ];
 
 const marketingLastModified = new Date('2026-07-21T00:00:00.000Z');
@@ -84,9 +84,9 @@ async function getLiveAgentRoutes() {
 }
 
 export default async function sitemap() {
-  const marketingRoutes = routes.map(([path, changeFrequency, priority]) => ({
+  const marketingRoutes = routes.map(([path, changeFrequency, priority, lastModified]) => ({
     url: new URL(path, SITE_URL).toString(),
-    lastModified: marketingLastModified,
+    lastModified: lastModified ? new Date(`${lastModified}T00:00:00.000Z`) : marketingLastModified,
     changeFrequency,
     priority,
   }));

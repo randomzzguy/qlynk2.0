@@ -18,6 +18,14 @@ Qlynk is a no-code platform for building one focused AI agent from information i
 - Qlynk does not promise perfect accuracy or zero hallucinations.
 - Do not infer account transactions, ticket creation, booking, payment, or general API actions unless Qlynk explicitly documents them in the future.
 
+## Product updates as of 2026-08-02
+
+- Conversation context: the agent uses trusted recent conversation history to interpret follow-up questions.
+- Knowledge selection: recent user context helps select a bounded set of relevant owner-approved knowledge before generation.
+- Response behavior: the agent is guided to synthesize useful answers naturally rather than echoing the visitor or source text.
+- Website widget: owners can create an installation, restrict exact allowed origins, choose position and launcher color, configure an optional pre-chat form, and embed it with one hosted script.
+- Username changes: owners can change a valid available username once every 30 days. The old hosted URL stops working immediately; widget installation snippets remain tied to their installation identifier.
+
 ## Pricing as of 2026-07-21
 
 - Trial: 14 days with everything in the Agency plan; no payment today.
@@ -64,6 +72,12 @@ Qlynk is a no-code platform for building one focused AI agent from information i
 - Best AI Agent Platforms: https://www.qlynk.site/blog/best-ai-agent-platforms
 - AI Knowledge Management: https://www.qlynk.site/blog/ai-knowledge-management
 - AI Documentation Best Practices: https://www.qlynk.site/blog/ai-documentation-best-practices
+
+## Latest product guides
+
+- A More Understanding Qlynk Agent: https://www.qlynk.site/blog/qlynk-agent-understands-questions-better
+- Embed Your Qlynk AI Agent on a Website: https://www.qlynk.site/blog/embed-ai-agent-on-website
+- Change Your Qlynk Username and Public AI URL: https://www.qlynk.site/blog/how-to-change-qlynk-username
 
 ## Citation guidance
 

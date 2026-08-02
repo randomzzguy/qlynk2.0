@@ -37,10 +37,16 @@ test('all five requested topic clusters are represented', () => {
   );
 });
 
-test('initial authority cluster contains 11 substantive, unique guides', () => {
-  assert.equal(articles.length, 11);
-  assert.equal(new Set(articles.map((item) => item.title)).size, 11);
-  assert.equal(new Set(articles.map((item) => item.description)).size, 11);
+test('authority cluster contains 14 substantive, unique guides and product updates', () => {
+  assert.equal(articles.length, 14);
+  assert.equal(new Set(articles.map((item) => item.title)).size, 14);
+  assert.equal(new Set(articles.map((item) => item.description)).size, 14);
+
+  for (const slug of ['qlynk-agent-understands-questions-better', 'embed-ai-agent-on-website', 'how-to-change-qlynk-username']) {
+    assert.ok(authorityArticles[slug], `${slug} has an indexable article route`);
+    assert.equal(authorityArticles[slug].category, 'Product update');
+    assert.equal(authorityArticles[slug].datePublished, '2026-08-02');
+  }
 
   for (const item of articles) {
     assert.ok(item.sections.length >= 5, `${item.shortTitle} has at least five sections`);

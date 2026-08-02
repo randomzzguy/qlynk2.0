@@ -29,6 +29,7 @@ export default function Footer() {
               <li><Link href="/ai-agent" className="hover:text-[#f46530] transition-colors">AI Agent Platform</Link></li>
               <li><Link href="/solutions" className="hover:text-[#f46530] transition-colors">All Solutions</Link></li>
               <li><Link href="/features/knowledge-base" className="hover:text-[#f46530] transition-colors">Knowledge Base</Link></li>
+              <li><Link href="/features/website-widget" className="hover:text-[#f46530] transition-colors">Website Widget</Link></li>
               <li><Link href="/features/security" className="hover:text-[#f46530] transition-colors">Scope & Controls</Link></li>
               <li><Link href="/personal-ai" className="hover:text-[#f46530] transition-colors">Personal AI</Link></li>
               <li><Link href="/pricing" className="hover:text-[#f46530] transition-colors">Pricing</Link></li>
@@ -58,6 +59,7 @@ export default function Footer() {
               <li><Link href="/blog/what-is-an-ai-agent" className="hover:text-[#f46530] transition-colors">What Is an AI Agent?</Link></li>
               <li><Link href="/blog/ai-agent-vs-ai-chatbot" className="hover:text-[#f46530] transition-colors">AI Agent vs Chatbot</Link></li>
               <li><Link href="/blog/rag-explained" className="hover:text-[#f46530] transition-colors">RAG Explained</Link></li>
+              <li><Link href="/blog/qlynk-agent-understands-questions-better" className="hover:text-[#f46530] transition-colors">Latest Qlynk Updates</Link></li>
               <li><Link href="/compare" className="hover:text-[#f46530] transition-colors">Platform Comparisons</Link></li>
             </ul>
           </div>

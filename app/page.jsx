@@ -162,6 +162,7 @@ const homepageFaqs = [
   ['What files can I upload?', 'Qlynk supports PDF, DOCX, and TXT files. You can also add FAQs, facts, links, notes, profile details, and other structured knowledge from the dashboard.'],
   ['Can I update my AI later?', 'Yes. Add, edit, or remove knowledge whenever your information changes. You do not need to retrain the underlying model.'],
   ['Does it work on my website?', 'Yes. Share the hosted qlynk.site link or embed the Qlynk agent on an existing website.'],
+  ['Can I change my public Qlynk URL?', 'Yes. Change your username from Account Settings once every 30 days. Your old URL stops working immediately, so update links and bookmarks after the change.'],
   ['Is there a free plan?', 'Qlynk offers a 14-day free trial with every feature included and no payment today. After the trial, choose the paid plan that fits your needs.'],
 ];
 

@@ -4,6 +4,7 @@ import ToasterClient from '../components/ToasterClient'
 import QlynkBackground from '../components/QlynkBackground'
 import JsonLd from '../components/JsonLd'
 import { createMetadata, HOME_DESCRIPTION, HOME_TITLE, SITE_URL } from '../lib/seo'
+import { Analytics } from '@vercel/analytics/next'
 
 export const metadata = {
   ...createMetadata({
@@ -138,6 +139,7 @@ export default function RootLayout({ children }) {
         <AnimationControl />
         <ToasterClient />
         {children}
+        <Analytics />
       </body>
     </html>
   )

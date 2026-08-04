@@ -242,6 +242,12 @@ const WhyQlynk = () => (
       >
         <p className="text-sm font-black tracking-[0.18em] text-[#ff8a5b]">WHY QLYNK?</p>
         <h2 className="mt-4 text-4xl font-black leading-tight text-white md:text-5xl">Simple to launch. Easy to control. Ready to share.</h2>
+        <p className="mx-auto mt-5 max-w-2xl leading-relaxed text-gray-400">
+          Want to know more about Qlynk?{' '}
+          <Link href="https://www.qlynk.site/qlynk" className="inline-flex items-center gap-1 font-bold text-[#ff8a5b] transition-colors hover:text-orange hover:underline">
+            Ask the Qlynk Guide <ArrowRight size={16} aria-hidden="true" />
+          </Link>
+        </p>
       </motion.div>
 
       <div className="relative mx-auto mt-16 hidden max-w-6xl pb-8 lg:block">

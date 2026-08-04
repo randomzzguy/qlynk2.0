@@ -38,12 +38,12 @@ const navGroups = [
       { href: '/dashboard/agent?section=visual', icon: Palette, label: 'Visual Style', section: 'visual', tourKey: 'visual-style' },
       { href: '/dashboard/knowledge', icon: Database, label: 'Knowledge Base', tourKey: 'knowledge' },
       { href: '/dashboard/widget', icon: Code2, label: 'Website Widget' },
-      { href: '/dashboard/conversations', icon: MessageSquare, label: 'Conversations' },
     ]
   },
   {
     title: 'Insights',
     items: [
+      { href: '/dashboard/conversations', icon: MessageSquare, label: 'Conversations' },
       { href: '/dashboard/analytics', icon: BarChart3, label: 'Analytics' },
     ]
   },

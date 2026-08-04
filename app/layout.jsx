@@ -110,6 +110,8 @@ export default function RootLayout({ children }) {
             "name": "Creator monthly plan",
             "price": "9",
             "priceCurrency": "USD",
+            "priceValidUntil": "2026-08-31",
+            "description": "August offer: 50% off the regular USD 18 monthly price through August 31, 2026.",
             "url": `${SITE_URL}/pricing`
           },
           {
@@ -117,6 +119,8 @@ export default function RootLayout({ children }) {
             "name": "Agency monthly plan",
             "price": "19",
             "priceCurrency": "USD",
+            "priceValidUntil": "2026-08-31",
+            "description": "August offer: 50% off the regular USD 38 monthly price through August 31, 2026.",
             "url": `${SITE_URL}/pricing`
           }
         ]

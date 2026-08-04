@@ -24,7 +24,9 @@ export default function TrialChoiceManager({ subscription, userId }) {
     {
       id: 'creator',
       name: 'Creator Plan',
-      description: '$9/mo after trial. For one professional or focused use case.',
+      regularPrice: '$18/mo',
+      offerPrice: '$9/mo',
+      description: 'For one professional or focused use case.',
       icon: Zap,
       color: 'bg-emerald-900/30',
       borderColor: 'border-emerald-500/30',
@@ -33,7 +35,9 @@ export default function TrialChoiceManager({ subscription, userId }) {
     {
       id: 'agency',
       name: 'Agency Plan',
-      description: '$19/mo after trial. For higher volume without the “Powered by Qlynk” label.',
+      regularPrice: '$38/mo',
+      offerPrice: '$19/mo',
+      description: 'For higher volume without the “Powered by Qlynk” label.',
       icon: Crown,
       color: 'bg-purple-900/30',
       borderColor: 'border-purple-500/30',
@@ -134,6 +138,12 @@ export default function TrialChoiceManager({ subscription, userId }) {
                     </div>
                     <div className="pr-5">
                       <h4 className="font-bold text-white text-sm mb-1">{item.name}</h4>
+                      {item.offerPrice && (
+                        <p className="mb-1 text-xs font-bold text-[#ff8a5b]">
+                          <span className="mr-1.5 text-gray-500 line-through">{item.regularPrice}</span>
+                          {item.offerPrice} · 50% off through Aug 31, 2026
+                        </p>
+                      )}
                       <p className="text-xs text-gray-300 leading-relaxed">{item.description}</p>
                     </div>
                     {isActive && (

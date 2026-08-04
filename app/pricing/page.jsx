@@ -78,6 +78,10 @@ const faqs = [
         a: 'At the end of 14 days, your agent goes offline unless you choose a paid plan. If you pause instead, your account data remains available so you can return and upgrade later.',
       },
       {
+        q: 'Are the current prices discounted?',
+        a: 'Yes. Through August 31, 2026, Creator is $9/month or $84/year (regularly $18/month or $168/year), and Agency is $19/month or $180/year (regularly $38/month or $360/year). The regular prices apply beginning September 1, 2026.',
+      },
+      {
         q: 'Can I cancel anytime?',
         a: 'Yes. Cancel from your account settings at any time with no questions asked and no hidden fees. Your agent stays live until the end of your current billing period.',
       },
@@ -268,6 +272,7 @@ export default function PricingPage() {
       name: 'Creator',
       description: 'For one professional or focused use case',
       price: billingCycle === 'monthly' ? '$9' : '$84',
+      regularPrice: billingCycle === 'monthly' ? '$18' : '$168',
       period: billingCycle === 'monthly' ? '/month' : '/year',
       cta: 'Choose Plan',
       icon: Crown,
@@ -287,6 +292,7 @@ export default function PricingPage() {
       name: 'Agency',
       description: 'For higher-volume professional use',
       price: billingCycle === 'monthly' ? '$19' : '$180',
+      regularPrice: billingCycle === 'monthly' ? '$38' : '$360',
       period: billingCycle === 'monthly' ? '/month' : '/year (Save 21%)',
       cta: 'Upgrade Now',
       icon: Crown,
@@ -473,6 +479,10 @@ export default function PricingPage() {
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
             Your trial includes everything in Agency. After 14 days, choose Creator or Agency to keep the agent live.
           </p>
+          <div className="mx-auto mt-7 inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-[#f46530]/40 bg-[#f46530]/10 px-5 py-2.5 text-sm font-bold text-orange-100">
+            <span className="rounded-full bg-[#f46530] px-2.5 py-1 text-xs uppercase tracking-wider text-white">50% off</span>
+            August offer ends August 31, 2026
+          </div>
         </motion.div>
 
         {/* Billing Toggle */}
@@ -541,10 +551,18 @@ export default function PricingPage() {
 
                     {/* Price */}
                     <div className="mb-8">
-                      <div className="text-4xl font-black text-white">
-                        {plan.price}
-                        <span className="text-lg text-gray-400 font-normal"> {plan.period}</span>
+                      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                        {plan.regularPrice && (
+                          <span className="text-xl font-bold text-gray-500 line-through decoration-2" aria-label={`Regular price ${plan.regularPrice}`}>
+                            {plan.regularPrice}
+                          </span>
+                        )}
+                        <div className="text-4xl font-black text-white">
+                          {plan.price}
+                          <span className="text-lg text-gray-400 font-normal"> {plan.period}</span>
+                        </div>
                       </div>
+                      {plan.regularPrice && <p className="mt-2 text-sm font-bold text-[#ff8a5b]">50% off through August 31, 2026</p>}
                     </div>
 
                     {/* CTA */}

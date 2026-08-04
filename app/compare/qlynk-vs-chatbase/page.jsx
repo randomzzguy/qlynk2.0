@@ -20,18 +20,18 @@ const rows = [
   ['Publishing', 'A hosted qlynk.site link for the agent plus an embeddable website widget.', 'Website embed plus a wider set of integrations and deployment channels documented by Chatbase.'],
   ['External actions', 'Knowledge answers, guidance, links, and a defined human handoff; no claim of general API actions or account transactions.', 'Built-in and custom actions can connect services and APIs, with availability and limits varying by plan.'],
   ['Review', 'Conversation history, visitor feedback, knowledge gaps, and analytics for improving the maintained agent.', 'Conversation activity, topics, sentiment, feedback, contacts, and plan-dependent analytics.'],
-  ['Current entry pricing', '14-day trial with everything in Agency; Creator is $9/month and Agency is $19/month. One agent per account.', 'Free plan plus paid Hobby, Standard, Pro, and Enterprise tiers; credits, seats, sources, actions, integrations, and analytics vary by tier.'],
+  ['Current entry pricing', 'August offer: Creator is $9/month (regularly $18) and Agency is $19/month (regularly $38)—50% off through August 31, 2026. The 14-day trial includes everything in Agency. One agent per account.', 'Free plan plus paid Hobby, Standard, Pro, and Enterprise tiers; credits, seats, sources, actions, integrations, and analytics vary by tier.'],
 ];
 
 export default function QlynkVsChatbasePage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <JsonLd data={breadcrumbSchema([{ name: 'Home', path: '/' }, { name: 'Compare', path: '/compare' }, { name: 'Qlynk vs Chatbase', path: '/compare/qlynk-vs-chatbase' }])} />
-      <JsonLd data={{ '@context': 'https://schema.org', '@type': 'Article', headline: 'Qlynk vs Chatbase: AI Agent Platform Comparison', description: metadata.description, datePublished: '2026-07-21', dateModified: '2026-07-21', mainEntityOfPage: `${SITE_URL}/compare/qlynk-vs-chatbase`, author: { '@type': 'Organization', name: 'Qlynk AI' }, publisher: { '@type': 'Organization', name: 'Qlynk AI' } }} />
+      <JsonLd data={{ '@context': 'https://schema.org', '@type': 'Article', headline: 'Qlynk vs Chatbase: AI Agent Platform Comparison', description: metadata.description, datePublished: '2026-07-21', dateModified: '2026-08-05', mainEntityOfPage: `${SITE_URL}/compare/qlynk-vs-chatbase`, author: { '@type': 'Organization', name: 'Qlynk AI' }, publisher: { '@type': 'Organization', name: 'Qlynk AI' } }} />
       <MarketingHeader />
       <main>
         <header className="mx-auto max-w-5xl px-6 py-20 text-center md:py-28">
-          <p className="text-sm font-black uppercase tracking-[0.2em] text-orange">Independent feature review · July 21, 2026</p>
+          <p className="text-sm font-black uppercase tracking-[0.2em] text-orange">Independent feature review · Updated August 5, 2026</p>
           <h1 className="mt-5 text-5xl font-black tracking-tight md:text-7xl">Qlynk vs Chatbase</h1>
           <p className="mx-auto mt-7 max-w-3xl text-xl leading-relaxed text-gray-300">Both products build AI agents from supplied knowledge. Qlynk centers a focused, shareable agent with explicit scope and simple pricing. Chatbase centers a broader customer-service platform with more integrations and external actions.</p>
         </header>
@@ -66,7 +66,7 @@ export default function QlynkVsChatbasePage() {
         <section className="mx-auto grid max-w-6xl gap-8 px-6 py-20 md:grid-cols-[1fr_.8fr]">
           <div>
             <h2 className="text-3xl font-black">Methodology and sources</h2>
-            <p className="mt-5 leading-relaxed text-gray-400">Qlynk details were checked against the current application, plan configuration, and product pages. Chatbase details were checked against its official documentation and pricing page on July 21, 2026. We avoided scoring features that cannot be compared fairly and did not treat a missing mention as proof that a feature does not exist.</p>
+            <p className="mt-5 leading-relaxed text-gray-400">Qlynk details, including the August offer, were checked against the current application, plan configuration, and product pages on August 5, 2026. Chatbase details were checked against its official documentation and pricing page on July 21, 2026. We avoided scoring features that cannot be compared fairly and did not treat a missing mention as proof that a feature does not exist.</p>
             <div className="mt-6 flex flex-wrap gap-4 text-sm font-bold">
               <a href="https://www.chatbase.co/docs/user-guides/quick-start/introduction" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-orange hover:underline">Chatbase overview <ExternalLink size={14} /></a>
               <a href="https://www.chatbase.co/docs/user-guides/chatbot/data-sources" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-orange hover:underline">Data sources <ExternalLink size={14} /></a>

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import Script from 'next/script';
 import {
   ArrowRight,
   BarChart3,
@@ -725,6 +726,13 @@ export default function App() {
 
       {/* Footer */}
       <Footer />
+
+      <Script
+        id="qlynk-homepage-widget"
+        src="https://www.qlynk.site/qlynk-agent.js"
+        data-widget-id="01bbaa14-aa59-462d-9693-644802bd3d7f"
+        strategy="afterInteractive"
+      />
 
       <ScrollToTop />
     </div>

@@ -484,7 +484,12 @@ export default function DashboardPage() {
               {recentConversations.length > 0 ? (
                 <div className="space-y-4">
                   {recentConversations.map((convo) => (
-                    <div key={convo.id} className="group flex items-center justify-between p-4 bg-white/5 rounded-2xl hover:bg-white/10 border border-transparent hover:border-white/10 transition-all cursor-pointer">
+                    <Link
+                      key={convo.id}
+                      href={{ pathname: '/dashboard/conversations', query: { conversation: convo.id } }}
+                      aria-label={`Open conversation with ${convo.visitor_name || 'Anonymous Visitor'}`}
+                      className="group flex items-center justify-between p-4 bg-white/5 rounded-2xl hover:bg-white/10 border border-transparent hover:border-white/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f46530]"
+                    >
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-gray-400 group-hover:text-white transition-colors">
                           <Users size={20} />
@@ -503,7 +508,7 @@ export default function DashboardPage() {
                       <div className="text-gray-500 group-hover:text-white transition-colors">
                         <ExternalLink size={18} />
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               ) : (

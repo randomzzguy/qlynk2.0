@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { getCurrentUser } from '@/lib/supabase';
 import { createClient } from '@/utils/supabase/client';
 import { 
@@ -21,6 +22,9 @@ import ReactMarkdown from 'react-markdown';
 import { toast } from 'react-hot-toast';
 
 export default function ConversationsPage() {
+  const searchParams = useSearchParams();
+  const requestedConversationId = searchParams.get('conversation');
+  const openedConversationIdRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [conversations, setConversations] = useState([]);
   const [selectedConvo, setSelectedConvo] = useState(null);
@@ -57,14 +61,7 @@ export default function ConversationsPage() {
     loadConversations();
   }, []);
 
-  const loadMessages = async (conversationId) => {
-    if (selectedConvo === conversationId) {
-      setSelectedConvo(null);
-      setMessages([]);
-      setVisitorInfo(null);
-      return;
-    }
-
+  const openConversation = useCallback(async (conversationId) => {
     setLoadingMessages(true);
     setSelectedConvo(conversationId);
     setReplyText('');
@@ -94,6 +91,31 @@ export default function ConversationsPage() {
     } finally {
       setLoadingMessages(false);
     }
+  }, []);
+
+  useEffect(() => {
+    if (
+      loading
+      || !requestedConversationId
+      || openedConversationIdRef.current === requestedConversationId
+      || !conversations.some((conversation) => conversation.id === requestedConversationId)
+    ) {
+      return;
+    }
+
+    openedConversationIdRef.current = requestedConversationId;
+    openConversation(requestedConversationId);
+  }, [conversations, loading, openConversation, requestedConversationId]);
+
+  const loadMessages = async (conversationId) => {
+    if (selectedConvo === conversationId) {
+      setSelectedConvo(null);
+      setMessages([]);
+      setVisitorInfo(null);
+      return;
+    }
+
+    await openConversation(conversationId);
   };
 
   const handleSendReply = async (e) => {

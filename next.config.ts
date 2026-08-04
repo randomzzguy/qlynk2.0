@@ -30,7 +30,7 @@ const nextConfig: NextConfig = {
       "img-src 'self' data: blob: https://*.supabase.co https://api.dicebear.com https://www.qlynk.site",
       "font-src 'self'",
       "connect-src 'self' https://api.groq.com https://*.supabase.co https://api.stripe.com https://*.hcaptcha.com",
-      "frame-src https://js.stripe.com https://hcaptcha.com https://*.hcaptcha.com",
+      "frame-src 'self' https://js.stripe.com https://hcaptcha.com https://*.hcaptcha.com",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",

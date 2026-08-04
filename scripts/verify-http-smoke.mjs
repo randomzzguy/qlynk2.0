@@ -44,6 +44,7 @@ assert(privateRules.response.status === 401, '/api/agent/rules did not require o
 const homepage = await request('/');
 const csp = homepage.response.headers.get('content-security-policy') || '';
 assert(csp.includes("frame-ancestors 'none'"), 'Homepage CSP does not deny framing');
+assert(csp.includes("frame-src 'self'"), 'Homepage CSP blocks the same-origin Qlynk widget iframe');
 assert(!csp.includes("'unsafe-eval'"), 'Production CSP still permits unsafe-eval');
 assert(homepage.response.headers.get('x-frame-options') === 'DENY', 'Homepage lacks X-Frame-Options DENY');
 assert(homepage.response.headers.get('x-content-type-options') === 'nosniff', 'Homepage lacks nosniff');

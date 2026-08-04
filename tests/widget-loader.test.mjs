@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
 const loaderSource = await readFile(new URL('../public/qlynk-agent.js', import.meta.url), 'utf8');
+const nextConfigSource = await readFile(new URL('../next.config.ts', import.meta.url), 'utf8');
 
 function runLoader({ bodyAvailable = true } = {}) {
   const iframeListeners = new Map();
@@ -158,4 +159,8 @@ test('embed route reuses its initial agent and subscription lookups', async () =
   assert.match(embedSource, /isSubscriptionLive\(subscription\)/);
   assert.match(embedSource, /ownerSubscription/);
   assert.match(embedSource, /publicSubscription/);
+});
+
+test('site CSP permits the same-origin widget iframe', () => {
+  assert.match(nextConfigSource, /frame-src 'self'/);
 });

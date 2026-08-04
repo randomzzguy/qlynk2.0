@@ -141,9 +141,10 @@ export default function TrialChoiceManager({ subscription, userId }) {
                       {item.offerPrice && (
                         <p className="mb-1 text-xs font-bold text-[#ff8a5b]">
                           <span className="mr-1.5 text-gray-500 line-through">{item.regularPrice}</span>
-                          {item.offerPrice} · 50% off through Aug 31, 2026
+                          {item.offerPrice} first payment · Offer ends Aug 31, 2026
                         </p>
                       )}
+                      {item.offerPrice && <p className="mb-1 text-xs text-gray-400">Renews at {item.regularPrice}.</p>}
                       <p className="text-xs text-gray-300 leading-relaxed">{item.description}</p>
                     </div>
                     {isActive && (

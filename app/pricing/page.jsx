@@ -79,7 +79,7 @@ const faqs = [
       },
       {
         q: 'Are the current prices discounted?',
-        a: 'Yes. Through August 31, 2026, Creator is $9/month or $84/year (regularly $18/month or $168/year), and Agency is $19/month or $180/year (regularly $38/month or $360/year). The regular prices apply beginning September 1, 2026.',
+        a: 'Yes. Through August 31, 2026, the first Creator payment is $9 monthly or $84 annually (regularly $18 monthly or $168 annually), and the first Agency payment is $19 monthly or $180 annually (regularly $38 monthly or $360 annually). The 50% discount applies only to the first payment. Every renewal is charged at the plan’s regular price.',
       },
       {
         q: 'Can I cancel anytime?',
@@ -481,7 +481,7 @@ export default function PricingPage() {
           </p>
           <div className="mx-auto mt-7 inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-[#f46530]/40 bg-[#f46530]/10 px-5 py-2.5 text-sm font-bold text-orange-100">
             <span className="rounded-full bg-[#f46530] px-2.5 py-1 text-xs uppercase tracking-wider text-white">50% off</span>
-            August offer ends August 31, 2026
+            First payment only through August 31, 2026 · Renewals are full price
           </div>
         </motion.div>
 
@@ -562,7 +562,12 @@ export default function PricingPage() {
                           <span className="text-lg text-gray-400 font-normal"> {plan.period}</span>
                         </div>
                       </div>
-                      {plan.regularPrice && <p className="mt-2 text-sm font-bold text-[#ff8a5b]">50% off through August 31, 2026</p>}
+                      {plan.regularPrice && (
+                        <p className="mt-2 text-sm font-bold leading-relaxed text-[#ff8a5b]">
+                          50% off your first payment through August 31, 2026<br />
+                          <span className="font-medium text-gray-400">Renews at {plan.regularPrice}{billingCycle === 'monthly' ? '/month' : '/year'}.</span>
+                        </p>
+                      )}
                     </div>
 
                     {/* CTA */}

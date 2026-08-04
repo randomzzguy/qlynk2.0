@@ -20,7 +20,7 @@ const rows = [
   ['Publishing', 'A hosted qlynk.site link for the agent plus an embeddable website widget.', 'Website embed plus a wider set of integrations and deployment channels documented by Chatbase.'],
   ['External actions', 'Knowledge answers, guidance, links, and a defined human handoff; no claim of general API actions or account transactions.', 'Built-in and custom actions can connect services and APIs, with availability and limits varying by plan.'],
   ['Review', 'Conversation history, visitor feedback, knowledge gaps, and analytics for improving the maintained agent.', 'Conversation activity, topics, sentiment, feedback, contacts, and plan-dependent analytics.'],
-  ['Current entry pricing', 'August offer: Creator is $9/month (regularly $18) and Agency is $19/month (regularly $38)—50% off through August 31, 2026. The 14-day trial includes everything in Agency. One agent per account.', 'Free plan plus paid Hobby, Standard, Pro, and Enterprise tiers; credits, seats, sources, actions, integrations, and analytics vary by tier.'],
+  ['Current entry pricing', 'August offer: the first monthly payment is $9 for Creator (regularly $18) or $19 for Agency (regularly $38)—50% off through August 31, 2026. Every renewal is charged at the regular price. The 14-day trial includes everything in Agency. One agent per account.', 'Free plan plus paid Hobby, Standard, Pro, and Enterprise tiers; credits, seats, sources, actions, integrations, and analytics vary by tier.'],
 ];
 
 export default function QlynkVsChatbasePage() {

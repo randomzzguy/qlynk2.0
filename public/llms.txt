@@ -29,8 +29,8 @@ Qlynk is a no-code platform for building one focused AI agent from information i
 ## Pricing as of 2026-08-05
 
 - Trial: 14 days with everything in the Agency plan; no payment today.
-- Creator August offer: USD 9 monthly or USD 84 yearly, 50% off through August 31, 2026; the regular USD 18 monthly or USD 168 yearly price applies beginning September 1, 2026. Includes one agent and 5,000 messages per month.
-- Agency August offer: USD 19 monthly or USD 180 yearly, 50% off through August 31, 2026; the regular USD 38 monthly or USD 360 yearly price applies beginning September 1, 2026. Includes one agent, 10,000 messages per month, and removal of visible Qlynk branding.
+- Creator August offer: the first payment is USD 9 monthly or USD 84 annually, 50% off through August 31, 2026. Every renewal is charged at the regular USD 18 monthly or USD 168 annual price. Includes one agent and 5,000 messages per month.
+- Agency August offer: the first payment is USD 19 monthly or USD 180 annually, 50% off through August 31, 2026. Every renewal is charged at the regular USD 38 monthly or USD 360 annual price. Includes one agent, 10,000 messages per month, and removal of visible Qlynk branding.
 - Current pricing: https://www.qlynk.site/pricing
 
 ## Primary pages

@@ -111,7 +111,7 @@ export default function RootLayout({ children }) {
             "price": "9",
             "priceCurrency": "USD",
             "priceValidUntil": "2026-08-31",
-            "description": "August offer: 50% off the regular USD 18 monthly price through August 31, 2026.",
+            "description": "August offer: the first payment is 50% off through August 31, 2026. Monthly renewals are charged at the regular USD 18 price.",
             "url": `${SITE_URL}/pricing`
           },
           {
@@ -120,7 +120,7 @@ export default function RootLayout({ children }) {
             "price": "19",
             "priceCurrency": "USD",
             "priceValidUntil": "2026-08-31",
-            "description": "August offer: 50% off the regular USD 38 monthly price through August 31, 2026.",
+            "description": "August offer: the first payment is 50% off through August 31, 2026. Monthly renewals are charged at the regular USD 38 price.",
             "url": `${SITE_URL}/pricing`
           }
         ]

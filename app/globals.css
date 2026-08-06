@@ -701,40 +701,71 @@ html {
 
 .dashboard-save-bar {
   position: fixed;
-  right: 1rem;
-  bottom: max(1rem, env(safe-area-inset-bottom));
+  right: 1.25rem;
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
   z-index: 45;
 }
 
 div.dashboard-save-bar {
-  left: 1rem;
-  width: auto;
-  padding: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  left: auto;
+  width: fit-content;
+  padding: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 1.25rem;
+  background: linear-gradient(145deg, rgba(28, 28, 36, 0.94), rgba(10, 10, 15, 0.94));
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.48), 0 1px 0 rgba(255, 255, 255, 0.08) inset;
+  backdrop-filter: blur(22px) saturate(150%);
+}
+
+div.dashboard-save-bar button {
+  min-height: 2.75rem;
+  border-radius: 0.9rem;
+  padding: 0.7rem 1.1rem;
+  font-size: 0.875rem;
+  line-height: 1rem;
+  box-shadow: none;
+  transform: none;
+}
+
+button.dashboard-save-bar {
+  min-height: 3rem;
+  border: 1px solid rgba(255, 151, 104, 0.42);
   border-radius: 1rem;
-  background: rgba(10, 10, 15, 0.92);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 16px 40px rgba(244, 101, 48, 0.3), 0 1px 0 rgba(255, 255, 255, 0.18) inset;
   backdrop-filter: blur(18px);
 }
 
-@media (min-width: 1024px) {
-  [data-sidebar-collapsed="false"] div.dashboard-save-bar { left: 17rem; }
-  [data-sidebar-collapsed="true"] div.dashboard-save-bar { left: 6rem; }
-}
-
 @media (max-width: 639px) {
-  .dashboard-save-secondary {
-    display: none;
-  }
-
   div.dashboard-save-bar {
+    right: 0.75rem;
+    left: 0.75rem;
+    bottom: max(0.75rem, env(safe-area-inset-bottom));
+    width: auto;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 1.15rem;
   }
 
   div.dashboard-save-bar > * {
     width: 100%;
     justify-content: center;
+  }
+
+  div.dashboard-save-bar:has(> :only-child) {
+    display: flex;
+  }
+
+  div.dashboard-save-bar:has(> :only-child) > * {
+    flex: 1;
+  }
+
+  button.dashboard-save-bar {
+    right: 0.75rem;
+    left: 0.75rem;
+    bottom: max(0.75rem, env(safe-area-inset-bottom));
+    width: auto;
   }
 
   [data-dashboard-root] > div > div[class*="max-w-"] {

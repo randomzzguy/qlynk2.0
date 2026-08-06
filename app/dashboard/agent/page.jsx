@@ -625,6 +625,8 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
                   Preview
                 </a>
               )}
+            </div>
+            <div className="dashboard-save-bar flex items-center justify-end gap-2">
               <button
                 onClick={handleSaveDraft}
                 disabled={saving || !hasContentChanges}

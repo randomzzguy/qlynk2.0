@@ -679,6 +679,61 @@ html {
   }
 }
 
+/* Dashboard mobile containment
+   Keep every dashboard tab inside the viewport, including long user content. */
+[data-dashboard-root],
+[data-dashboard-root] > div,
+[data-dashboard-root] [class*="max-w-"] {
+  min-width: 0;
+  max-width: 100%;
+}
+
+[data-dashboard-root] img,
+[data-dashboard-root] video,
+[data-dashboard-root] canvas,
+[data-dashboard-root] iframe {
+  max-width: 100%;
+}
+
+[data-dashboard-root] :is(p, h1, h2, h3, h4, a, span, code) {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 639px) {
+  [data-dashboard-root] > div > div[class*="max-w-"] {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  [data-dashboard-root] h1.text-3xl {
+    font-size: 1.625rem;
+    line-height: 2rem;
+  }
+
+  [data-dashboard-root] :is(.p-8, .p-7) {
+    padding: 1.25rem;
+  }
+
+  [data-dashboard-root] :is(button, [role="button"], input, select, textarea) {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  [data-dashboard-root] button,
+  [data-dashboard-root] [role="button"] {
+    white-space: normal;
+  }
+
+  [data-dashboard-root] :is(.flex, .grid) > * {
+    min-width: 0;
+  }
+
+  [data-dashboard-root] pre {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+}
+
 /* Neon orange pulse for headline numbers */
 @keyframes neon-pulse {
   0%, 100% {

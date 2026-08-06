@@ -36,6 +36,7 @@ function DashboardLayoutContent({ children }) {
   const [routeLoading, setRouteLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile
   const [isCollapsed, setIsCollapsed] = useState(false); // Desktop
+  const unsavedChangesRef = useRef(false);
   const [profile, setProfile] = useState(null);
   const sidebarWasCollapsedBeforeTourRef = useRef(null);
   const previousRouteKeyRef = useRef(routeKey);
@@ -83,6 +84,29 @@ function DashboardLayoutContent({ children }) {
     if (saved !== null) {
       setIsCollapsed(saved === 'true');
     }
+  }, []);
+
+  useEffect(() => {
+    const syncUnsavedChanges = (event) => {
+      unsavedChangesRef.current = Boolean(event.detail?.dirty);
+    };
+    const guardDashboardLinks = (event) => {
+      if (!unsavedChangesRef.current || event.defaultPrevented || event.button !== 0) return;
+      const link = event.target.closest('a[href]');
+      if (!link || link.target === '_blank' || link.hasAttribute('download')) return;
+      const target = new URL(link.href, window.location.href);
+      if (target.origin !== window.location.origin || target.href === window.location.href) return;
+      if (!window.confirm('You have unsaved changes. Leave this page and discard them?')) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+    window.addEventListener('qlynk:unsaved-changes', syncUnsavedChanges);
+    document.addEventListener('click', guardDashboardLinks, true);
+    return () => {
+      window.removeEventListener('qlynk:unsaved-changes', syncUnsavedChanges);
+      document.removeEventListener('click', guardDashboardLinks, true);
+    };
   }, []);
 
   useEffect(() => {
@@ -177,6 +201,7 @@ function DashboardLayoutContent({ children }) {
     const targetUrl = new URL(targetHref, window.location.origin);
     const targetKey = `${targetUrl.pathname}${targetUrl.search}`;
     if (targetKey !== routeKey) setRouteLoading(true);
+    return true;
   }, [routeKey]);
 
   const handleSignOut = async () => {
@@ -197,7 +222,7 @@ function DashboardLayoutContent({ children }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
+    <div data-dashboard-shell data-sidebar-collapsed={isCollapsed ? 'true' : 'false'} className="min-h-screen bg-[#0a0a0f] text-white">
       <Toaster position="top-right" />
       {/* Background Orbs */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">

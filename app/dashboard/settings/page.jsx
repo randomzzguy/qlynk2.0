@@ -145,6 +145,11 @@ export default function SettingsPage() {
     return () => window.removeEventListener('beforeunload', warnAboutUnsavedChanges);
   }, [isDirty]);
 
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('qlynk:unsaved-changes', { detail: { dirty: isDirty } }));
+    return () => window.dispatchEvent(new CustomEvent('qlynk:unsaved-changes', { detail: { dirty: false } }));
+  }, [isDirty]);
+
   const handleSave = async () => {
     if (!user) return;
     setSaving(true);
@@ -754,7 +759,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Save Button */}
-        <div className="flex justify-end mb-20">
+        <div className="dashboard-save-bar flex justify-end">
           <button 
             onClick={handleSave}
             disabled={saving || !isDirty}

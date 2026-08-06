@@ -285,6 +285,11 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
     return () => window.removeEventListener('beforeunload', warnAboutUnsavedChanges);
   }, [isDirty]);
 
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('qlynk:unsaved-changes', { detail: { dirty: isDirty } }));
+    return () => window.dispatchEvent(new CustomEvent('qlynk:unsaved-changes', { detail: { dirty: false } }));
+  }, [isDirty]);
+
   const handleSaveDraft = async () => {
     if (!userId || !hasContentChanges) return;
     setSaving(true);
@@ -608,13 +613,13 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
           </p>
         </div>
             
-            <div className="flex items-center gap-3">
+            <div className="dashboard-save-bar flex items-center justify-end gap-3">
               {username && (
                 <a 
                   href={`/${username}`} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2.5 bg-gray-800/60 border border-gray-700 rounded-xl text-gray-300 hover:text-white hover:border-[#f46530]/50 hover:bg-gray-800 transition-all"
+                  className="dashboard-save-secondary flex items-center gap-2 px-4 py-2.5 bg-gray-800/60 border border-gray-700 rounded-xl text-gray-300 hover:text-white hover:border-[#f46530]/50 hover:bg-gray-800 transition-all"
                 >
                   <ExternalLink size={18} />
                   Preview

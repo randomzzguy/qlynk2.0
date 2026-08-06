@@ -106,6 +106,11 @@ export default function KnowledgeDashboard() {
     return () => window.removeEventListener('beforeunload', warnAboutUnsavedChanges);
   }, [hasUnsavedDraft]);
 
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('qlynk:unsaved-changes', { detail: { dirty: hasUnsavedDraft } }));
+    return () => window.dispatchEvent(new CustomEvent('qlynk:unsaved-changes', { detail: { dirty: false } }));
+  }, [hasUnsavedDraft]);
+
   // Refresh every 5s while a document is still processing.
   useEffect(() => {
     const hasUnprocessed = documents.some(d => !d.is_processed && ['pending', 'processing'].includes(d.processing_status || 'pending'));

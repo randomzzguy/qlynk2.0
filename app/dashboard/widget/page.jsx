@@ -168,13 +168,19 @@ export default function WebsiteWidgetPage() {
 
   useEffect(() => {
     const warnAboutUnsavedChanges = (event) => {
-      if (!isDirty || !widget) return;
+      if (loading || !isDirty) return;
       event.preventDefault();
       event.returnValue = '';
     };
     window.addEventListener('beforeunload', warnAboutUnsavedChanges);
     return () => window.removeEventListener('beforeunload', warnAboutUnsavedChanges);
-  }, [isDirty, widget]);
+  }, [isDirty, loading]);
+
+  useEffect(() => {
+    const hasUnsavedChanges = Boolean(!loading && isDirty);
+    window.dispatchEvent(new CustomEvent('qlynk:unsaved-changes', { detail: { dirty: hasUnsavedChanges } }));
+    return () => window.dispatchEvent(new CustomEvent('qlynk:unsaved-changes', { detail: { dirty: false } }));
+  }, [isDirty, loading]);
 
   const payload = () => ({
     ...form,
@@ -241,7 +247,7 @@ export default function WebsiteWidgetPage() {
           type="button"
           onClick={save}
           disabled={saving || !subscription?.is_live || (Boolean(widget) && !isDirty)}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#f46530] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#f46530]/20 transition hover:bg-[#df5929] disabled:cursor-not-allowed disabled:opacity-50"
+          className="dashboard-save-bar inline-flex items-center justify-center gap-2 rounded-xl bg-[#f46530] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#f46530]/20 transition hover:bg-[#df5929] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {saving ? <Loader2 size={17} className="animate-spin" /> : widget && !isDirty ? <Check size={17} /> : widget ? <Save size={17} /> : <Sparkles size={17} />}
           {widget ? (isDirty ? 'Publish changes' : 'Saved') : 'Create widget'}

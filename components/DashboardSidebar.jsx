@@ -72,8 +72,11 @@ export default function DashboardSidebar({ onSignOut, onNavigate, isOpen, onClos
     return (
       <Link
         href={item.href}
-        onClick={() => {
-          onNavigate?.(item.href);
+        onClick={(event) => {
+          if (onNavigate?.(item.href) === false) {
+            event.preventDefault();
+            return;
+          }
           onClose?.();
         }}
         data-tour={item.tourKey}

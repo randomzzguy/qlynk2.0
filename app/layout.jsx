@@ -7,6 +7,13 @@ import { createMetadata, HOME_DESCRIPTION, HOME_TITLE, SITE_URL } from '../lib/s
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#0a0a0f',
+}
+
 export const metadata = {
   ...createMetadata({
     title: HOME_TITLE,

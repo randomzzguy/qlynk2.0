@@ -271,7 +271,7 @@ function DashboardLayoutContent({ children }) {
         </button>
       </header>
       
-      <div className="flex h-[calc(100dvh-4rem)] min-h-0 overflow-hidden lg:h-screen">
+      <div className="flex min-h-[calc(100dvh-4rem)] lg:h-screen lg:min-h-0 lg:overflow-hidden">
         <DashboardSidebar 
           onSignOut={handleSignOut} 
           isOpen={isSidebarOpen} 
@@ -294,7 +294,7 @@ function DashboardLayoutContent({ children }) {
         
         {/* Main Content Scrollable Area */}
         <main data-dashboard-root data-dashboard-tour-background data-dashboard-tour-main tabIndex={-1} className={`
-          min-w-0 flex-1 overflow-x-hidden overflow-y-auto relative z-10 transition-all duration-300 ease-in-out motion-reduce:transition-none
+          min-w-0 flex-1 overflow-x-hidden overflow-y-visible relative z-10 transition-all duration-300 ease-in-out motion-reduce:transition-none lg:overflow-y-auto
           ${isCollapsed ? 'lg:ml-20' : 'lg:ml-64'}
         `}>
           <AnimatePresence>

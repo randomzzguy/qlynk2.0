@@ -695,6 +695,17 @@ html {
   -webkit-overflow-scrolling: touch;
 }
 
+@media (max-width: 1023px) {
+  [data-dashboard-shell] {
+    min-height: 100dvh;
+  }
+
+  [data-dashboard-root] {
+    min-height: calc(100dvh - 4rem);
+    overflow-y: visible;
+  }
+}
+
 @media (min-width: 1024px) {
   [data-dashboard-root] {
     scroll-padding-bottom: 5rem;

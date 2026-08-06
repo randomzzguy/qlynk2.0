@@ -271,7 +271,7 @@ function DashboardLayoutContent({ children }) {
         </button>
       </header>
       
-      <div className="flex h-[calc(100dvh-4rem)] overflow-hidden lg:h-screen">
+      <div className="flex h-[calc(100dvh-4rem)] min-h-0 overflow-hidden lg:h-screen">
         <DashboardSidebar 
           onSignOut={handleSignOut} 
           isOpen={isSidebarOpen} 
@@ -310,7 +310,7 @@ function DashboardLayoutContent({ children }) {
               </motion.div>
             )}
           </AnimatePresence>
-          <div ref={contentRef} className="min-h-full min-w-0 pb-20">
+          <div ref={contentRef} className="min-h-full min-w-0 pb-[calc(9rem+env(safe-area-inset-bottom))] lg:pb-20">
             {children}
           </div>
         </main>

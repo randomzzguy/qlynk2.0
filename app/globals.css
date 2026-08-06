@@ -688,6 +688,19 @@ html {
   max-width: 100%;
 }
 
+[data-dashboard-root] {
+  min-height: 0;
+  scroll-padding-bottom: calc(9rem + env(safe-area-inset-bottom));
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 1024px) {
+  [data-dashboard-root] {
+    scroll-padding-bottom: 5rem;
+  }
+}
+
 [data-dashboard-root] img,
 [data-dashboard-root] video,
 [data-dashboard-root] canvas,

@@ -5,6 +5,7 @@ import QlynkBackground from '../components/QlynkBackground'
 import JsonLd from '../components/JsonLd'
 import { createMetadata, HOME_DESCRIPTION, HOME_TITLE, SITE_URL } from '../lib/seo'
 import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 export const metadata = {
   ...createMetadata({
@@ -140,6 +141,7 @@ export default function RootLayout({ children }) {
         <ToasterClient />
         {children}
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )

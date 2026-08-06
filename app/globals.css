@@ -755,17 +755,21 @@ button.dashboard-save-bar {
 
   div.dashboard-save-bar:has(> :only-child) {
     display: flex;
+    right: 0.75rem;
+    left: auto;
+    width: fit-content;
   }
 
   div.dashboard-save-bar:has(> :only-child) > * {
-    flex: 1;
+    flex: none;
+    width: auto;
   }
 
   button.dashboard-save-bar {
     right: 0.75rem;
-    left: 0.75rem;
+    left: auto;
     bottom: max(0.75rem, env(safe-area-inset-bottom));
-    width: auto;
+    width: fit-content;
   }
 
   [data-dashboard-root] > div > div[class*="max-w-"] {

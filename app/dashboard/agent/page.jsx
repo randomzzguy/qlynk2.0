@@ -613,7 +613,7 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
           </p>
         </div>
             
-            <div className="dashboard-save-bar flex items-center justify-end gap-3">
+            <div className="flex items-center justify-end gap-3">
               {username && (
                 <a 
                   href={`/${username}`} 
@@ -626,7 +626,9 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
                 </a>
               )}
             </div>
-            <div className="dashboard-save-bar flex items-center justify-end gap-2">
+            {(isDirty || saving || hasDraft) && (
+            <div className="dashboard-save-bar flex items-center justify-end gap-2" aria-label="Unsaved agent changes">
+              {(hasContentChanges || savingAction === 'draft') && (
               <button
                 onClick={handleSaveDraft}
                 disabled={saving || !hasContentChanges}
@@ -635,6 +637,7 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
                 {saving && savingAction === 'draft' ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                 {saving && savingAction === 'draft' ? 'Saving...' : 'Save Draft'}
               </button>
+              )}
               <button
                 onClick={handleSave}
                 disabled={saving || (!isDirty && !hasDraft)}
@@ -652,6 +655,7 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
                 {saving && savingAction === 'publish' ? 'Publishing...' : saveStatus === 'error' ? 'Error' : 'Publish Changes'}
               </button>
             </div>
+            )}
           </div>
 
           {(hasDraft || saveMessage) && section === 'general' && (

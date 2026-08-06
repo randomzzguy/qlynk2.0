@@ -179,7 +179,7 @@ function DashboardLayoutContent({ children }) {
               { opacity: 0, transform: 'translateY(14px)', filter: 'blur(3px)' },
               { opacity: 1, transform: 'translateY(0)', filter: 'blur(0)' },
             ],
-            { duration: 360, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'both' }
+            { duration: 360, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
           );
         }
       });

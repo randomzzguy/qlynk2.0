@@ -243,6 +243,7 @@ export default function WebsiteWidgetPage() {
             Put this Qlynk Agent on a client website while keeping its approved knowledge, rules, conversations, and usage in one place.
           </p>
         </div>
+        {(!widget || isDirty || saving) && (
         <button
           type="button"
           onClick={save}
@@ -252,6 +253,7 @@ export default function WebsiteWidgetPage() {
           {saving ? <Loader2 size={17} className="animate-spin" /> : widget && !isDirty ? <Check size={17} /> : widget ? <Save size={17} /> : <Sparkles size={17} />}
           {widget ? (isDirty ? 'Publish changes' : 'Saved') : 'Create widget'}
         </button>
+        )}
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[420px_1fr]">

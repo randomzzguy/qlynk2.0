@@ -759,7 +759,8 @@ export default function SettingsPage() {
         </div>
 
         {/* Save Button */}
-        <div className="dashboard-save-bar flex justify-end">
+        {(isDirty || saving) && (
+        <div className="dashboard-save-bar flex justify-end" aria-label="Unsaved settings changes">
           <button 
             onClick={handleSave}
             disabled={saving || !isDirty}
@@ -773,6 +774,7 @@ export default function SettingsPage() {
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
+        )}
       </div>
 
       {deleteOpen && (

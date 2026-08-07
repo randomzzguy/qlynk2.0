@@ -24,7 +24,6 @@ import {
 } from '@/lib/subscriptionHelpers';
 import UpgradePrompt from '@/components/UpgradePrompt';
 import TrialChoiceManager from '@/components/TrialChoiceManager';
-import confetti from 'canvas-confetti';
 import { announceDashboardTourCheckoutState } from '@/lib/dashboard-tour';
 
 export default function DashboardPage() {
@@ -54,7 +53,7 @@ export default function DashboardPage() {
       const user = await getCurrentUser();
       if (!user) return;
 
-      const userProfile = await getCurrentProfile();
+      const userProfile = await getCurrentProfile(user);
       setProfile(userProfile);
 
       const supabase = createClient();
@@ -185,6 +184,7 @@ export default function DashboardPage() {
           const data = await res.json();
           if (data.success) {
             // Trigger confetti welcome animation
+            const { default: confetti } = await import('canvas-confetti');
             confetti({
               particleCount: 150,
               spread: 80,

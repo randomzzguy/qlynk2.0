@@ -172,23 +172,25 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
 
         const supabase = createClient();
         
-        // Get username
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('username')
-          .eq('id', user.id)
-          .single();
+        // These requests are independent; start them together to avoid a
+        // multi-round-trip loading waterfall on this route.
+        const [
+          { data: profile },
+          { data: existingConfig },
+          passwordStatusResponse,
+          rulesResponse,
+          draftResponse,
+        ] = await Promise.all([
+          supabase.from('profiles').select('username').eq('id', user.id).single(),
+          supabase.from('agent_configs').select('*').eq('user_id', user.id).single(),
+          fetch('/api/agent/access-password', { cache: 'no-store' }),
+          fetch('/api/agent/rules', { cache: 'no-store' }),
+          fetch('/api/agent/draft', { cache: 'no-store' }),
+        ]);
         
         if (profile) {
           setUsername(profile.username);
         }
-
-        // Get existing agent config
-        const { data: existingConfig } = await supabase
-          .from('agent_configs')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
 
         if (existingConfig) {
           delete existingConfig.access_password;
@@ -212,15 +214,11 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
           });
         }
 
-        const passwordStatusResponse = await fetch('/api/agent/access-password', {
-          cache: 'no-store',
-        });
         if (passwordStatusResponse.ok) {
           const passwordStatus = await passwordStatusResponse.json();
           setPasswordIsSet(Boolean(passwordStatus.passwordSet));
         }
 
-        const rulesResponse = await fetch('/api/agent/rules', { cache: 'no-store' });
         if (rulesResponse.ok) {
           const rulesData = await rulesResponse.json();
           const loadedRules = normalizeAgentRules(rulesData.rules || {}, rulesData.agent_type || DEFAULT_AGENT_TYPE);
@@ -244,7 +242,6 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
 
         // A private draft takes precedence in the editor, while the public
         // agent continues using the published rows above.
-        const draftResponse = await fetch('/api/agent/draft', { cache: 'no-store' });
         if (draftResponse.ok) {
           const draftData = await draftResponse.json();
           if (draftData.draft) {

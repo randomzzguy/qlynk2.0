@@ -51,19 +51,19 @@ function DashboardLayoutContent({ children }) {
           return;
         }
 
-        const userProfile = await getCurrentProfile();
+        const supabase = createClientBrowser();
+        const [userProfile, { data: sub }] = await Promise.all([
+          getCurrentProfile(user),
+          supabase
+            .from('subscriptions')
+            .select('tier')
+            .eq('user_id', user.id)
+            .maybeSingle(),
+        ]);
         if (!userProfile || !userProfile.onboarding_completed) {
           router.push('/onboarding');
           return;
         }
-
-        // Fetch subscription
-        const supabase = createClientBrowser();
-        const { data: sub } = await supabase
-          .from('subscriptions')
-          .select('tier')
-          .eq('user_id', user.id)
-          .maybeSingle();
 
         setProfile({ ...userProfile, tier: sub?.tier || 'Trial' });
         setIsAuthenticated(true);
@@ -169,24 +169,21 @@ function DashboardLayoutContent({ children }) {
 
     previousRouteKeyRef.current = routeKey;
     let frame;
-    const revealTimer = window.setTimeout(() => {
-      frame = window.requestAnimationFrame(() => {
-        setRouteLoading(false);
+    frame = window.requestAnimationFrame(() => {
+      setRouteLoading(false);
 
-        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-          contentRef.current?.animate(
-            [
-              { opacity: 0, transform: 'translateY(14px)', filter: 'blur(3px)' },
-              { opacity: 1, transform: 'translateY(0)', filter: 'blur(0)' },
-            ],
-            { duration: 360, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
-          );
-        }
-      });
-    }, 900);
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        contentRef.current?.animate(
+          [
+            { opacity: 0, transform: 'translateY(8px)' },
+            { opacity: 1, transform: 'translateY(0)' },
+          ],
+          { duration: 220, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
+        );
+      }
+    });
 
     return () => {
-      window.clearTimeout(revealTimer);
       if (frame) window.cancelAnimationFrame(frame);
     };
   }, [routeKey]);

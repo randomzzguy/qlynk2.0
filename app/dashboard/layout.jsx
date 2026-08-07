@@ -170,8 +170,6 @@ function DashboardLayoutContent({ children }) {
     previousRouteKeyRef.current = routeKey;
     let frame;
     frame = window.requestAnimationFrame(() => {
-      setRouteLoading(false);
-
       if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         contentRef.current?.animate(
           [
@@ -186,6 +184,14 @@ function DashboardLayoutContent({ children }) {
     return () => {
       if (frame) window.cancelAnimationFrame(frame);
     };
+  }, [routeKey]);
+
+  useEffect(() => {
+    const handlePageReady = (event) => {
+      if (event.detail?.routeKey === routeKey) setRouteLoading(false);
+    };
+    window.addEventListener('qlynk:dashboard-page-ready', handlePageReady);
+    return () => window.removeEventListener('qlynk:dashboard-page-ready', handlePageReady);
   }, [routeKey]);
 
   useEffect(() => {

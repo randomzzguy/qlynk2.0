@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   Brain, 
   Plus, 
@@ -19,8 +19,9 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useSearchParams } from 'next/navigation';
-import { createClientBrowser } from '@/lib/supabase';
+import { createClientBrowser, getCurrentUser } from '@/lib/supabase';
 import { AgentConfigPage } from '@/app/dashboard/agent/page';
+import { useDashboardPageReady } from '@/lib/dashboard-page-ready';
 
 export default function KnowledgeDashboard() {
   const searchParams = useSearchParams();
@@ -28,6 +29,7 @@ export default function KnowledgeDashboard() {
   const [knowledge, setKnowledge] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
+  useDashboardPageReady(loading);
   const [isAdding, setIsAdding] = useState(false);
   const [isAddingLink, setIsAddingLink] = useState(false);
   
@@ -60,26 +62,25 @@ export default function KnowledgeDashboard() {
     || newFaqAnswer.trim()
   );
 
-  const supabase = createClientBrowser();
+  const supabase = useMemo(() => createClientBrowser(), []);
 
   const fetchAllData = useCallback(async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
       if (!user) return;
 
-      // Fetch facts
-      const { data: facts } = await supabase
-        .from('agent_knowledge')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      // Fetch documents
-      const { data: docs } = await supabase
-        .from('agent_documents')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+      const [{ data: facts }, { data: docs }] = await Promise.all([
+        supabase
+          .from('agent_knowledge')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('agent_documents')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false }),
+      ]);
 
       setKnowledge(facts || []);
       setDocuments(docs || []);

@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import UpgradePrompt from '@/components/UpgradePrompt';
+import { useDashboardPageReady } from '@/lib/dashboard-page-ready';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function formatDate(dateStr) {
@@ -56,6 +57,7 @@ function countInRange(rows, dateField, start, end) {
 export default function AnalyticsPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  useDashboardPageReady(loading);
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [conversationMessages, setConversationMessages] = useState([]);

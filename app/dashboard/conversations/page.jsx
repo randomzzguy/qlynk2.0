@@ -20,12 +20,14 @@ import {
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'react-hot-toast';
+import { useDashboardPageReady } from '@/lib/dashboard-page-ready';
 
 export default function ConversationsPage() {
   const searchParams = useSearchParams();
   const requestedConversationId = searchParams.get('conversation');
   const openedConversationIdRef = useRef(null);
   const [loading, setLoading] = useState(true);
+  useDashboardPageReady(loading);
   const [conversations, setConversations] = useState([]);
   const [selectedConvo, setSelectedConvo] = useState(null);
   const [messages, setMessages] = useState([]);

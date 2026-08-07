@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import UpgradePrompt from '@/components/UpgradePrompt';
 import AgentLaunchTools from '@/components/AgentLaunchTools';
+import { useDashboardPageReady } from '@/lib/dashboard-page-ready';
 
 const GOOGLE_FONTS = [
   'Inter',
@@ -159,6 +160,7 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
   const isDirty = hasContentChanges || Boolean(accessPassword);
   const selectedAgentType = getAgentTypeDefinition(config.agent_type || DEFAULT_AGENT_TYPE);
   const isPersonalAgent = selectedAgentType.id === 'personal';
+  useDashboardPageReady(loading);
 
   useEffect(() => {
     const loadConfig = async () => {

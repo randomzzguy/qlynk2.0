@@ -29,10 +29,12 @@ import {
 import UpgradePrompt from '@/components/UpgradePrompt';
 import { toast, Toaster } from 'react-hot-toast';
 import { getUsernameChangeAvailability, validateUsername } from '@/lib/usernames';
+import { useDashboardPageReady } from '@/lib/dashboard-page-ready';
 
 export default function SettingsPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  useDashboardPageReady(loading);
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
 
@@ -80,7 +82,15 @@ export default function SettingsPage() {
         setUser(currentUser);
         setEmail(currentUser.email);
 
-        const currentProfile = await getCurrentProfile();
+        const supabase = createClient();
+        const [currentProfile, { data: agentConfig }] = await Promise.all([
+          getCurrentProfile(currentUser),
+          supabase
+            .from('agent_configs')
+            .select('bio, primary_color')
+            .eq('user_id', currentUser.id)
+            .maybeSingle(),
+        ]);
         const loadedFullName = currentProfile?.full_name || '';
         const loadedAvatarUrl = currentProfile?.avatar_url || '';
         const loadedUsername = currentProfile?.username || '';
@@ -100,14 +110,7 @@ export default function SettingsPage() {
           setAccountDeletionScheduledFor(currentProfile.account_deletion_scheduled_for || null);
         }
 
-        // Fetch bio from agent_configs as it's the primary source for the AI
-        const supabase = createClient();
-        const { data: agentConfig } = await supabase
-          .from('agent_configs')
-          .select('bio, primary_color')
-          .eq('user_id', currentUser.id)
-          .maybeSingle();
-        
+        // Agent config is the primary source for the AI bio and color.
         const loadedBio = agentConfig?.bio || '';
         const loadedPrimaryColor = agentConfig?.primary_color || '#f46530';
         setBio(loadedBio);

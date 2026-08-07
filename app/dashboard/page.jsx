@@ -25,6 +25,7 @@ import {
 import UpgradePrompt from '@/components/UpgradePrompt';
 import TrialChoiceManager from '@/components/TrialChoiceManager';
 import { announceDashboardTourCheckoutState } from '@/lib/dashboard-tour';
+import { useDashboardPageReady } from '@/lib/dashboard-page-ready';
 
 export default function DashboardPage() {
   const [profile, setProfile] = useState(null);
@@ -47,23 +48,39 @@ export default function DashboardPage() {
   const [readinessData, setReadinessData] = useState({ knowledgeCount: 0, openGaps: 0, rules: null });
   const isPaymentPastDue = subscription?.status?.toLowerCase() === 'past_due';
   const isAccountDeletionScheduled = !!profile?.account_deletion_scheduled_for;
+  useDashboardPageReady(loading);
 
   const loadDashboardData = async () => {
     try {
       const user = await getCurrentUser();
       if (!user) return;
 
-      const userProfile = await getCurrentProfile(user);
-      setProfile(userProfile);
-
       const supabase = createClient();
-
-      // Load agent config - rescue if missing
-      let { data: config } = await supabase
+      const userProfilePromise = getCurrentProfile(user);
+      const configPromise = supabase
         .from('agent_configs')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
+      const readinessPromise = Promise.all([
+        supabase.from('agent_knowledge').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_active', true),
+        supabase.from('agent_documents').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_processed', true),
+        supabase.from('agent_knowledge_gaps').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'open'),
+        fetch('/api/agent/rules', { cache: 'no-store' }).then((response) => response.ok ? response.json() : null).catch(() => null),
+      ]);
+      const pagePromise = supabase.from('pages').select('id, theme').eq('user_id', user.id).maybeSingle();
+      const subscriptionPromise = supabase.from('subscriptions').select('*').eq('user_id', user.id).single();
+      const conversationsPromise = supabase
+        .from('agent_conversations')
+        .select('id, message_count, created_at, visitor_name')
+        .eq('agent_owner_id', user.id)
+        .order('created_at', { ascending: false });
+
+      const userProfile = await userProfilePromise;
+      setProfile(userProfile);
+
+      // Load agent config - rescue if missing
+      let { data: config } = await configPromise;
       
       if (!config) {
         console.log('[v0] Auto-repairing missing agent config for user:', user.id);
@@ -79,12 +96,7 @@ export default function DashboardPage() {
       
       setAgentConfig(config);
 
-      const [factsResult, documentsResult, gapsResult, rulesResult] = await Promise.all([
-        supabase.from('agent_knowledge').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_active', true),
-        supabase.from('agent_documents').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_processed', true),
-        supabase.from('agent_knowledge_gaps').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'open'),
-        fetch('/api/agent/rules', { cache: 'no-store' }).then((response) => response.ok ? response.json() : null).catch(() => null),
-      ]);
+      const [factsResult, documentsResult, gapsResult, rulesResult] = await readinessPromise;
       setReadinessData({
         knowledgeCount: (factsResult.count || 0) + (documentsResult.count || 0),
         openGaps: gapsResult.count || 0,
@@ -92,11 +104,7 @@ export default function DashboardPage() {
       });
 
       // Load public page - ensure it exists (Fixes "Setting up the clone" error)
-      const { data: pageData, error: pageFetchError } = await supabase
-        .from('pages')
-        .select('id, theme')
-        .eq('user_id', user.id)
-        .maybeSingle();
+      const { data: pageData, error: pageFetchError } = await pagePromise;
       
       // If missing or broken, force-create a default
       if (!pageData || pageFetchError) {
@@ -119,20 +127,12 @@ export default function DashboardPage() {
       }
 
       // Load subscription for usage limits
-      const { data: subData } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
+      const { data: subData } = await subscriptionPromise;
       
       setSubscription(subData);
 
       // Load conversation stats
-      const { data: conversations } = await supabase
-        .from('agent_conversations')
-        .select('id, message_count, created_at, visitor_name')
-        .eq('agent_owner_id', user.id)
-        .order('created_at', { ascending: false });
+      const { data: conversations } = await conversationsPromise;
 
       if (conversations) {
         const totalConvos = conversations.length;

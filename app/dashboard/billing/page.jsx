@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
-import { getCurrentUser, getCurrentProfile } from '@/lib/supabase';
+import { getCurrentUser } from '@/lib/supabase';
 import { CreditCard, Zap, Check, ArrowRight, Loader2, Clock, FileText, Download, Receipt, AlertTriangle } from 'lucide-react';
 import { getTrialDaysRemaining, PLAN_LIMITS } from '@/lib/subscriptionHelpers';
+import { useDashboardPageReady } from '@/lib/dashboard-page-ready';
 
 export default function BillingPage() {
   const [subscription, setSubscription] = useState(null);
@@ -13,14 +14,13 @@ export default function BillingPage() {
   const [portalLoading, setPortalLoading] = useState(false);
   const [invoices, setInvoices] = useState([]);
   const [loadingInvoices, setLoadingInvoices] = useState(false);
+  useDashboardPageReady(loading);
 
   useEffect(() => {
     const loadBillingData = async () => {
       try {
         const user = await getCurrentUser();
         if (!user) return;
-
-        await getCurrentProfile();
 
         const supabase = createClient();
         const { data: sub } = await supabase

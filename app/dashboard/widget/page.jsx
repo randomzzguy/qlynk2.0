@@ -25,6 +25,7 @@ import { toast } from 'react-hot-toast';
 import { buildWidgetEmbedCode } from '@/lib/widget-installations';
 import { hasAgencyFeatures } from '@/lib/plans';
 import UpgradePrompt from '@/components/UpgradePrompt';
+import { useDashboardPageReady } from '@/lib/dashboard-page-ready';
 
 const DEFAULT_FORM = {
   name: 'Primary website widget',
@@ -120,6 +121,7 @@ function WidgetPreview({ form, agent, mobile }) {
 
 export default function WebsiteWidgetPage() {
   const [loading, setLoading] = useState(true);
+  useDashboardPageReady(loading);
   const [saving, setSaving] = useState(false);
   const [widget, setWidget] = useState(null);
   const [agent, setAgent] = useState(null);

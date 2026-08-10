@@ -25,7 +25,7 @@ import MarketingHeader from '@/components/MarketingHeader';
 import { breadcrumbSchema, createMetadata, SITE_URL } from '@/lib/seo';
 
 const path = '/agent-builder';
-const downloadPath = '/downloads/qlynk-agent-builder-skill-v1.0.0.zip';
+const downloadPath = '/downloads/qlynk-agent-builder-skill-v1.0.1.zip';
 const githubUrl = 'https://github.com/randomzzguy/qlynk-agent-builder';
 
 export const metadata = createMetadata({
@@ -244,7 +244,7 @@ export default function AgentBuilderPage() {
                 <div className="flex items-center gap-3"><Download className="text-orange" /><h3 className="text-xl font-black">Download the standalone skill</h3></div>
                 <p className="mt-3 text-sm leading-relaxed text-gray-400">Unzip it into your personal or repository skill folder, then invoke it explicitly.</p>
                 <pre className="mt-5 overflow-x-auto rounded-xl border border-white/10 bg-black/40 p-4 text-xs leading-7 text-gray-300"><code>{`$HOME/.agents/skills/build-qlynk-agent\n\nUse $build-qlynk-agent to build a Qlynk Agent for my client.`}</code></pre>
-                <a href={downloadPath} download className="mt-5 inline-flex items-center gap-2 font-bold text-orange hover:underline">Download version 1.0.0 <Download size={15} /></a>
+                <a href={downloadPath} download className="mt-5 inline-flex items-center gap-2 font-bold text-orange hover:underline">Download version 1.0.1 <Download size={15} /></a>
               </div>
             </div>
           </div>

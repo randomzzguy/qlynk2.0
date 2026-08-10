@@ -16,7 +16,8 @@ test('distributed Qlynk Agent Builder copies match the validated canonical skill
 
 test('plugin and marketplace expose the intended versioned package', () => {
   assert.equal(plugin.name, 'qlynk-agent-builder');
-  assert.equal(plugin.version, '1.0.0');
+  assert.equal(plugin.version, '1.0.1');
+  assert.equal(plugin.license, 'MIT');
   assert.equal(plugin.skills, './skills/');
   assert.equal(plugin.interface.websiteURL, 'https://www.qlynk.site/agent-builder');
   assert.equal(marketplace.name, 'qlynk');
@@ -25,7 +26,8 @@ test('plugin and marketplace expose the intended versioned package', () => {
 });
 
 test('landing page points to a real versioned download and public repository', () => {
-  assert.match(landingPage, /qlynk-agent-builder-skill-v1\.0\.0\.zip/);
+  assert.match(landingPage, /qlynk-agent-builder-skill-v1\.0\.1\.zip/);
   assert.match(landingPage, /github\.com\/randomzzguy\/qlynk-agent-builder/);
-  assert.ok(existsSync('public/downloads/qlynk-agent-builder-skill-v1.0.0.zip'));
+  assert.ok(existsSync('distribution/qlynk-agent-builder/LICENSE'));
+  assert.ok(existsSync('public/downloads/qlynk-agent-builder-skill-v1.0.1.zip'));
 });

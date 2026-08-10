@@ -67,9 +67,9 @@ Keep the freelancer's project fee separate from the client's Qlynk subscription.
 
 ### 8–22 seconds: introduce the workflow
 
-**Visual:** Invoke `$build-qlynk-agent`, then show the first Quick interview question.
+**Visual:** Show the Codex `$build-qlynk-agent` and Claude `/qlynk-agent-builder:build-qlynk-agent` invocations, then the first Quick interview question.
 
-**Voiceover:** “The free Qlynk Agent Builder gives you a five-question client interview and an advanced path for complex businesses.”
+**Voiceover:** “The free Qlynk Agent Builder works in Codex and Claude, with a five-question client interview and an advanced path for complex businesses.”
 
 **On-screen text:** Five questions → complete agent brief
 
@@ -107,7 +107,7 @@ Keep the freelancer's project fee separate from the client's Qlynk subscription.
 
 ## LinkedIn launch post
 
-Freelancers and web designers can now offer custom AI-agent setup without improvising the client interview every time.
+Freelancers and web designers can now use Codex or Claude to offer custom AI-agent setup without improvising the client interview every time.
 
 The free Qlynk Agent Builder helps you:
 
@@ -126,7 +126,7 @@ AI-generated answers can still be inaccurate, so client approval and testing rem
 
 ## Short social caption
 
-Turn AI-agent setup into a client service. The free Qlynk Agent Builder gives freelancers a five-question interview, copy-ready agent configuration, knowledge-base plan, launch tests, and a client-owned handoff. Download it at qlynk.site/agent-builder.
+Turn AI-agent setup into a client service. The free Qlynk Agent Builder works with Codex and Claude, giving freelancers a five-question interview, copy-ready configuration, launch tests, and a client-owned handoff. Download it at qlynk.site/agent-builder.
 
 ## Three short-form hooks
 
@@ -238,19 +238,21 @@ Do not claim an affiliate or referral payment until Qlynk has implemented and do
 
 The skills-only plugin package already includes:
 
-- a validated `.codex-plugin/plugin.json`;
+- validated Codex and Claude plugin manifests;
 - the Qlynk Agent Builder skill;
 - Qlynk brand assets;
 - privacy, terms, website, repository, and support details;
 - three starter prompts;
-- a local/GitHub marketplace manifest.
+- Codex and Claude GitHub marketplace manifests;
+- an MIT license;
+- six positive and four negative review tests.
 
-Still required before public-directory submission:
+Still required for the universal Codex directory:
 
 - confirm the publisher's verified developer or business identity;
 - confirm Apps Management write access;
-- choose and approve the public license;
 - capture final plugin screenshots if requested by the submission surface;
-- prepare at least five positive and three negative review tests;
 - review all listing text and policy attestations;
 - submit through the plugin portal and wait for review.
+
+For Claude, publish immediately through the Qlynk GitHub marketplace, then submit the repository through the Claude Console community-plugin form. Claude.ai organization submission requires Team or Enterprise directory-management access; individual publishers can use the Console form. Anthropic reviews third-party submissions for the `claude-community` marketplace.

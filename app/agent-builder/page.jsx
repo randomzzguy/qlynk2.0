@@ -20,17 +20,19 @@ import {
   Wrench,
 } from 'lucide-react';
 import Footer from '@/components/Footer';
+import AgentBuilderInstallTabs from '@/components/AgentBuilderInstallTabs';
 import JsonLd from '@/components/JsonLd';
 import MarketingHeader from '@/components/MarketingHeader';
 import { breadcrumbSchema, createMetadata, SITE_URL } from '@/lib/seo';
 
 const path = '/agent-builder';
-const downloadPath = '/downloads/qlynk-agent-builder-skill-v1.0.1.zip';
+const version = '1.1.0';
+const downloadPath = `/downloads/qlynk-agent-builder-skill-v${version}.zip`;
 const githubUrl = 'https://github.com/randomzzguy/qlynk-agent-builder';
 
 export const metadata = createMetadata({
   title: 'Free Qlynk Agent Builder Skill for Freelancers',
-  description: 'Use a free guided skill to interview clients, configure accurate Qlynk Agents, test their answers, and hand off a client-owned subscription.',
+  description: 'Use a free Codex and Claude skill to interview clients, configure accurate Qlynk Agents, test their answers, and hand off a client-owned subscription.',
   path,
   keywords: ['Qlynk Agent Builder', 'AI agent freelancer', 'AI chatbot setup service', 'build AI agents for clients'],
 });
@@ -67,6 +69,7 @@ const faqs = [
   ['Who should own the Qlynk account?', 'The client should control the account email, recovery, billing, public username, and source files from the beginning.'],
   ['Does it guarantee every answer is correct?', 'No. It reduces avoidable errors through approved sources, explicit boundaries, client review, and structured testing. Generated answers still require responsible oversight.'],
   ['Does the skill publish automatically?', 'It can prepare and enter approved configuration when an authorized browser session is available. Publishing, billing changes, and live website installation still require confirmation.'],
+  ['Does it work with Codex and Claude?', 'Yes. The shared Agent Skill works in Codex and Claude Code, with native plugin marketplace installation for each platform.'],
   ['What can the agent represent?', 'Qlynk currently supports personal, business, property, operations, product, support, and custom focused agents.'],
 ];
 
@@ -82,7 +85,7 @@ export default function AgentBuilderPage() {
         '@type': 'SoftwareApplication',
         name: 'Qlynk Agent Builder',
         applicationCategory: 'BusinessApplication',
-        operatingSystem: 'Codex-supported environments',
+        operatingSystem: 'Codex and Claude Code supported environments',
         description: metadata.description,
         url: `${SITE_URL}${path}`,
         downloadUrl: `${SITE_URL}${downloadPath}`,
@@ -111,7 +114,7 @@ export default function AgentBuilderPage() {
           <div className="relative mx-auto grid max-w-7xl gap-14 px-6 py-20 lg:grid-cols-[1.08fr_0.92fr] lg:items-center lg:py-28">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-orange/30 bg-orange/10 px-4 py-2 text-sm font-black text-[#ff9b76]">
-                <Sparkles size={16} aria-hidden="true" /> Free workflow for freelancers
+                <Sparkles size={16} aria-hidden="true" /> Free for Codex and Claude
               </div>
               <h1 className="mt-7 max-w-4xl text-5xl font-black leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
                 Build Qlynk Agents for clients. <span className="text-orange">Charge for the setup.</span>
@@ -233,20 +236,7 @@ export default function AgentBuilderPage() {
               <p className="text-sm font-black uppercase tracking-[0.2em] text-orange">Install and start</p>
               <h2 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">Choose the quickest route</h2>
             </div>
-            <div className="mt-12 grid gap-6 lg:grid-cols-2">
-              <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] p-7">
-                <div className="flex items-center gap-3"><PackageCheck className="text-orange" /><h3 className="text-xl font-black">Install the plugin</h3></div>
-                <p className="mt-3 text-sm leading-relaxed text-gray-400">Add the public Qlynk marketplace, install the plugin, and start a new Codex session.</p>
-                <pre className="mt-5 overflow-x-auto rounded-xl border border-white/10 bg-black/40 p-4 text-xs leading-7 text-gray-300"><code>{`codex plugin marketplace add randomzzguy/qlynk-agent-builder\ncodex plugin add qlynk-agent-builder@qlynk`}</code></pre>
-                <a href={githubUrl} target="_blank" rel="noreferrer" className="mt-5 inline-flex items-center gap-2 font-bold text-orange hover:underline">Installation details <ExternalLink size={15} /></a>
-              </div>
-              <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] p-7">
-                <div className="flex items-center gap-3"><Download className="text-orange" /><h3 className="text-xl font-black">Download the standalone skill</h3></div>
-                <p className="mt-3 text-sm leading-relaxed text-gray-400">Unzip it into your personal or repository skill folder, then invoke it explicitly.</p>
-                <pre className="mt-5 overflow-x-auto rounded-xl border border-white/10 bg-black/40 p-4 text-xs leading-7 text-gray-300"><code>{`$HOME/.agents/skills/build-qlynk-agent\n\nUse $build-qlynk-agent to build a Qlynk Agent for my client.`}</code></pre>
-                <a href={downloadPath} download className="mt-5 inline-flex items-center gap-2 font-bold text-orange hover:underline">Download version 1.0.1 <Download size={15} /></a>
-              </div>
-            </div>
+            <AgentBuilderInstallTabs downloadPath={downloadPath} githubUrl={githubUrl} version={version} />
           </div>
         </section>
 

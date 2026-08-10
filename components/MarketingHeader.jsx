@@ -10,6 +10,9 @@ export default function MarketingHeader() {
         </Link>
 
         <nav aria-label="Primary navigation" className="flex items-center gap-3 sm:gap-6">
+          <Link href="/agent-builder" className="hidden text-sm font-medium text-gray-300 transition-colors hover:text-orange lg:block">
+            Earn with Qlynk
+          </Link>
           <Link href="/solutions" className="hidden text-sm font-medium text-gray-300 transition-colors hover:text-orange sm:block">
             Solutions
           </Link>

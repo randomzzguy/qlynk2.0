@@ -56,6 +56,7 @@ export default function Footer() {
             <ul className="space-y-3 text-sm">
               <li><Link href="/blog" className="hover:text-[#f46530] transition-colors">All Resources</Link></li>
               <li><Link href="/docs" className="hover:text-[#f46530] transition-colors">Documentation</Link></li>
+              <li><Link href="/agent-builder" className="hover:text-[#f46530] transition-colors">Freelancer Agent Builder</Link></li>
               <li><Link href="/blog/what-is-an-ai-agent" className="hover:text-[#f46530] transition-colors">What Is an AI Agent?</Link></li>
               <li><Link href="/blog/ai-agent-vs-ai-chatbot" className="hover:text-[#f46530] transition-colors">AI Agent vs Chatbot</Link></li>
               <li><Link href="/blog/rag-explained" className="hover:text-[#f46530] transition-colors">RAG Explained</Link></li>

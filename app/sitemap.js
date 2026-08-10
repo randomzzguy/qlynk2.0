@@ -16,6 +16,7 @@ const routes = [
   ['/digital-twin', 'monthly', 0.8],
   ['/for-business', 'monthly', 0.8],
   ['/for-freelancers', 'monthly', 0.8],
+  ['/agent-builder', 'monthly', 0.9, '2026-08-10'],
   ['/for-founders', 'monthly', 0.8],
   ['/for-creators', 'monthly', 0.8],
   ['/for-job-seekers', 'monthly', 0.7],

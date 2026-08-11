@@ -107,7 +107,7 @@ Keep the freelancer's project fee separate from the client's Qlynk subscription.
 
 ## LinkedIn launch post
 
-Freelancers and web designers can now use Codex or Claude to offer custom AI-agent setup without improvising the client interview every time.
+Freelancers and web designers can now use the official Qlynk Agent Builder plugin for Codex to offer custom AI-agent setup without improvising the client interview every time.
 
 The free Qlynk Agent Builder helps you:
 
@@ -120,13 +120,17 @@ The free Qlynk Agent Builder helps you:
 
 You charge for the setup work. The client owns and pays for their Qlynk Agent.
 
+Install the official Codex plugin: https://chatgpt.com/plugins/plugins_6a7a8eef28608191869f04ead95cd5b2
+
+The Claude Code-compatible package is available from GitHub. Its Claude community directory submission is still under review.
+
 Download it: https://www.qlynk.site/agent-builder?utm_source=linkedin&utm_medium=social&utm_campaign=agent_builder_launch
 
 AI-generated answers can still be inaccurate, so client approval and testing remain part of the workflow.
 
 ## Short social caption
 
-Turn AI-agent setup into a client service. The free Qlynk Agent Builder works with Codex and Claude, giving freelancers a five-question interview, copy-ready configuration, launch tests, and a client-owned handoff. Download it at qlynk.site/agent-builder.
+Turn AI-agent setup into a client service. The official Qlynk Agent Builder plugin for Codex gives freelancers a five-question interview, copy-ready configuration, launch tests, and a client-owned handoff. The Claude directory listing is under review. Get started at qlynk.site/agent-builder.
 
 ## Three short-form hooks
 

@@ -14,7 +14,6 @@ import {
   MessagesSquare,
   PackageCheck,
   ShieldCheck,
-  Sparkles,
   TestTube2,
   UserRoundCheck,
   Wrench,
@@ -29,12 +28,13 @@ const path = '/agent-builder';
 const version = '1.1.1';
 const downloadPath = `/downloads/qlynk-agent-builder-skill-v${version}.zip`;
 const githubUrl = 'https://github.com/randomzzguy/qlynk-agent-builder';
+const codexPluginUrl = 'https://chatgpt.com/plugins/plugins_6a7a8eef28608191869f04ead95cd5b2';
 
 export const metadata = createMetadata({
-  title: 'Free Qlynk Agent Builder Skill for Freelancers',
-  description: 'Use a free Codex and Claude skill to interview clients, configure accurate Qlynk Agents, test their answers, and hand off a client-owned subscription.',
+  title: 'Official Qlynk Agent Builder Plugin for Codex',
+  description: 'Install the official Qlynk Agent Builder plugin for Codex. Interview clients, configure accurate Qlynk Agents, test their answers, and hand off a client-owned subscription. Claude directory review is pending.',
   path,
-  keywords: ['Qlynk Agent Builder', 'AI agent freelancer', 'AI chatbot setup service', 'build AI agents for clients'],
+  keywords: ['Qlynk Agent Builder', 'official Codex plugin', 'AI agent freelancer', 'AI chatbot setup service', 'build AI agents for clients'],
 });
 
 const workflow = [
@@ -69,7 +69,8 @@ const faqs = [
   ['Who should own the Qlynk account?', 'The client should control the account email, recovery, billing, public username, and source files from the beginning.'],
   ['Does it guarantee every answer is correct?', 'No. It reduces avoidable errors through approved sources, explicit boundaries, client review, and structured testing. Generated answers still require responsible oversight.'],
   ['Does the skill publish automatically?', 'It can prepare and enter approved configuration when an authorized browser session is available. Publishing, billing changes, and live website installation still require confirmation.'],
-  ['Does it work with Codex and Claude?', 'Yes. The shared Agent Skill works in Codex and Claude Code, with native plugin marketplace installation for each platform.'],
+  ['Is it an official Codex plugin?', 'Yes. Qlynk Agent Builder version 1.1.1 is live in the official Codex plugin directory and can be installed directly from its ChatGPT listing.'],
+  ['Does it work with Claude?', 'Yes. The Claude Code-compatible package is available from the Qlynk GitHub marketplace. Its Claude community directory listing is still under review.'],
   ['What can the agent represent?', 'Qlynk currently supports personal, business, property, operations, product, support, and custom focused agents.'],
 ];
 
@@ -113,8 +114,8 @@ export default function AgentBuilderPage() {
 
           <div className="relative mx-auto grid max-w-7xl gap-14 px-6 py-20 lg:grid-cols-[1.08fr_0.92fr] lg:items-center lg:py-28">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-orange/30 bg-orange/10 px-4 py-2 text-sm font-black text-[#ff9b76]">
-                <Sparkles size={16} aria-hidden="true" /> Free for Codex and Claude
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-sm font-black text-emerald-300">
+                <CheckCircle2 size={16} aria-hidden="true" /> Official Codex plugin · Live
               </div>
               <h1 className="mt-7 max-w-4xl text-5xl font-black leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
                 Build Qlynk Agents for clients. <span className="text-orange">Charge for the setup.</span>
@@ -123,14 +124,17 @@ export default function AgentBuilderPage() {
                 The Qlynk Agent Builder helps you interview a business, organize its approved knowledge, configure the agent, test difficult questions, and deliver a professional client-owned handoff.
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <a href={downloadPath} download className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange px-7 py-4 font-black text-white transition-colors hover:bg-[#c14f22]">
+                <a href={codexPluginUrl} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange px-7 py-4 font-black text-white transition-colors hover:bg-[#c14f22]">
+                  Install the Codex plugin <ExternalLink size={17} aria-hidden="true" />
+                </a>
+                <a href={downloadPath} download className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-7 py-4 font-black text-white transition hover:border-orange/60 hover:bg-white/10">
                   <Download size={19} aria-hidden="true" /> Download the free skill
                 </a>
                 <a href={githubUrl} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-7 py-4 font-bold text-white transition hover:border-orange/60 hover:bg-white/10">
                   View on GitHub <ExternalLink size={17} aria-hidden="true" />
                 </a>
               </div>
-              <p className="mt-4 text-sm leading-relaxed text-gray-400">Free workflow download · Client subscription sold separately · No income or accuracy guarantees</p>
+              <p className="mt-4 text-sm leading-relaxed text-gray-400">Official Codex plugin · Claude community directory review pending · Free workflow download · Client subscription sold separately</p>
             </div>
 
             <div className="relative">
@@ -163,6 +167,27 @@ export default function AgentBuilderPage() {
                   <p className="mt-2 text-sm leading-relaxed text-gray-300">A verified Qlynk Build Pack ready for client approval, implementation, testing, and handoff.</p>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-b border-white/10 bg-white/[0.025]">
+          <div className="mx-auto grid max-w-7xl gap-5 px-6 py-10 md:grid-cols-2">
+            <a href={codexPluginUrl} target="_blank" rel="noreferrer" className="group rounded-2xl border border-emerald-400/25 bg-emerald-400/[0.06] p-6 transition hover:border-emerald-300/50 hover:bg-emerald-400/[0.09]">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-300">Codex status</p>
+                  <h2 className="mt-2 text-xl font-black">Official plugin — available now</h2>
+                </div>
+                <ExternalLink size={20} className="shrink-0 text-emerald-300 transition group-hover:translate-x-0.5" aria-hidden="true" />
+              </div>
+              <p className="mt-3 leading-relaxed text-gray-400">Open the verified Qlynk Agent Builder listing and select <span className="font-bold text-gray-200">Install plugin</span>.</p>
+            </a>
+
+            <div className="rounded-2xl border border-amber-300/20 bg-amber-300/[0.045] p-6">
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-200">Claude status</p>
+              <h2 className="mt-2 text-xl font-black">Compatible package available — directory review pending</h2>
+              <p className="mt-3 leading-relaxed text-gray-400">The Claude Code package can already be installed from GitHub. Its Claude community directory submission is still under review.</p>
             </div>
           </div>
         </section>
@@ -236,7 +261,7 @@ export default function AgentBuilderPage() {
               <p className="text-sm font-black uppercase tracking-[0.2em] text-orange">Install and start</p>
               <h2 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">Choose the quickest route</h2>
             </div>
-            <AgentBuilderInstallTabs downloadPath={downloadPath} githubUrl={githubUrl} version={version} />
+            <AgentBuilderInstallTabs downloadPath={downloadPath} githubUrl={githubUrl} codexPluginUrl={codexPluginUrl} version={version} />
           </div>
         </section>
 

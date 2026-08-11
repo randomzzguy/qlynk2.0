@@ -44,6 +44,11 @@ test('plugin and marketplace expose the intended versioned package', () => {
 test('landing page points to a real versioned download and public repository', () => {
   assert.match(landingPage, /1\.1\.1/);
   assert.match(landingPage, /github\.com\/randomzzguy\/qlynk-agent-builder/);
+  assert.match(landingPage, /chatgpt\.com\/plugins\/plugins_6a7a8eef28608191869f04ead95cd5b2/);
+  assert.match(landingPage, /Official Codex plugin/);
+  assert.match(landingPage, /Claude community directory review pending/);
+  assert.match(installTabs, /Official plugin · Live/);
+  assert.match(installTabs, /Community directory · Under review/);
   assert.match(installTabs, /claude plugin marketplace add randomzzguy\/qlynk-agent-builder/);
   assert.match(installTabs, /qlynk-agent-builder:build-qlynk-agent/);
   assert.ok(existsSync('distribution/qlynk-agent-builder/LICENSE'));

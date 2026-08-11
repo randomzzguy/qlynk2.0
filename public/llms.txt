@@ -37,6 +37,7 @@ Qlynk is a no-code platform for building one focused AI agent from information i
 
 - Product: https://www.qlynk.site/ai-agent
 - Free Freelancer Agent Builder: https://www.qlynk.site/agent-builder
+- Official Codex plugin: https://chatgpt.com/plugins/plugins_6a7a8eef28608191869f04ead95cd5b2
 - Solutions: https://www.qlynk.site/solutions
 - Documentation: https://www.qlynk.site/docs
 - Resources: https://www.qlynk.site/blog

@@ -26,7 +26,7 @@ import MarketingHeader from '@/components/MarketingHeader';
 import { breadcrumbSchema, createMetadata, SITE_URL } from '@/lib/seo';
 
 const path = '/agent-builder';
-const version = '1.1.0';
+const version = '1.1.1';
 const downloadPath = `/downloads/qlynk-agent-builder-skill-v${version}.zip`;
 const githubUrl = 'https://github.com/randomzzguy/qlynk-agent-builder';
 

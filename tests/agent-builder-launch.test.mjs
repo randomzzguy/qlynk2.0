@@ -26,7 +26,7 @@ test('distributed Qlynk Agent Builder copies match the validated canonical skill
 
 test('plugin and marketplace expose the intended versioned package', () => {
   assert.equal(plugin.name, 'qlynk-agent-builder');
-  assert.equal(plugin.version, '1.1.0');
+  assert.equal(plugin.version, '1.1.1');
   assert.equal(plugin.license, 'MIT');
   assert.equal(plugin.skills, './skills/');
   assert.equal(plugin.interface.websiteURL, 'https://www.qlynk.site/agent-builder');
@@ -42,11 +42,20 @@ test('plugin and marketplace expose the intended versioned package', () => {
 });
 
 test('landing page points to a real versioned download and public repository', () => {
-  assert.match(landingPage, /1\.1\.0/);
+  assert.match(landingPage, /1\.1\.1/);
   assert.match(landingPage, /github\.com\/randomzzguy\/qlynk-agent-builder/);
   assert.match(installTabs, /claude plugin marketplace add randomzzguy\/qlynk-agent-builder/);
   assert.match(installTabs, /qlynk-agent-builder:build-qlynk-agent/);
   assert.ok(existsSync('distribution/qlynk-agent-builder/LICENSE'));
-  assert.ok(existsSync('public/downloads/qlynk-agent-builder-skill-v1.1.0.zip'));
-  assert.ok(existsSync('public/downloads/qlynk-agent-builder-plugin-v1.1.0.zip'));
+  assert.ok(existsSync('public/downloads/qlynk-agent-builder-skill-v1.1.1.zip'));
+  assert.ok(existsSync('public/downloads/qlynk-agent-builder-plugin-v1.1.1.zip'));
+});
+
+test('plugin directory artwork uses exact square PNG assets', () => {
+  assert.equal(plugin.interface.composerIcon, './assets/icon.png');
+  assert.equal(plugin.interface.logo, './assets/logo.png');
+  assert.equal(plugin.interface.logoDark, './assets/logo-dark.png');
+  assert.ok(existsSync('distribution/qlynk-agent-builder/plugins/qlynk-agent-builder/assets/icon.png'));
+  assert.ok(existsSync('distribution/qlynk-agent-builder/plugins/qlynk-agent-builder/assets/logo.png'));
+  assert.ok(existsSync('distribution/qlynk-agent-builder/plugins/qlynk-agent-builder/assets/logo-dark.png'));
 });

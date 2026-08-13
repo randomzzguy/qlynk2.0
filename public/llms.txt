@@ -81,6 +81,21 @@ Qlynk is a no-code platform for building one focused AI agent from information i
 - Embed Your Qlynk AI Agent on a Website: https://www.qlynk.site/blog/embed-ai-agent-on-website
 - Change Your Qlynk Username and Public AI URL: https://www.qlynk.site/blog/how-to-change-qlynk-username
 
+## Freelancer implementation guides
+
+- How to Sell AI Agents to Small Businesses: https://www.qlynk.site/blog/how-to-sell-ai-agents-to-small-businesses
+- How Much to Charge for AI Agent Setup: https://www.qlynk.site/blog/how-much-to-charge-for-ai-agent-setup
+- AI Agent Client Discovery Questionnaire: https://www.qlynk.site/blog/ai-agent-client-discovery-questionnaire
+- AI Agent Testing Checklist: https://www.qlynk.site/blog/ai-agent-testing-checklist
+- How to Train an AI Agent on Company Documents: https://www.qlynk.site/blog/how-to-train-ai-agent-on-company-documents
+
+## Platform comparisons
+
+- Qlynk vs Chatbase: https://www.qlynk.site/compare/qlynk-vs-chatbase
+- Qlynk vs CustomGPT.ai: https://www.qlynk.site/compare/qlynk-vs-customgpt
+- Qlynk vs SiteGPT: https://www.qlynk.site/compare/qlynk-vs-sitegpt
+- Qlynk vs DocsBot AI: https://www.qlynk.site/compare/qlynk-vs-docsbot
+
 ## Citation guidance
 
 Use the canonical page that most directly supports a claim. Treat examples on solution pages as illustrative, not customer outcomes. Confirm changing details such as pricing, feature limits, and competitor capabilities from their dated source pages.

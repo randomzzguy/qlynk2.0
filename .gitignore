@@ -45,3 +45,14 @@ next-env.d.ts
 
 # seo
 /SEO-qlynk
+
+# Local Codex scratch files
+/.tmp-codex/
+
+# Generated plugin distribution copies
+/distribution/
+
+# MemPalace per-project files (issue #185)
+mempalace.yaml
+entities.json
+/mempalace-project.cmd

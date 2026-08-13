@@ -1,0 +1,4 @@
+project_id = "qlynk2-0"
+
+[functions.knowledge-embeddings]
+verify_jwt = false

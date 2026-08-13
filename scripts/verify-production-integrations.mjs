@@ -22,6 +22,29 @@ await expectOk('Supabase Auth health', `${supabaseUrl}/auth/v1/health`, {
   headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY },
 });
 
+if (process.env.KNOWLEDGE_EMBEDDINGS_ENABLED === '1') {
+  if (!process.env.KNOWLEDGE_EMBEDDINGS_SECRET) throw new Error('Missing KNOWLEDGE_EMBEDDINGS_SECRET for embedding verification');
+  const embeddingResponse = await expectOk(
+    'Supabase knowledge embeddings',
+    `${supabaseUrl}/functions/v1/knowledge-embeddings`,
+    {
+      method: 'POST',
+      headers: {
+        apikey: process.env.KNOWLEDGE_EMBEDDINGS_SECRET,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ inputs: ['Qlynk semantic retrieval verification'] }),
+    }
+  );
+  const embeddingPayload = await embeddingResponse.json();
+  if (embeddingPayload.model !== 'gte-small@1'
+      || embeddingPayload.dimensions !== 384
+      || embeddingPayload.embeddings?.[0]?.length !== 384) {
+    throw new Error('Supabase knowledge embedding response is incompatible');
+  }
+  console.log('Supabase gte-small embedding dimensions and model version: PASS');
+}
+
 const groqResponse = await expectOk('Groq models API', 'https://api.groq.com/openai/v1/models', {
   headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}` },
 });

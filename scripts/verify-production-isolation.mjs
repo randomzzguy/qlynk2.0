@@ -64,7 +64,71 @@ async function createFixture(fixture) {
     status: 'trialing',
     trial_ends_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
   }), `subscription ${fixture.label}`);
-  await requireResult(admin.from('agent_knowledge').insert({ user_id: fixture.id, title: `Private ${fixture.label}`, content: `secret-${fixture.label}-${suffix}`, is_active: true }), `knowledge ${fixture.label}`);
+  const graphEntityName = `secret-${fixture.label}-${suffix}`;
+  const graphAlias = `alias-${fixture.label}-${suffix}`;
+  const graphContent = `${graphEntityName}, also called ${graphAlias}, belongs to Smoke ${fixture.label}.`;
+  await requireResult(admin.from('agent_knowledge').insert({
+    user_id: fixture.id,
+    title: `Private ${fixture.label}`,
+    content: graphContent,
+    is_active: true,
+  }), `knowledge ${fixture.label}`);
+  const graphJobs = await requireResult(admin.rpc('claim_agent_knowledge_graph_jobs', {
+    p_limit: 1,
+    p_owner_id: fixture.id,
+  }), `claim graph job ${fixture.label}`);
+  assert(graphJobs.length === 1, `Graph source was not queued for ${fixture.label}`);
+  await requireResult(admin.rpc('store_agent_knowledge_graph_extraction', {
+    p_chunk_id: graphJobs[0].chunk_id,
+    p_content_hash: graphJobs[0].content_hash,
+    p_payload: {
+      entities: [
+        { id: 'secret', name: graphEntityName, type: 'concept', aliases: [graphAlias], confidence: 1 },
+        { id: 'owner', name: `Smoke ${fixture.label}`, type: 'person', aliases: [], confidence: 1 },
+      ],
+      claims: [{
+        subject_id: 'secret',
+        predicate: 'belongs_to',
+        object_entity_id: 'owner',
+        object_value: '',
+        statement: `${graphEntityName} belongs to Smoke ${fixture.label}.`,
+        excerpt: `belongs to Smoke ${fixture.label}`,
+        confidence: 1,
+      }],
+    },
+  }), `store graph fixture ${fixture.label}`);
+  const graphClaim = await requireResult(
+    admin.from('agent_knowledge_claims').select('id, subject_entity_id').eq('user_id', fixture.id).eq('statement', `${graphEntityName} belongs to Smoke ${fixture.label}.`).single(),
+    `load graph claim ${fixture.label}`
+  );
+  await requireResult(admin.rpc('review_agent_knowledge_claim', {
+    p_owner_id: fixture.id,
+    p_claim_id: graphClaim.id,
+    p_decision: 'approve',
+    p_resolution_note: null,
+  }), `approve graph claim ${fixture.label}`);
+  for (const daysAgo of [21, 14, 7]) {
+    await requireResult(admin.rpc('record_agent_memory_observation', {
+      p_owner_id: fixture.id,
+      p_entity_id: graphClaim.subject_entity_id,
+      p_observation_type: 'behavior',
+      p_observation_key: 'smoke_schedule',
+      p_observed_value: `${graphEntityName} follows the smoke schedule.`,
+      p_occurred_at: new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString(),
+      p_expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+    }), `memory observation ${fixture.label}`);
+  }
+  await requireResult(admin.rpc('record_agent_memory_preference', {
+    p_owner_id: fixture.id,
+    p_entity_id: graphClaim.subject_entity_id,
+    p_preference_key: 'smoke_format',
+    p_preference_value: `format-${fixture.label}-${suffix}`,
+    p_expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+  }), `memory preference ${fixture.label}`);
+  await requireResult(admin.rpc('refresh_agent_memory_patterns', {
+    p_owner_id: fixture.id,
+    p_intent_similarity: 0.82,
+  }), `refresh memory patterns ${fixture.label}`);
   await requireResult(admin.from('agent_documents').insert({
     user_id: fixture.id,
     filename: 'smoke.txt',
@@ -129,6 +193,16 @@ async function assertOwnerIsolation(client, owner, other) {
     ['profiles', 'id', owner.id, other.id],
     ['agent_configs', 'user_id', owner.id, other.id],
     ['agent_knowledge', 'user_id', owner.id, other.id],
+    ['agent_knowledge_chunks', 'user_id', owner.id, other.id],
+    ['agent_knowledge_entities', 'user_id', owner.id, other.id],
+    ['agent_knowledge_entity_aliases', 'user_id', owner.id, other.id],
+    ['agent_knowledge_claims', 'user_id', owner.id, other.id],
+    ['agent_knowledge_claim_evidence', 'user_id', owner.id, other.id],
+    ['agent_knowledge_relationships', 'user_id', owner.id, other.id],
+    ['agent_memory_observations', 'user_id', owner.id, other.id],
+    ['agent_memory_patterns', 'user_id', owner.id, other.id],
+    ['agent_memory_pattern_support', 'user_id', owner.id, other.id],
+    ['agent_memory_preferences', 'user_id', owner.id, other.id],
     ['agent_documents', 'user_id', owner.id, other.id],
     ['subscriptions', 'user_id', owner.id, other.id],
     ['agent_conversations', 'agent_owner_id', owner.id, other.id],
@@ -207,7 +281,7 @@ async function assertPublicProjectionSafety(fixture) {
   assert(profileRows.length === 1 && !Object.hasOwn(profileRows[0], 'email'), 'Safe profile view is missing or exposes private email.');
   assert(agentRows.length === 1 && !Object.hasOwn(agentRows[0], 'custom_knowledge'), 'Safe agent view is missing or exposes private knowledge.');
 
-  for (const table of ['profiles', 'agent_configs']) {
+  for (const table of ['profiles', 'agent_configs', 'agent_knowledge_chunks', 'agent_knowledge_entities', 'agent_knowledge_entity_aliases', 'agent_knowledge_claims', 'agent_knowledge_claim_evidence', 'agent_knowledge_relationships', 'agent_knowledge_contradictions', 'agent_memory_observations', 'agent_memory_patterns', 'agent_memory_pattern_support', 'agent_memory_preferences']) {
     const { data, error } = await anonymous.from(table).select('*').limit(1);
     assert(Boolean(error) && !data, `Anonymous clients can read private ${table}.`);
   }
@@ -240,7 +314,7 @@ try {
   await assertPrivateRuleIsolation(clients[1], fixtures[1]);
   await assertStorageIsolation(clients[0], clients[1], fixtures[0]);
   await assertPublicProjectionSafety(fixtures[0]);
-  console.log('Production isolation passed for private account data, security-invoker public projections, agents, private rules/history, drafts/publish snapshots, knowledge/gaps, feedback, documents, subscriptions, conversations, messages, analytics, writes, and private Storage.');
+  console.log('Production isolation passed for private account data, security-invoker public projections, agents, private rules/history, drafts/publish snapshots, knowledge/chunks/graph/temporal-memory/gaps, feedback, documents, subscriptions, conversations, messages, analytics, writes, and private Storage.');
 } finally {
   for (const fixture of fixtures) {
     if (!fixture.id) continue;

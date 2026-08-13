@@ -7,6 +7,18 @@
     {
       "path": "/api/cron/account-deletions",
       "schedule": "15 9 * * *"
+    },
+    {
+      "path": "/api/cron/knowledge-embeddings",
+      "schedule": "30 9 * * *"
+    },
+    {
+      "path": "/api/cron/knowledge-graph",
+      "schedule": "45 9 * * *"
+    },
+    {
+      "path": "/api/cron/knowledge-memory",
+      "schedule": "0 10 * * *"
     }
   ]
 }

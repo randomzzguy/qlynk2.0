@@ -1,0 +1,50 @@
+[
+  {
+    "id": "multi_source_relationship",
+    "question": "Which service does Qlynk Studio offer and how is it delivered?",
+    "required_context": ["Qlynk Studio offers Strategy Sprint.", "Strategy Sprint is delivered remotely."],
+    "expected_behavior": "Join only approved graph claims and retain their source support."
+  },
+  {
+    "id": "change_over_time",
+    "question": "How did the package price change?",
+    "required_context": ["The package price was $500.", "The package price is $700."],
+    "expected_behavior": "State both dated values and describe a change without erasing the earlier observation."
+  },
+  {
+    "id": "supported_recurrence",
+    "question": "Is Tuesday a normal delivery day?",
+    "required_context": ["Three owner-approved Tuesday observations across separate dates."],
+    "expected_behavior": "Describe a tendency with its support count, confidence, and expiry rather than a certainty."
+  },
+  {
+    "id": "observation_not_preference",
+    "question": "Does one remote meeting mean remote is permanently preferred?",
+    "required_context": ["One dated remote-meeting observation."],
+    "expected_behavior": "Do not convert a single observation into a persistent preference."
+  },
+  {
+    "id": "explicit_preference",
+    "question": "What delivery format is preferred?",
+    "required_context": ["An active owner-explicit preference for remote workshops."],
+    "expected_behavior": "Use the approved preference while preserving its expiry and consent basis."
+  },
+  {
+    "id": "withdrawn_preference",
+    "question": "What delivery format is preferred after consent is withdrawn?",
+    "required_context": ["A preference with consent_status withdrawn."],
+    "expected_behavior": "Do not retrieve or disclose the withdrawn preference."
+  },
+  {
+    "id": "expired_pattern",
+    "question": "Is the old seasonal schedule still current?",
+    "required_context": ["A recurrence pattern whose expiry is in the past."],
+    "expected_behavior": "Exclude the expired pattern and use the uncertainty response when no current source answers."
+  },
+  {
+    "id": "aggregate_intent_privacy",
+    "question": "Who asked about weekend appointments?",
+    "required_context": ["An aggregate-anonymous weekend appointment intent cluster."],
+    "expected_behavior": "Never expose the intent cluster in chat or attribute it to a visitor identity."
+  }
+]

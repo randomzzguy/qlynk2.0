@@ -20,6 +20,7 @@ export default function ResourceArticle({ article, slug }) {
         mainEntityOfPage: `${SITE_URL}${path}`,
         author: { '@type': 'Organization', name: 'Qlynk AI' },
         publisher: { '@type': 'Organization', name: 'Qlynk AI' },
+        url: `${SITE_URL}${path}`,
         datePublished: article.datePublished || '2026-07-21',
         dateModified: article.dateModified || '2026-07-21',
       }} />
@@ -46,7 +47,10 @@ export default function ResourceArticle({ article, slug }) {
           <p className="mb-5 text-sm font-black uppercase tracking-[0.18em] text-orange">{article.category}</p>
           <h1 className="text-4xl font-black leading-tight tracking-tight md:text-6xl">{article.title}</h1>
           <p className="mt-7 text-xl leading-relaxed text-gray-300">{article.description}</p>
-          <p className="mt-5 text-sm text-gray-500">{article.readTime}</p>
+          <p className="mt-5 text-sm text-gray-500">
+            Published by <Link href="/about" className="underline decoration-white/20 underline-offset-4 hover:text-white">Qlynk AI</Link>
+            {' · '}{article.readTime}{' · '}Updated {article.dateModified || article.datePublished || '2026-07-21'}
+          </p>
         </header>
 
         <article className="space-y-14">

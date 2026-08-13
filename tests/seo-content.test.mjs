@@ -38,10 +38,10 @@ test('all five requested topic clusters are represented', () => {
   );
 });
 
-test('authority cluster contains 19 substantive, unique guides and product updates', () => {
-  assert.equal(articles.length, 19);
-  assert.equal(new Set(articles.map((item) => item.title)).size, 19);
-  assert.equal(new Set(articles.map((item) => item.description)).size, 19);
+test('authority cluster contains 23 substantive, unique guides and product updates', () => {
+  assert.equal(articles.length, 23);
+  assert.equal(new Set(articles.map((item) => item.title)).size, 23);
+  assert.equal(new Set(articles.map((item) => item.description)).size, 23);
 
   for (const slug of ['qlynk-agent-understands-questions-better', 'embed-ai-agent-on-website', 'how-to-change-qlynk-username']) {
     assert.ok(authorityArticles[slug], `${slug} has an indexable article route`);
@@ -55,6 +55,30 @@ test('authority cluster contains 19 substantive, unique guides and product updat
     assert.ok(item.relatedSolutions.length >= 3, `${item.shortTitle} links to solutions`);
     for (const slug of item.relatedSolutions) assert.ok(solutionPages[slug], `${item.shortTitle} links to ${slug}`);
   }
+});
+
+test('knowledge fabric SEO cluster explains connected retrieval, graphs, temporal memory, and their differences', () => {
+  const slugs = [
+    'qlynk-knowledge-fabric',
+    'what-is-ai-knowledge-graph',
+    'ai-agent-memory-patterns',
+    'rag-vs-knowledge-graph-ai-memory',
+  ];
+
+  for (const slug of slugs) {
+    const item = authorityArticles[slug];
+    assert.ok(item, `${slug} has an indexable article route`);
+    assert.equal(item.datePublished, '2026-08-14');
+    assert.ok(item.sections.length >= 6, `${slug} has substantive sections`);
+    assert.ok(item.faqs.length >= 4, `${slug} answers distinct search questions`);
+    assert.ok(item.relatedArticles.some((relatedSlug) => slugs.includes(relatedSlug)), `${slug} links within the knowledge fabric cluster`);
+  }
+
+  const combinedText = slugs.map((slug) => JSON.stringify(authorityArticles[slug])).join(' ');
+  assert.match(combinedText, /raw conversations/i);
+  assert.match(combinedText, /owner review|reviewed|approval/i);
+  assert.match(combinedText, /source evidence/i);
+  assert.match(combinedText, /expiry|expires|expired/i);
 });
 
 test('freelancer growth guides cover sales, pricing, discovery, testing, and knowledge preparation', () => {

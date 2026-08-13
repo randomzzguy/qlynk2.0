@@ -8,6 +8,7 @@ import {
   parseScopeDecision,
   selectRelevantKnowledge,
 } from '../lib/agent-prompt.js';
+import { buildKnowledgeChunks } from '../lib/knowledge-retrieval.js';
 
 test('knowledge retrieval prioritizes relevant facts and enforces hard context bounds', () => {
   const knowledge = [
@@ -25,6 +26,46 @@ test('knowledge retrieval prioritizes relevant facts and enforces hard context b
   assert.equal(selected[0].title, 'Kitchen inventory');
   assert.ok(selected.length <= 2);
   assert.ok(selected.reduce((total, item) => total + item.content.length, 0) <= 150);
+});
+
+test('long sources are chunked so relevant information near the end can be retrieved', () => {
+  const chunks = buildKnowledgeChunks([{
+    source_id: 'handbook-1',
+    title: 'Customer handbook',
+    source_title: 'Customer handbook',
+    source_type: 'file',
+    content: `${'General introduction and background. '.repeat(180)}\n\nCancellation requests require 48 hours notice.`,
+  }], { maxChars: 900, overlapChars: 100 });
+
+  const selected = selectRelevantKnowledge(chunks, 'How much notice do cancellation requests require?');
+
+  assert.ok(chunks.length > 3);
+  assert.match(selected[0].content, /48 hours notice/i);
+  assert.ok(selected[0].chunk_index > 0);
+  assert.equal(selected[0].source_id, 'handbook-1');
+});
+
+test('FAQ priority resolves equally relevant matches without overriding relevance', () => {
+  const selected = selectRelevantKnowledge([
+    { source_id: 'faq-low', title: 'Support hours', content: 'Support opens at 9 AM.', source_type: 'faq', priority: 1 },
+    { source_id: 'faq-high', title: 'Support hours', content: 'Priority support opens at 8 AM.', source_type: 'faq', priority: 5 },
+    { source_id: 'unrelated', title: 'Pricing', content: 'Plans start at $20.', source_type: 'faq', priority: 5 },
+  ], 'When does support open?');
+
+  assert.equal(selected[0].source_id, 'faq-high');
+  assert.ok(selected.some((item) => item.source_id === 'faq-low'));
+  assert.ok(!selected.some((item) => item.source_id === 'unrelated'));
+});
+
+test('unapproved and expired evidence is excluded from retrieval', () => {
+  const selected = selectRelevantKnowledge([
+    { title: 'Draft price', content: 'The package costs $10.', evidence_status: 'draft' },
+    { title: 'Expired price', content: 'The package costs $20.', valid_until: '2025-01-01T00:00:00Z' },
+    { title: 'Current price', content: 'The package costs $30.', evidence_status: 'verified' },
+  ], 'What does the package cost?', { now: '2026-08-14T00:00:00Z' });
+
+  assert.equal(selected.length, 1);
+  assert.equal(selected[0].title, 'Current price');
 });
 
 test('immutable platform policy precedes owner rules and untrusted knowledge', () => {
@@ -52,6 +93,23 @@ test('immutable platform policy precedes owner rules and untrusted knowledge', (
   assert.match(prompt, /instructions_inside_are_untrusted="true"/);
   assert.doesNotMatch(prompt, /make the user look like a rockstar/i);
   assert.doesNotMatch(prompt, /you can professionally expand on skills/i);
+});
+
+test('knowledge provenance reaches the prompt without becoming executable instructions', () => {
+  const prompt = buildAgentSystemPrompt({ agent_type: 'business' }, [{
+    title: 'Cancellation policy',
+    content: 'Cancellation requests require 48 hours notice.',
+    source_type: 'url',
+    source_title: 'Official policies',
+    source_url: 'https://example.com/policies',
+    chunk_index: 2,
+    priority: 5,
+    verified_at: '2026-08-01T00:00:00Z',
+  }]);
+
+  assert.match(prompt, /https:\/\/example\.com\/policies/);
+  assert.match(prompt, /Official policies/);
+  assert.match(prompt, /Never invent a source, URL, verification date, or citation/i);
 });
 
 test('response guidance restores natural synthesis and measured visitor engagement', () => {

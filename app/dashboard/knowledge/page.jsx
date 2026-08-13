@@ -16,6 +16,10 @@ import {
   Lightbulb,
   CheckCircle,
   RotateCcw,
+  Network,
+  AlertTriangle,
+  History,
+  ShieldCheck,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useSearchParams } from 'next/navigation';
@@ -25,7 +29,10 @@ import { useDashboardPageReady } from '@/lib/dashboard-page-ready';
 
 export default function KnowledgeDashboard() {
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') === 'gaps' ? 'gaps' : 'profile');
+  const [activeTab, setActiveTab] = useState(() => {
+    const requestedTab = searchParams.get('tab');
+    return ['gaps', 'connections', 'memory'].includes(requestedTab) ? requestedTab : 'profile';
+  });
   const [knowledge, setKnowledge] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -54,12 +61,32 @@ export default function KnowledgeDashboard() {
   const [gapsLoading, setGapsLoading] = useState(false);
   const [selectedGapId, setSelectedGapId] = useState(null);
   const [gapAnswer, setGapAnswer] = useState('');
+  const [connectedClaims, setConnectedClaims] = useState([]);
+  const [graphContradictions, setGraphContradictions] = useState([]);
+  const [graphLoading, setGraphLoading] = useState(false);
+  const [graphStatus, setGraphStatus] = useState('draft');
+  const [memoryItems, setMemoryItems] = useState([]);
+  const [memoryEntities, setMemoryEntities] = useState([]);
+  const [memoryLoading, setMemoryLoading] = useState(false);
+  const [memoryType, setMemoryType] = useState('pattern');
+  const [memoryStatus, setMemoryStatus] = useState('draft');
+  const [showMemoryForm, setShowMemoryForm] = useState(false);
+  const [memoryForm, setMemoryForm] = useState({
+    entityId: '',
+    observationType: 'event',
+    key: '',
+    value: '',
+    occurredAt: new Date().toISOString().slice(0, 16),
+    expiresAt: '',
+    consentConfirmed: false,
+  });
   const hasUnsavedDraft = Boolean(
     newTitle.trim()
     || newContent.trim()
     || newUrl.trim()
     || newFaqQuestion.trim()
     || newFaqAnswer.trim()
+    || (showMemoryForm && (memoryForm.key.trim() || memoryForm.value.trim()))
   );
 
   const supabase = useMemo(() => createClientBrowser(), []);
@@ -369,6 +396,133 @@ export default function KnowledgeDashboard() {
     }
   };
 
+  const fetchConnectedKnowledge = useCallback(async (status = graphStatus) => {
+    setGraphLoading(true);
+    try {
+      const response = await fetch(`/api/agent/knowledge-graph?status=${encodeURIComponent(status)}`, { cache: 'no-store' });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Unable to load connected knowledge');
+      setConnectedClaims(result.claims || []);
+      setGraphContradictions(result.contradictions || []);
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setGraphLoading(false);
+    }
+  }, [graphStatus]);
+
+  useEffect(() => {
+    if (activeTab === 'connections') fetchConnectedKnowledge(graphStatus);
+  }, [activeTab, graphStatus, fetchConnectedKnowledge]);
+
+  const handleClaimReview = async (claim, decision) => {
+    const hasOpenConflict = graphContradictions.some((conflict) =>
+      conflict.status === 'open' && (conflict.left_claim_id === claim.id || conflict.right_claim_id === claim.id)
+    );
+    let resolutionNote = '';
+    if (decision === 'approve' && hasOpenConflict) {
+      resolutionNote = window.prompt('This conflicts with another extracted claim. Explain why this version is the approved one:')?.trim() || '';
+      if (!resolutionNote) return;
+    }
+
+    setSubmitting(true);
+    try {
+      const response = await fetch('/api/agent/knowledge-graph', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ claimId: claim.id, decision, resolutionNote }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Unable to review this connection');
+      toast.success(decision === 'approve' ? 'Connection approved for agent use' : 'Connection excluded');
+      await fetchConnectedKnowledge(graphStatus);
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const fetchMemory = useCallback(async (type = memoryType, status = memoryStatus) => {
+    setMemoryLoading(true);
+    try {
+      const response = await fetch(`/api/agent/memory?type=${encodeURIComponent(type)}&status=${encodeURIComponent(status)}`, { cache: 'no-store' });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Unable to load temporal memory');
+      setMemoryItems(result.items || []);
+      setMemoryEntities(result.entities || []);
+      setMemoryForm((current) => ({
+        ...current,
+        entityId: current.entityId || result.entities?.[0]?.id || '',
+      }));
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setMemoryLoading(false);
+    }
+  }, [memoryStatus, memoryType]);
+
+  useEffect(() => {
+    if (activeTab === 'memory') fetchMemory(memoryType, memoryStatus);
+  }, [activeTab, memoryType, memoryStatus, fetchMemory]);
+
+  const handleMemorySave = async (event) => {
+    event.preventDefault();
+    const action = memoryType === 'preference' ? 'preference' : 'observe';
+    setSubmitting(true);
+    try {
+      const response = await fetch('/api/agent/memory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action,
+          entityId: memoryForm.entityId,
+          observationType: memoryForm.observationType,
+          key: memoryForm.key,
+          value: memoryForm.value,
+          occurredAt: action === 'observe' ? new Date(memoryForm.occurredAt).toISOString() : undefined,
+          expiresAt: memoryForm.expiresAt ? new Date(memoryForm.expiresAt).toISOString() : null,
+          consentConfirmed: memoryForm.consentConfirmed,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Unable to save memory');
+      toast.success(action === 'preference' ? 'Explicit preference saved' : 'Dated observation saved');
+      setMemoryForm((current) => ({ ...current, key: '', value: '', expiresAt: '', consentConfirmed: false }));
+      setShowMemoryForm(false);
+      setMemoryStatus('verified');
+      await fetchMemory(memoryType, 'verified');
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleMemoryReview = async (item, decision) => {
+    const reviewNote = decision === 'approve'
+      ? window.prompt('Optional approval note:')?.trim() || ''
+      : window.prompt(decision === 'revoke' ? 'Why is this preference being withdrawn?' : 'Why should this memory be excluded?')?.trim() || '';
+    if (decision !== 'approve' && !reviewNote) return;
+
+    setSubmitting(true);
+    try {
+      const response = await fetch('/api/agent/memory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'review', itemType: memoryType, itemId: item.id, decision, reviewNote }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Unable to review memory');
+      toast.success(decision === 'approve' ? 'Memory approved for agent use' : decision === 'revoke' ? 'Preference withdrawn' : 'Memory excluded');
+      await fetchMemory(memoryType, memoryStatus);
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="w-full max-w-[1440px] px-5 sm:px-7 lg:px-9 py-8 sm:py-10 space-y-7">
       {/* Header */}
@@ -413,6 +567,23 @@ export default function KnowledgeDashboard() {
             className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all ${activeTab === 'links' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
           >
             Links
+          </button>
+          <button
+            onClick={() => setActiveTab('connections')}
+            className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all flex items-center gap-2 ${activeTab === 'connections' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+          >
+            Connections
+            {connectedClaims.filter((claim) => ['draft', 'unresolved'].includes(claim.evidence_status)).length > 0 && (
+              <span className={`min-w-5 h-5 px-1 rounded-full text-[10px] flex items-center justify-center ${activeTab === 'connections' ? 'bg-blue-600 text-white' : 'bg-blue-500/15 text-blue-300'}`}>
+                {connectedClaims.filter((claim) => ['draft', 'unresolved'].includes(claim.evidence_status)).length}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('memory')}
+            className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all flex items-center gap-2 ${activeTab === 'memory' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+          >
+            Memory
           </button>
           <button
             onClick={() => setActiveTab('gaps')}
@@ -908,6 +1079,224 @@ export default function KnowledgeDashboard() {
                     )}
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'connections' && (
+          <div className="space-y-6">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Network className="text-blue-400" size={20} /> Connected Knowledge
+                </h2>
+                <p className="text-sm text-gray-400 mt-1">Review atomic connections extracted from approved sources. Drafts never reach your agent until you approve them.</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={graphStatus}
+                  onChange={(event) => setGraphStatus(event.target.value)}
+                  className="rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-400/50"
+                >
+                  <option value="draft">Needs review</option>
+                  <option value="unresolved">Source changed</option>
+                  <option value="verified">Approved</option>
+                  <option value="excluded">Excluded</option>
+                  <option value="superseded">Superseded</option>
+                </select>
+                <button onClick={() => fetchConnectedKnowledge(graphStatus)} disabled={graphLoading} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-sm font-semibold text-gray-300 hover:text-white hover:bg-white/10 disabled:opacity-50">
+                  <RotateCcw size={15} className={graphLoading ? 'animate-spin' : ''} /> Refresh
+                </button>
+              </div>
+            </div>
+
+            {graphLoading ? (
+              <div className="flex items-center justify-center py-20"><Loader2 className="w-9 h-9 animate-spin text-blue-400" /></div>
+            ) : connectedClaims.length === 0 ? (
+              <div className="py-20 text-center bg-white/5 rounded-[2rem] border border-dashed border-white/10">
+                <Network className="w-12 h-12 text-blue-400 mx-auto mb-4" />
+                <h3 className="text-white font-bold mb-2">No {graphStatus} connections</h3>
+                <p className="text-gray-500 text-sm max-w-md mx-auto">Connections appear after verified knowledge is processed. Extracted drafts remain inactive until reviewed here.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {connectedClaims.map((claim) => {
+                  const conflicts = graphContradictions.filter((conflict) =>
+                    conflict.status === 'open' && (conflict.left_claim_id === claim.id || conflict.right_claim_id === claim.id)
+                  );
+                  const objectLabel = typeof claim.object === 'string' ? claim.object : claim.object?.canonical_name;
+                  return (
+                    <div key={claim.id} className={`rounded-2xl border p-5 ${conflicts.length ? 'border-amber-500/30 bg-amber-500/[0.06]' : 'border-white/10 bg-white/[0.035]'}`}>
+                      <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-5">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2 mb-3">
+                            <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-blue-500/15 text-blue-300">{claim.evidence_status}</span>
+                            <span className="text-xs text-gray-500">{Math.round((claim.confidence || 0) * 100)}% extraction confidence</span>
+                            {conflicts.length > 0 && <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300"><AlertTriangle size={12} /> Conflict</span>}
+                          </div>
+                          <p className="text-white font-bold leading-relaxed">{claim.statement}</p>
+                          <p className="text-xs text-gray-500 mt-2 font-mono">
+                            {claim.subject?.canonical_name || 'Unknown'} → {claim.predicate.replaceAll('_', ' ')} → {objectLabel || 'Unknown'}
+                          </p>
+                          <div className="mt-4 space-y-2">
+                            {(claim.evidence || []).map((evidence) => (
+                              <div key={`${claim.id}-${evidence.source_chunk_id}`} className="rounded-xl border border-white/5 bg-black/20 px-4 py-3">
+                                <p className="text-xs text-gray-300">“{evidence.excerpt}”</p>
+                                <p className="text-[10px] text-gray-600 mt-1">Source: {evidence.source?.source_title || 'Current approved knowledge'}</p>
+                              </div>
+                            ))}
+                          </div>
+                          {conflicts.map((conflict) => <p key={conflict.id} className="mt-3 text-xs text-amber-300">{conflict.reason}</p>)}
+                        </div>
+                        {['draft', 'unresolved'].includes(claim.evidence_status) && (
+                          <div className="flex gap-2 shrink-0">
+                            <button onClick={() => handleClaimReview(claim, 'approve')} disabled={submitting} className="px-4 py-2 rounded-xl bg-blue-500 text-white text-sm font-bold hover:bg-blue-400 disabled:opacity-50">Approve</button>
+                            <button onClick={() => handleClaimReview(claim, 'reject')} disabled={submitting} className="px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-gray-300 text-sm font-semibold hover:bg-white/10 disabled:opacity-50">Exclude</button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'memory' && (
+          <div className="space-y-6">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <History className="text-violet-400" size={20} /> Temporal Memory
+                </h2>
+                <p className="text-sm text-gray-400 mt-1">Review dated observations, explicit preferences, change signals, and aggregate question patterns.</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <select value={memoryType} onChange={(event) => { setMemoryType(event.target.value); setShowMemoryForm(false); }} className="rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-400/50">
+                  <option value="pattern">Patterns</option>
+                  <option value="preference">Preferences</option>
+                  <option value="observation">Observations</option>
+                </select>
+                <select value={memoryStatus} onChange={(event) => setMemoryStatus(event.target.value)} className="rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-400/50">
+                  <option value="draft">Needs review</option>
+                  <option value="verified">Approved</option>
+                  <option value="unresolved">Expired or withdrawn</option>
+                  <option value="excluded">Excluded</option>
+                </select>
+                {memoryType !== 'pattern' && (
+                  <button onClick={() => setShowMemoryForm((visible) => !visible)} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-500 text-white text-sm font-bold hover:bg-violet-400">
+                    {showMemoryForm ? <X size={15} /> : <Plus size={15} />} {showMemoryForm ? 'Close' : `Add ${memoryType}`}
+                  </button>
+                )}
+                <button onClick={() => fetchMemory(memoryType, memoryStatus)} disabled={memoryLoading} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-sm font-semibold text-gray-300 hover:text-white hover:bg-white/10 disabled:opacity-50">
+                  <RotateCcw size={15} className={memoryLoading ? 'animate-spin' : ''} /> Refresh
+                </button>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-violet-500/20 bg-violet-500/[0.06] px-5 py-4 flex gap-3">
+              <ShieldCheck className="text-violet-300 shrink-0 mt-0.5" size={19} />
+              <p className="text-sm text-gray-300 leading-relaxed">Memory uses only owner-confirmed entries or approved sources. Patterns are suggestions until approved. Visitor questions are grouped only as anonymous aggregate intents and never become personal preferences.</p>
+            </div>
+
+            {showMemoryForm && memoryType !== 'pattern' && (
+              <form onSubmit={handleMemorySave} className="rounded-[2rem] border border-violet-500/25 bg-white/[0.045] p-6 space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <label className="space-y-2">
+                    <span className="text-xs font-bold text-gray-300">Entity</span>
+                    <select required value={memoryForm.entityId} onChange={(event) => setMemoryForm((current) => ({ ...current, entityId: event.target.value }))} className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white">
+                      <option value="">Choose an approved entity</option>
+                      {memoryEntities.map((entity) => <option key={entity.id} value={entity.id}>{entity.canonical_name} ({entity.entity_type})</option>)}
+                    </select>
+                  </label>
+                  {memoryType === 'observation' && (
+                    <label className="space-y-2">
+                      <span className="text-xs font-bold text-gray-300">Observation type</span>
+                      <select value={memoryForm.observationType} onChange={(event) => setMemoryForm((current) => ({ ...current, observationType: event.target.value }))} className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white">
+                        <option value="event">Event</option><option value="state">State</option><option value="change">Change</option><option value="preference_signal">Preference signal</option><option value="behavior">Behavior</option><option value="availability">Availability</option>
+                      </select>
+                    </label>
+                  )}
+                  <label className="space-y-2">
+                    <span className="text-xs font-bold text-gray-300">Key</span>
+                    <input required maxLength={80} value={memoryForm.key} onChange={(event) => setMemoryForm((current) => ({ ...current, key: event.target.value }))} placeholder={memoryType === 'preference' ? 'communication style' : 'availability'} className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder-gray-600" />
+                  </label>
+                  <label className="space-y-2">
+                    <span className="text-xs font-bold text-gray-300">Optional expiry</span>
+                    <input type="datetime-local" value={memoryForm.expiresAt} onChange={(event) => setMemoryForm((current) => ({ ...current, expiresAt: event.target.value }))} className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white" />
+                  </label>
+                  {memoryType === 'observation' && (
+                    <label className="space-y-2">
+                      <span className="text-xs font-bold text-gray-300">Occurred at</span>
+                      <input required type="datetime-local" value={memoryForm.occurredAt} onChange={(event) => setMemoryForm((current) => ({ ...current, occurredAt: event.target.value }))} className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white" />
+                    </label>
+                  )}
+                </div>
+                <label className="block space-y-2">
+                  <span className="text-xs font-bold text-gray-300">{memoryType === 'preference' ? 'Explicit preference' : 'Observed value'}</span>
+                  <textarea required rows={4} maxLength={1000} value={memoryForm.value} onChange={(event) => setMemoryForm((current) => ({ ...current, value: event.target.value }))} placeholder="Enter only information you are authorized to store and let the agent use." className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder-gray-600 resize-y" />
+                </label>
+                <label className="flex items-start gap-3 text-sm text-gray-300">
+                  <input required type="checkbox" checked={memoryForm.consentConfirmed} onChange={(event) => setMemoryForm((current) => ({ ...current, consentConfirmed: event.target.checked }))} className="mt-1" />
+                  I confirm this is owner-approved information, contains no visitor profile or unnecessary sensitive data, and may be used by this agent until withdrawn or expired.
+                </label>
+                <div className="flex justify-end"><button disabled={submitting || !memoryForm.entityId || !memoryForm.key.trim() || !memoryForm.value.trim() || !memoryForm.consentConfirmed} className="px-5 py-2.5 rounded-xl bg-violet-500 text-white text-sm font-bold disabled:opacity-50">{submitting ? 'Saving...' : `Save ${memoryType}`}</button></div>
+              </form>
+            )}
+
+            {memoryLoading ? (
+              <div className="flex items-center justify-center py-20"><Loader2 className="w-9 h-9 animate-spin text-violet-400" /></div>
+            ) : memoryItems.length === 0 ? (
+              <div className="py-20 text-center bg-white/5 rounded-[2rem] border border-dashed border-white/10">
+                <History className="w-12 h-12 text-violet-400 mx-auto mb-4" />
+                <h3 className="text-white font-bold mb-2">No {memoryStatus} {memoryType}s</h3>
+                <p className="text-gray-500 text-sm max-w-md mx-auto">Add explicit dated memory or wait for supported patterns to be proposed from approved observations and aggregate knowledge gaps.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {memoryItems.map((item) => {
+                  const title = item.title || (memoryType === 'preference' ? `${item.entity?.canonical_name || 'Entity'} prefers ${item.preference_value}` : item.observed_value);
+                  const content = item.summary || item.preference_value || item.observed_value;
+                  const date = item.window_end || item.verified_at || item.occurred_at || item.updated_at;
+                  return (
+                    <div key={item.id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
+                      <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-5">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2 mb-3">
+                            <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-violet-500/15 text-violet-300">{item.evidence_status}</span>
+                            {item.pattern_type && <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/5 text-gray-400">{item.pattern_type.replaceAll('_', ' ')}</span>}
+                            {item.support_count != null && <span className="text-xs text-gray-500">{item.support_count} supports</span>}
+                            {item.confidence != null && <span className="text-xs text-gray-500">{Math.round(item.confidence * 100)}% confidence</span>}
+                            {item.consent_basis && <span className="text-xs text-gray-500">{item.consent_basis.replaceAll('_', ' ')}</span>}
+                          </div>
+                          <h3 className="text-white font-bold">{title}</h3>
+                          <p className="text-sm text-gray-400 mt-2 leading-relaxed">{content}</p>
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs text-gray-600">
+                            {item.entity?.canonical_name && <span>Entity: {item.entity.canonical_name}</span>}
+                            {date && <span>Dated: {new Date(date).toLocaleString()}</span>}
+                            {item.expires_at && <span>Expires: {new Date(item.expires_at).toLocaleString()}</span>}
+                          </div>
+                          {item.support_evidence?.length > 0 && (
+                            <div className="mt-4 space-y-2">
+                              {item.support_evidence.slice(0, 12).map((evidence, index) => (
+                                <div key={`${item.id}-support-${evidence.id || index}`} className="rounded-xl border border-white/5 bg-black/20 px-4 py-3">
+                                  <p className="text-xs text-gray-300">{evidence.kind === 'observation' ? evidence.observed_value : evidence.question}</p>
+                                  <p className="text-[10px] text-gray-600 mt-1">{evidence.kind === 'observation' ? `Observed ${new Date(evidence.occurred_at).toLocaleString()} · ${evidence.evidence_status}` : `Anonymous aggregate gap · asked ${evidence.occurrence_count} time${evidence.occurrence_count === 1 ? '' : 's'} · ${evidence.status}`}</p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                          {['draft', 'unresolved'].includes(item.evidence_status) && <button onClick={() => handleMemoryReview(item, 'approve')} disabled={submitting} className="px-4 py-2 rounded-xl bg-violet-500 text-white text-sm font-bold disabled:opacity-50">Approve</button>}
+                          {item.evidence_status !== 'excluded' && <button onClick={() => handleMemoryReview(item, memoryType === 'preference' && item.evidence_status === 'verified' ? 'revoke' : 'reject')} disabled={submitting} className="px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-gray-300 text-sm font-semibold disabled:opacity-50">{memoryType === 'preference' && item.evidence_status === 'verified' ? 'Withdraw' : 'Exclude'}</button>}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

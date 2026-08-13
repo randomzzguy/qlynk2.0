@@ -1,5 +1,6 @@
 import { featurePages } from '@/lib/marketing-pages';
 import { authorityArticles } from '@/lib/authority-articles';
+import { comparisonPages } from '@/lib/comparison-pages';
 import { isSubscriptionLive } from '@/lib/plans';
 import { SITE_URL } from '@/lib/seo';
 import { solutionPages } from '@/lib/solution-pages';
@@ -37,6 +38,7 @@ const routes = [
   ...Object.keys(featurePages).map((slug) => [`/features/${slug}`, 'monthly', 0.7]),
   ...Object.keys(solutionPages).map((slug) => [`/solutions/${slug}`, 'monthly', 0.8]),
   ...Object.entries(authorityArticles).map(([slug, article]) => [`/blog/${slug}`, 'monthly', 0.7, article.dateModified]),
+  ...Object.entries(comparisonPages).map(([slug, comparison]) => [`/compare/${slug}`, 'monthly', 0.8, comparison.dateModified]),
 ];
 
 const marketingLastModified = new Date('2026-07-21T00:00:00.000Z');

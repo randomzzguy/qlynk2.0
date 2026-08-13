@@ -3,6 +3,7 @@ import { ArrowRight, Scale } from 'lucide-react';
 import Footer from '@/components/Footer';
 import JsonLd from '@/components/JsonLd';
 import MarketingHeader from '@/components/MarketingHeader';
+import { comparisonPages } from '@/lib/comparison-pages';
 import { breadcrumbSchema, createMetadata, SITE_URL } from '@/lib/seo';
 
 export const metadata = createMetadata({
@@ -31,6 +32,14 @@ export default function ComparePage() {
             <p className="mt-4 leading-relaxed text-gray-400">A focused publishing-and-governance agent compared with a broader customer-service platform offering integrations and actions.</p>
             <span className="mt-8 inline-flex items-center gap-2 font-bold">Read the comparison <ArrowRight size={17} /></span>
           </Link>
+          {Object.entries(comparisonPages).map(([slug, comparison]) => (
+            <Link key={slug} href={`/compare/${slug}`} className="group rounded-3xl border border-white/10 bg-white/5 p-8 hover:border-orange/40">
+              <p className="text-sm font-black uppercase tracking-wider text-orange">Updated {comparison.updatedLabel}</p>
+              <h2 className="mt-4 text-3xl font-black group-hover:text-orange">Qlynk vs {comparison.vendor}</h2>
+              <p className="mt-4 leading-relaxed text-gray-400">{comparison.description}</p>
+              <span className="mt-8 inline-flex items-center gap-2 font-bold">Read the comparison <ArrowRight size={17} /></span>
+            </Link>
+          ))}
           <div className="rounded-3xl border border-dashed border-white/10 p-8 text-gray-500">
             <p className="text-sm font-black uppercase tracking-wider">Evaluation framework</p>
             <h2 className="mt-4 text-2xl font-black text-white">Compare your own shortlist</h2>

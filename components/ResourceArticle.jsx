@@ -109,10 +109,10 @@ export default function ResourceArticle({ article, slug }) {
         )}
 
         <section className="mt-20 rounded-3xl border border-orange/30 bg-orange/10 p-9 text-center md:p-12">
-          <h2 className="text-3xl font-black">Turn your approved knowledge into a trusted AI agent</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-gray-300">Add the answer, define the limits, test the response, and build from there.</p>
-          <Link href="/auth/signup" className="mt-8 inline-flex items-center gap-2 rounded-xl bg-orange px-7 py-4 font-bold text-white transition-colors hover:bg-[#c14f22]">
-            Start Free <ArrowRight size={18} aria-hidden="true" />
+          <h2 className="text-3xl font-black">{article.ctaTitle || 'Turn your approved knowledge into a trusted AI agent'}</h2>
+          <p className="mx-auto mt-4 max-w-2xl text-gray-300">{article.ctaText || 'Add the answer, define the limits, test the response, and build from there.'}</p>
+          <Link href={article.ctaHref || '/auth/signup'} className="mt-8 inline-flex items-center gap-2 rounded-xl bg-orange px-7 py-4 font-bold text-white transition-colors hover:bg-[#c14f22]">
+            {article.ctaLabel || 'Start Free'} <ArrowRight size={18} aria-hidden="true" />
           </Link>
         </section>
       </main>

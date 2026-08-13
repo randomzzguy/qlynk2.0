@@ -63,6 +63,14 @@ const serviceItems = [
   'Website widget setup and client training',
 ];
 
+const freelancerGuides = [
+  ['How to Sell AI Agents to Small Businesses', 'Find a narrow business problem, demonstrate it safely, and sell a complete implementation rather than vague automation.', 'how-to-sell-ai-agents-to-small-businesses'],
+  ['How Much to Charge for AI Agent Setup', 'Price discovery, knowledge preparation, configuration, testing, installation, and ongoing maintenance as real project work.', 'how-much-to-charge-for-ai-agent-setup'],
+  ['AI Agent Client Discovery Questionnaire', 'Use simple questions to uncover the audience, job, approved knowledge, limits, voice, escalation path, and launch criteria.', 'ai-agent-client-discovery-questionnaire'],
+  ['AI Agent Testing Checklist', 'Test routine answers, missing knowledge, boundaries, sensitive requests, prompt attacks, links, and human handoff before launch.', 'ai-agent-testing-checklist'],
+  ['How to Train an AI Agent on Company Documents', 'Turn company material into a current, approved, searchable knowledge set instead of uploading an unreviewed document dump.', 'how-to-train-ai-agent-on-company-documents'],
+];
+
 const faqs = [
   ['Is the Qlynk Agent Builder free?', 'Yes. The downloadable workflow is free. A live Qlynk Agent still requires the client’s own trial or paid Qlynk subscription.'],
   ['Can freelancers charge for using it?', 'Yes. Freelancers can charge for discovery, configuration, knowledge preparation, testing, website installation, training, and ongoing maintenance.'],
@@ -250,6 +258,25 @@ export default function AgentBuilderPage() {
             <div className="mt-7 space-y-3">
               {['Client controls email, recovery, username, and billing', 'Freelancer never collects passwords, cards, or verification codes', 'Facts and public contact details require client approval', 'Publishing and live website installation require confirmation'].map((item) => (
                 <div key={item} className="flex gap-3 rounded-xl border border-white/10 bg-black/20 p-4 text-sm text-gray-300"><ShieldCheck size={18} className="shrink-0 text-emerald-300" /> {item}</div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="border-y border-white/10 bg-white/[0.025]">
+          <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
+            <div className="max-w-3xl">
+              <p className="text-sm font-black uppercase tracking-[0.2em] text-orange">Freelancer playbook</p>
+              <h2 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">Learn the business around the build</h2>
+              <p className="mt-5 text-lg leading-relaxed text-gray-400">Use these practical guides to find clients, scope the work, prepare reliable knowledge, test the finished agent, and price your service.</p>
+            </div>
+            <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {freelancerGuides.map(([title, description, slug]) => (
+                <Link key={slug} href={`/blog/${slug}`} className="group rounded-2xl border border-white/10 bg-gray-950 p-7 transition hover:border-orange/40">
+                  <h3 className="text-xl font-black transition group-hover:text-orange">{title}</h3>
+                  <p className="mt-3 leading-relaxed text-gray-400">{description}</p>
+                  <span className="mt-6 inline-flex items-center gap-2 text-sm font-black text-orange">Read the guide <ArrowRight size={16} /></span>
+                </Link>
               ))}
             </div>
           </div>

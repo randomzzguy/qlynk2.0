@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { authorityArticles } from '../lib/authority-articles.js';
+import { comparisonPages } from '../lib/comparison-pages.js';
 import { solutionClusters, solutionPages } from '../lib/solution-pages.js';
 
 const solutions = Object.values(solutionPages);
@@ -37,10 +38,10 @@ test('all five requested topic clusters are represented', () => {
   );
 });
 
-test('authority cluster contains 14 substantive, unique guides and product updates', () => {
-  assert.equal(articles.length, 14);
-  assert.equal(new Set(articles.map((item) => item.title)).size, 14);
-  assert.equal(new Set(articles.map((item) => item.description)).size, 14);
+test('authority cluster contains 19 substantive, unique guides and product updates', () => {
+  assert.equal(articles.length, 19);
+  assert.equal(new Set(articles.map((item) => item.title)).size, 19);
+  assert.equal(new Set(articles.map((item) => item.description)).size, 19);
 
   for (const slug of ['qlynk-agent-understands-questions-better', 'embed-ai-agent-on-website', 'how-to-change-qlynk-username']) {
     assert.ok(authorityArticles[slug], `${slug} has an indexable article route`);
@@ -53,5 +54,32 @@ test('authority cluster contains 14 substantive, unique guides and product updat
     assert.ok(item.faqs.length >= 3, `${item.shortTitle} has FAQs`);
     assert.ok(item.relatedSolutions.length >= 3, `${item.shortTitle} links to solutions`);
     for (const slug of item.relatedSolutions) assert.ok(solutionPages[slug], `${item.shortTitle} links to ${slug}`);
+  }
+});
+
+test('freelancer growth guides cover sales, pricing, discovery, testing, and knowledge preparation', () => {
+  for (const slug of [
+    'how-to-sell-ai-agents-to-small-businesses',
+    'how-much-to-charge-for-ai-agent-setup',
+    'ai-agent-client-discovery-questionnaire',
+    'ai-agent-testing-checklist',
+    'how-to-train-ai-agent-on-company-documents',
+  ]) {
+    assert.ok(authorityArticles[slug], `${slug} has an indexable article route`);
+    assert.equal(authorityArticles[slug].datePublished, '2026-08-14');
+    assert.equal(authorityArticles[slug].ctaHref, '/agent-builder');
+  }
+});
+
+test('comparison cluster contains three complete, source-backed platform reviews', () => {
+  assert.deepEqual(Object.keys(comparisonPages).sort(), ['qlynk-vs-customgpt', 'qlynk-vs-docsbot', 'qlynk-vs-sitegpt']);
+
+  for (const [slug, comparison] of Object.entries(comparisonPages)) {
+    assert.ok(comparison.summary.length >= 150, `${slug} has a substantive summary`);
+    assert.equal(comparison.qlynkBestFor.length, 3, `${slug} has Qlynk fit criteria`);
+    assert.equal(comparison.vendorBestFor.length, 3, `${slug} has competitor fit criteria`);
+    assert.ok(comparison.rows.length >= 8, `${slug} compares at least eight areas`);
+    assert.ok(comparison.sources.length >= 2, `${slug} cites official sources`);
+    assert.ok(comparison.sources.every(([, href]) => href.startsWith('https://')), `${slug} uses secure source links`);
   }
 });

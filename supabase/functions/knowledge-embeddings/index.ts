@@ -2,7 +2,6 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 
 const MODEL_NAME = 'gte-small@1'
 const MODEL_DIMENSIONS = 384
-const MAX_INPUTS = 16
 const MAX_INPUT_CHARS = 4_000
 
 const model = new Supabase.ai.Session('gte-small')
@@ -32,8 +31,8 @@ Deno.serve(async (request) => {
     return json({ error: 'Invalid JSON body' }, 400)
   }
 
-  if (!Array.isArray(body.inputs) || body.inputs.length < 1 || body.inputs.length > MAX_INPUTS) {
-    return json({ error: `Provide 1-${MAX_INPUTS} text inputs` }, 400)
+  if (!Array.isArray(body.inputs) || body.inputs.length !== 1) {
+    return json({ error: 'Provide exactly one text input' }, 400)
   }
 
   const inputs = body.inputs.map((value) => typeof value === 'string' ? value.trim() : '')
@@ -42,19 +41,15 @@ Deno.serve(async (request) => {
   }
 
   try {
-    const embeddings: number[][] = []
-    for (const input of inputs) {
-      const output = await model.run(input, { mean_pool: true, normalize: true })
-      if (!Array.isArray(output) || output.length !== MODEL_DIMENSIONS) {
-        throw new Error('Embedding model returned an unexpected dimension')
-      }
-      embeddings.push(output as number[])
+    const output = await model.run(inputs[0], { mean_pool: true, normalize: true })
+    if (!Array.isArray(output) || output.length !== MODEL_DIMENSIONS) {
+      throw new Error('Embedding model returned an unexpected dimension')
     }
 
     return json({
       model: MODEL_NAME,
       dimensions: MODEL_DIMENSIONS,
-      embeddings,
+      embeddings: [output as number[]],
     })
   } catch (error) {
     console.error('[Knowledge Embeddings] Inference failed:', error)

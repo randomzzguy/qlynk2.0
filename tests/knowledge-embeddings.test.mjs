@@ -11,7 +11,9 @@ test('embedding inference is service-only, bounded, normalized, and model-versio
   assert.match(edgeFunction, /apiKey !== embeddingSecret/);
   assert.doesNotMatch(embeddingClient, /Authorization:/);
   assert.match(embeddingClient, /apikey: embeddingSecret/);
-  assert.match(edgeFunction, /MAX_INPUTS = 16/);
+  assert.match(edgeFunction, /body\.inputs\.length !== 1/);
+  assert.match(embeddingClient, /MAX_CONCURRENT_EMBEDDINGS = 4/);
+  assert.match(embeddingClient, /batch\.map\(\(input\) => requestKnowledgeEmbedding/);
   assert.match(edgeFunction, /MAX_INPUT_CHARS = 4_000/);
   assert.match(edgeFunction, /mean_pool: true, normalize: true/);
   assert.match(edgeFunction, /gte-small@1/);

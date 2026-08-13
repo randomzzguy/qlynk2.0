@@ -18,6 +18,7 @@ Implemented in code:
 - optional 384-dimensional `gte-small` embeddings generated in Supabase Edge Runtime;
 - HNSW cosine index on active knowledge chunks;
 - service-only, bounded embedding job claims with retry and stale-job recovery;
+- one model inference per Edge Function request with bounded four-request concurrency to stay within hosted inference resource limits;
 - reciprocal-rank fusion of lexical and semantic candidates;
 - a minimum semantic similarity threshold;
 - preservation of embeddings during metadata-only edits;

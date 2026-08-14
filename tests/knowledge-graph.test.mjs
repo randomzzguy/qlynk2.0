@@ -57,6 +57,8 @@ test('graph worker is feature-gated, bounded, JSON-only, and treats source text 
   assert.match(worker, /response_format:\s*\{ type: 'json_object' \}/);
   assert.match(worker, /validateKnowledgeGraphExtraction\(payload, job\.content\)/);
   assert.match(worker, /MAX_GRAPH_JOBS = 6/);
+  assert.match(worker, /for \(const job of jobs\)/);
+  assert.doesNotMatch(worker, /Promise\.all\(jobs\.map/);
   assert.match(cron, /authorizeCronRequest/);
   assert.match(cron, /limit: 6/);
 });

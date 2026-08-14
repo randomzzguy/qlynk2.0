@@ -152,7 +152,9 @@ export default function ChatWidget({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: updatedMessages,
+          // The server reloads trusted conversation history by conversation ID.
+          // Send only the new turn so long visible chats stay within request bounds.
+          messages: [userMessage],
           username,
           conversationId,
           visitorId,

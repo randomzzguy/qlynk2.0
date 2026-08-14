@@ -16,7 +16,7 @@ export async function GET(request) {
   try {
     const totals = await processPendingKnowledgeGraph({
       supabase: createAdminClient(),
-      limit: 6,
+      limit: 3,
     });
     return Response.json({ success: true, ...totals });
   } catch (error) {

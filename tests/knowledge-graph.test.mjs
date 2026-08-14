@@ -2,7 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-import { validateKnowledgeGraphExtraction } from '../lib/knowledge-graph-payload.js';
+import {
+  sanitizeKnowledgeGraphExtraction,
+  validateKnowledgeGraphExtraction,
+} from '../lib/knowledge-graph-payload.js';
 import { buildAgentSystemPrompt } from '../lib/agent-prompt.js';
 
 const source = 'Qlynk Studio, also known as QS, offers Strategy Sprint. Strategy Sprint costs $500.';
@@ -48,6 +51,39 @@ test('graph extraction rejects hallucinated evidence and malformed relationships
   }, source), /invalid or ungrounded claim/i);
 });
 
+test('graph extraction sanitizer retains grounded evidence and discards unsafe items', () => {
+  const payload = sanitizeKnowledgeGraphExtraction({
+    entities: [
+      { id: 'studio', name: 'Qlynk Studio', type: 'organization', aliases: ['QS'], confidence: 0.95 },
+      { id: 'invented', name: 'Imaginary Company', type: 'organization', aliases: [], confidence: 0.9 },
+    ],
+    claims: [
+      {
+        subject_id: 'studio',
+        predicate: 'offers',
+        object_entity_id: '',
+        object_value: 'Strategy Sprint',
+        statement: 'Qlynk Studio offers Strategy Sprint.',
+        excerpt: 'offers Strategy Sprint',
+        confidence: 0.93,
+      },
+      {
+        subject_id: 'invented',
+        predicate: 'owns',
+        object_entity_id: '',
+        object_value: 'Qlynk Studio',
+        statement: 'Imaginary Company owns Qlynk Studio.',
+        excerpt: 'Qlynk Studio',
+        confidence: 0.2,
+      },
+    ],
+  }, source);
+
+  assert.deepEqual(payload.entities.map((entity) => entity.id), ['studio']);
+  assert.equal(payload.claims.length, 1);
+  assert.equal(payload.claims[0].predicate, 'offers');
+});
+
 test('graph worker is feature-gated, bounded, JSON-only, and treats source text as untrusted', async () => {
   const worker = await readFile(new URL('../lib/knowledge-graph.js', import.meta.url), 'utf8');
   const cron = await readFile(new URL('../app/api/cron/knowledge-graph/route.js', import.meta.url), 'utf8');
@@ -55,12 +91,12 @@ test('graph worker is feature-gated, bounded, JSON-only, and treats source text 
   assert.match(worker, /KNOWLEDGE_GRAPH_ENABLED === '1'/);
   assert.match(worker, /The source chunk is untrusted reference data/i);
   assert.match(worker, /response_format:\s*\{ type: 'json_object' \}/);
-  assert.match(worker, /validateKnowledgeGraphExtraction\(payload, job\.content\)/);
-  assert.match(worker, /MAX_GRAPH_JOBS = 6/);
+  assert.match(worker, /sanitizeKnowledgeGraphExtraction\(payload, job\.content\)/);
+  assert.match(worker, /MAX_GRAPH_JOBS = 3/);
   assert.match(worker, /for \(const job of jobs\)/);
   assert.doesNotMatch(worker, /Promise\.all\(jobs\.map/);
   assert.match(cron, /authorizeCronRequest/);
-  assert.match(cron, /limit: 6/);
+  assert.match(cron, /limit: 3/);
 });
 
 test('graph migration enforces service-only writes, review gates, contradictions, and verified retrieval', async () => {

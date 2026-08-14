@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-import { DEFAULT_WIDGET_THEME, resolveWidgetTheme } from '../lib/widget-theme.js';
+import { DEFAULT_WIDGET_THEME, resolveWidgetTheme, WIDGET_SURFACE_SHADOW } from '../lib/widget-theme.js';
 
 test('widget theme uses the installation accent and every live visual-style field', () => {
   assert.deepEqual(
@@ -43,6 +43,14 @@ test('widget theme falls back consistently when optional colors are blank', () =
   assert.equal(branded.ctaButtonColor, '#abcdef');
 });
 
+test('widget surface blends into its host without a colored outline', () => {
+  assert.equal(
+    WIDGET_SURFACE_SHADOW,
+    '0 28px 80px rgba(0, 0, 0, 0.34), 0 10px 30px rgba(0, 0, 0, 0.18)',
+  );
+  assert.doesNotMatch(WIDGET_SURFACE_SHADOW, /#[0-9a-f]{3,8}/i);
+});
+
 test('dashboard preview and live widget share theme resolution and receive the same fields', async () => {
   const [previewSource, widgetSource, apiSource] = await Promise.all([
     readFile(new URL('../app/dashboard/widget/page.jsx', import.meta.url), 'utf8'),
@@ -52,6 +60,8 @@ test('dashboard preview and live widget share theme resolution and receive the s
 
   assert.match(previewSource, /resolveWidgetTheme/);
   assert.match(widgetSource, /resolveWidgetTheme/);
+  assert.match(previewSource, /boxShadow: WIDGET_SURFACE_SHADOW/);
+  assert.match(widgetSource, /boxShadow: WIDGET_SURFACE_SHADOW/);
   for (const field of [
     'chat_bg_color',
     'user_bubble_color',

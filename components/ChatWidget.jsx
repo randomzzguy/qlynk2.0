@@ -7,7 +7,7 @@ import AgentResponseIndicator from '@/components/AgentResponseIndicator';
 import { getAgentTypeDefinition } from '@/lib/agent-type-catalog';
 import { hasAgencyFeatures } from '@/lib/plans';
 import { isOriginAllowed } from '@/lib/widget-installations';
-import { resolveWidgetTheme } from '@/lib/widget-theme';
+import { resolveWidgetTheme, WIDGET_SURFACE_SHADOW } from '@/lib/widget-theme';
 
 export default function ChatWidget({ 
   username, 
@@ -298,8 +298,8 @@ export default function ChatWidget({
       {/* Chat Window */}
       {isOpen && (
         <div 
-          className="mb-4 h-[min(520px,calc(100dvh-100px))] w-[min(360px,calc(100vw-32px))] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-white/10"
-          style={{ backgroundColor: widgetTheme.chatBgColor, boxShadow: `0 25px 50px -12px ${widgetTheme.accentColor}20` }}
+          className="mb-4 h-[min(520px,calc(100dvh-100px))] w-[min(360px,calc(100vw-32px))] rounded-2xl flex flex-col overflow-hidden"
+          style={{ backgroundColor: widgetTheme.chatBgColor, boxShadow: WIDGET_SURFACE_SHADOW }}
         >
           {/* Header */}
           <div 

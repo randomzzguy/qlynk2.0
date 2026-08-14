@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { buildWidgetEmbedCode } from '@/lib/widget-installations';
-import { resolveWidgetTheme } from '@/lib/widget-theme';
+import { resolveWidgetTheme, WIDGET_SURFACE_SHADOW } from '@/lib/widget-theme';
 import { hasAgencyFeatures } from '@/lib/plans';
 import UpgradePrompt from '@/components/UpgradePrompt';
 import { useDashboardPageReady } from '@/lib/dashboard-page-ready';
@@ -85,8 +85,8 @@ function WidgetPreview({ form, agent, mobile }) {
       </div>
 
       <div
-        className={`absolute bottom-20 flex h-[min(360px,calc(100%-92px))] w-[min(340px,calc(100%-24px))] flex-col overflow-hidden rounded-2xl border border-white/10 shadow-2xl ${form.position === 'bottom-left' ? 'left-3' : 'right-3'}`}
-        style={{ backgroundColor: theme.chatBgColor, fontFamily: theme.fontFamily }}
+        className={`absolute bottom-20 flex h-[min(360px,calc(100%-92px))] w-[min(340px,calc(100%-24px))] flex-col overflow-hidden rounded-2xl ${form.position === 'bottom-left' ? 'left-3' : 'right-3'}`}
+        style={{ backgroundColor: theme.chatBgColor, boxShadow: WIDGET_SURFACE_SHADOW, fontFamily: theme.fontFamily }}
       >
         <div className="flex items-center gap-3 px-4 py-3 text-white" style={{ backgroundColor: theme.accentColor }}>
           <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-white/20">

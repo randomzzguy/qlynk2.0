@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
-const fs = require('fs');
-const path = require('path');
+import fs from 'node:fs';
+import path from 'node:path';
 
 const lockPath = path.resolve(process.cwd(), '.next', 'dev', 'lock');
 try {

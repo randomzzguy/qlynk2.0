@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { buildWidgetEmbedCode } from '@/lib/widget-installations';
+import { resolveWidgetTheme } from '@/lib/widget-theme';
 import { hasAgencyFeatures } from '@/lib/plans';
 import UpgradePrompt from '@/components/UpgradePrompt';
 import { useDashboardPageReady } from '@/lib/dashboard-page-ready';
@@ -58,7 +59,10 @@ function formSnapshot(form) {
 }
 
 function WidgetPreview({ form, agent, mobile }) {
-  const color = form.launcher_color || agent?.primary_color || '#f46530';
+  const theme = resolveWidgetTheme({
+    widget: { launcher_color: form.launcher_color },
+    agent,
+  });
   const emailAccessRequired = agent?.access_level === 'email';
   const showsEmail = emailAccessRequired || form.pre_chat_email_enabled;
   const requiresEmail = emailAccessRequired || form.pre_chat_email_required;
@@ -80,8 +84,11 @@ function WidgetPreview({ form, agent, mobile }) {
         </div>
       </div>
 
-      <div className={`absolute bottom-20 w-[min(340px,calc(100%-24px))] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl ${form.position === 'bottom-left' ? 'left-3' : 'right-3'}`}>
-        <div className="flex items-center gap-3 px-4 py-3 text-white" style={{ backgroundColor: color }}>
+      <div
+        className={`absolute bottom-20 flex h-[min(360px,calc(100%-92px))] w-[min(340px,calc(100%-24px))] flex-col overflow-hidden rounded-2xl border border-white/10 shadow-2xl ${form.position === 'bottom-left' ? 'left-3' : 'right-3'}`}
+        style={{ backgroundColor: theme.chatBgColor, fontFamily: theme.fontFamily }}
+      >
+        <div className="flex items-center gap-3 px-4 py-3 text-white" style={{ backgroundColor: theme.accentColor }}>
           <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-white/20">
             {agent?.agent_avatar
               ? <Image src={agent.agent_avatar} alt="" width={36} height={36} className="h-full w-full object-cover" />
@@ -92,27 +99,31 @@ function WidgetPreview({ form, agent, mobile }) {
             <p className="text-[11px] text-white/75">Online</p>
           </div>
         </div>
-        <div className="h-40 overflow-hidden bg-gray-50 p-4">
+        <div className="flex-1 overflow-hidden p-4" style={{ backgroundColor: theme.chatBgColor }}>
           {form.pre_chat_enabled ? (
             <div className="mx-auto max-w-[260px]">
-              <p className="text-xs font-bold text-gray-800">Before we start</p>
-              <p className="mt-1 line-clamp-2 text-[9px] leading-relaxed text-gray-500">{form.pre_chat_intro}</p>
-              <div className="mt-2 h-7 rounded-lg border border-gray-200 bg-white px-2 text-[9px] leading-7 text-gray-400">Your name</div>
-              {showsEmail && <div className="mt-1.5 h-7 rounded-lg border border-gray-200 bg-white px-2 text-[9px] leading-7 text-gray-400">Email{requiresEmail ? '' : ' (optional)'}</div>}
-              <div className="mt-2 h-7 rounded-lg text-center text-[9px] font-bold leading-7 text-white" style={{ backgroundColor: color }}>Start chat</div>
+              <p className="text-xs font-bold text-white">Before we start</p>
+              <p className="mt-1 line-clamp-2 text-[9px] leading-relaxed" style={{ color: theme.gatekeeperTextColor }}>{form.pre_chat_intro}</p>
+              <div className="mt-2 h-7 rounded-lg border border-white/15 bg-white/10 px-2 text-[9px] leading-7 text-gray-400">Your name</div>
+              {showsEmail && <div className="mt-1.5 h-7 rounded-lg border border-white/15 bg-white/10 px-2 text-[9px] leading-7 text-gray-400">Email{requiresEmail ? '' : ' (optional)'}</div>}
+              <div className="mt-2 h-7 rounded-lg text-center text-[9px] font-bold leading-7" style={{ backgroundColor: theme.ctaButtonColor, color: theme.ctaTextColor }}>Start chat</div>
             </div>
           ) : (
-            <div className="max-w-[82%] rounded-2xl rounded-tl-sm bg-white px-3 py-2 text-xs leading-relaxed text-gray-600 shadow-sm">
+            <div className="max-w-[82%] rounded-2xl rounded-tl-sm px-3 py-2 text-xs leading-relaxed text-white shadow-sm" style={{ backgroundColor: theme.aiBubbleColor }}>
               {agent?.welcome_message || 'Hi! How can I help you today?'}
             </div>
           )}
         </div>
-        <div className="border-t border-gray-100 p-3">
-          <div className="h-9 rounded-full bg-gray-100" />
+        <div className="border-t border-white/10 p-3" style={{ backgroundColor: theme.chatBgColor }}>
+          <div className="flex h-9 items-center justify-end rounded-full bg-white/10 px-1.5">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full" style={{ backgroundColor: theme.ctaButtonColor, color: theme.ctaTextColor }}>
+              <MessageCircle size={13} />
+            </span>
+          </div>
         </div>
       </div>
 
-      <div className={`absolute bottom-4 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-xl ${form.position === 'bottom-left' ? 'left-4' : 'right-4'}`} style={{ backgroundColor: color }}>
+      <div className={`absolute bottom-4 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-xl ${form.position === 'bottom-left' ? 'left-4' : 'right-4'}`} style={{ backgroundColor: theme.accentColor }}>
         <MessageCircle size={24} />
       </div>
     </div>
@@ -448,7 +459,7 @@ export default function WebsiteWidgetPage() {
             <div className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
               <div>
                 <h2 className="font-bold text-white">Website preview</h2>
-                <p className="mt-1 text-xs text-gray-500">A visual preview of the client-site experience.</p>
+                <p className="mt-1 text-xs text-gray-500">Matches the live widget using your published Visual Style and these widget settings.</p>
               </div>
               <div className="flex w-fit rounded-xl border border-white/10 bg-black/25 p-1">
                 <button type="button" onClick={() => setPreviewMode('desktop')} className={`rounded-lg p-2 ${previewMode === 'desktop' ? 'bg-white text-black' : 'text-gray-500'}`} aria-label="Desktop preview"><Monitor size={17} /></button>

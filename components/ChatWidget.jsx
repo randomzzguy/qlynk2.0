@@ -7,6 +7,7 @@ import AgentResponseIndicator from '@/components/AgentResponseIndicator';
 import { getAgentTypeDefinition } from '@/lib/agent-type-catalog';
 import { hasAgencyFeatures } from '@/lib/plans';
 import { isOriginAllowed } from '@/lib/widget-installations';
+import { resolveWidgetTheme } from '@/lib/widget-theme';
 
 export default function ChatWidget({ 
   username, 
@@ -33,6 +34,19 @@ export default function ChatWidget({
   preChatIntro = 'Tell us who you are so we can better assist you.'
 }) {
   const agentTypeDefinition = getAgentTypeDefinition(agentType);
+  const widgetTheme = resolveWidgetTheme({
+    widget: { launcher_color: primaryColor },
+    agent: {
+      primary_color: primaryColor,
+      chat_bg_color: chatBgColor,
+      user_bubble_color: userBubbleColor,
+      ai_bubble_color: aiBubbleColor,
+      cta_button_color: ctaButtonColor,
+      cta_text_color: ctaTextColor,
+      gatekeeper_text_color: gatekeeperTextColor,
+      font_family: fontFamily,
+    },
+  });
   const needsVisitorForm = accessLevel !== 'public' || preChatEnabled;
   const showsEmailField = accessLevel === 'email' || (preChatEnabled && preChatEmailEnabled);
   const requiresEmail = accessLevel === 'email' || (preChatEnabled && preChatEmailEnabled && preChatEmailRequired);
@@ -280,17 +294,17 @@ export default function ChatWidget({
   if (embedBlocked || !embedReady) return null;
 
   return (
-    <div className={`fixed ${positionClasses[position] || positionClasses['bottom-right']} z-50`} style={{ fontFamily }}>
+    <div className={`fixed ${positionClasses[position] || positionClasses['bottom-right']} z-50`} style={{ fontFamily: widgetTheme.fontFamily }}>
       {/* Chat Window */}
       {isOpen && (
         <div 
           className="mb-4 h-[min(520px,calc(100dvh-100px))] w-[min(360px,calc(100vw-32px))] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-white/10"
-          style={{ backgroundColor: chatBgColor, boxShadow: `0 25px 50px -12px ${primaryColor}20` }}
+          style={{ backgroundColor: widgetTheme.chatBgColor, boxShadow: `0 25px 50px -12px ${widgetTheme.accentColor}20` }}
         >
           {/* Header */}
           <div 
             className="px-4 py-3 flex items-center justify-between text-white"
-            style={{ backgroundColor: primaryColor }}
+            style={{ backgroundColor: widgetTheme.accentColor }}
           >
             <div className="flex items-center gap-3">
               {agentAvatar ? (
@@ -333,19 +347,19 @@ export default function ChatWidget({
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ backgroundColor: chatBgColor }} aria-live="polite" aria-busy={isLoading}>
+          <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ backgroundColor: widgetTheme.chatBgColor }} aria-live="polite" aria-busy={isLoading}>
             {!isAuthorized && needsVisitorForm ? (
               <form onSubmit={handleGatekeeperSubmit} className="space-y-3">
                 {preChatEnabled && (
                   <div className="mb-4">
                     <h4 className="text-base font-bold text-white">Before we start</h4>
-                    <p className="mt-1 text-xs leading-relaxed" style={{ color: gatekeeperTextColor }}>
+                    <p className="mt-1 text-xs leading-relaxed" style={{ color: widgetTheme.gatekeeperTextColor }}>
                       {preChatIntro}
                     </p>
                   </div>
                 )}
                 <div>
-                  <label className="block text-xs font-semibold mb-1" style={{ color: gatekeeperTextColor }}>Your name</label>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: widgetTheme.gatekeeperTextColor }}>Your name</label>
                   <input
                     type="text"
                     name="name"
@@ -355,12 +369,12 @@ export default function ChatWidget({
                     value={gatekeeperForm.name}
                     onChange={(e) => setGatekeeperForm(prev => ({ ...prev, name: e.target.value }))}
                     className="w-full px-3 py-2 bg-white/10 border border-white/15 rounded-xl text-sm text-white focus:outline-none focus:ring-2"
-                    style={{ '--tw-ring-color': primaryColor }}
+                    style={{ '--tw-ring-color': widgetTheme.accentColor }}
                   />
                 </div>
                 {showsEmailField && (
                   <div>
-                    <label className="block text-xs font-semibold mb-1" style={{ color: gatekeeperTextColor }}>
+                    <label className="block text-xs font-semibold mb-1" style={{ color: widgetTheme.gatekeeperTextColor }}>
                       Email {!requiresEmail && <span className="font-normal opacity-70">(optional)</span>}
                     </label>
                     <input
@@ -372,19 +386,19 @@ export default function ChatWidget({
                       value={gatekeeperForm.email}
                       onChange={(e) => setGatekeeperForm(prev => ({ ...prev, email: e.target.value }))}
                       className="w-full px-3 py-2 bg-white/10 border border-white/15 rounded-xl text-sm text-white focus:outline-none focus:ring-2"
-                      style={{ '--tw-ring-color': primaryColor }}
+                      style={{ '--tw-ring-color': widgetTheme.accentColor }}
                     />
                   </div>
                 )}
                 {accessLevel === 'password' && (
                   <div>
-                    <label className="block text-xs font-semibold mb-1" style={{ color: gatekeeperTextColor }}>Access password</label>
+                    <label className="block text-xs font-semibold mb-1" style={{ color: widgetTheme.gatekeeperTextColor }}>Access password</label>
                     <input
                       type="password"
                       value={gatekeeperForm.password}
                       onChange={(e) => setGatekeeperForm(prev => ({ ...prev, password: e.target.value }))}
                       className="w-full px-3 py-2 bg-white/10 border border-white/15 rounded-xl text-sm text-white focus:outline-none focus:ring-2"
-                      style={{ '--tw-ring-color': primaryColor }}
+                      style={{ '--tw-ring-color': widgetTheme.accentColor }}
                     />
                   </div>
                 )}
@@ -401,7 +415,7 @@ export default function ChatWidget({
                 <button
                   type="submit"
                   className="w-full py-2.5 rounded-xl text-white text-sm font-semibold"
-                  style={{ backgroundColor: ctaButtonColor || primaryColor, color: ctaTextColor }}
+                  style={{ backgroundColor: widgetTheme.ctaButtonColor, color: widgetTheme.ctaTextColor }}
                 >
                   {preChatEnabled ? 'Start chat' : 'Continue'}
                 </button>
@@ -413,13 +427,13 @@ export default function ChatWidget({
               <div className="flex gap-3">
                 <div 
                   className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: `${primaryColor}20` }}
+                  style={{ backgroundColor: `${widgetTheme.accentColor}20` }}
                 >
-                  <Bot size={16} style={{ color: primaryColor }} />
+                  <Bot size={16} style={{ color: widgetTheme.accentColor }} />
                 </div>
                 <div 
                   className="rounded-2xl rounded-tl-sm px-4 py-3 max-w-[80%] shadow-sm text-white"
-                  style={{ backgroundColor: aiBubbleColor }}
+                  style={{ backgroundColor: widgetTheme.aiBubbleColor }}
                 >
                   <p className="text-sm">{welcomeMessage}</p>
                 </div>
@@ -441,12 +455,12 @@ export default function ChatWidget({
                     className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                       isUser ? 'bg-gray-200' : ''
                     }`}
-                    style={!isUser ? { backgroundColor: `${primaryColor}20` } : {}}
+                    style={!isUser ? { backgroundColor: `${widgetTheme.accentColor}20` } : {}}
                   >
                     {isUser ? (
                       <User size={16} className="text-gray-600" />
                     ) : (
-                      <Bot size={16} style={{ color: primaryColor }} />
+                      <Bot size={16} style={{ color: widgetTheme.accentColor }} />
                     )}
                   </div>
                   <div 
@@ -455,7 +469,7 @@ export default function ChatWidget({
                         ? 'rounded-tr-sm text-white' 
                         : 'rounded-tl-sm text-white'
                     }`}
-                    style={{ backgroundColor: isUser ? userBubbleColor : aiBubbleColor }}
+                    style={{ backgroundColor: isUser ? widgetTheme.userBubbleColor : widgetTheme.aiBubbleColor }}
                   >
                     <p className="text-sm whitespace-pre-wrap text-white">
                       {text}
@@ -469,7 +483,7 @@ export default function ChatWidget({
             {responsePhase === 'preparing' && (
               <AgentResponseIndicator
                 agentName={agentName}
-                accentColor={primaryColor}
+                accentColor={widgetTheme.accentColor}
                 variant="light"
                 compact
               />
@@ -481,7 +495,7 @@ export default function ChatWidget({
           </div>
 
           {/* Input Area */}
-          <form onSubmit={handleSubmit} className="p-4 border-t border-white/10" style={{ backgroundColor: chatBgColor }}>
+          <form onSubmit={handleSubmit} className="p-4 border-t border-white/10" style={{ backgroundColor: widgetTheme.chatBgColor }}>
             <div className="flex gap-2">
               <input
                 ref={inputRef}
@@ -491,13 +505,13 @@ export default function ChatWidget({
                 placeholder={isLoading ? 'The agent is responding...' : 'Type a message...'}
                 disabled={isLoading || !isAuthorized}
                 className="flex-1 px-4 py-2.5 bg-white/10 text-white placeholder:text-gray-500 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 disabled:opacity-50"
-                style={{ '--tw-ring-color': primaryColor }}
+                style={{ '--tw-ring-color': widgetTheme.accentColor }}
               />
               <button
                 type="submit"
                 disabled={!input.trim() || isLoading || !isAuthorized}
                 className="p-2.5 rounded-full text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
-                style={{ backgroundColor: ctaButtonColor || primaryColor, color: ctaTextColor }}
+                style={{ backgroundColor: widgetTheme.ctaButtonColor, color: widgetTheme.ctaTextColor }}
                 aria-label="Send message"
               >
                 {isLoading
@@ -522,8 +536,8 @@ export default function ChatWidget({
         onClick={() => setIsOpen(!isOpen)}
         className="w-14 h-14 rounded-full text-white shadow-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95"
         style={{ 
-          backgroundColor: primaryColor,
-          boxShadow: `0 10px 40px ${primaryColor}50`
+          backgroundColor: widgetTheme.accentColor,
+          boxShadow: `0 10px 40px ${widgetTheme.accentColor}50`
         }}
         aria-label={isOpen ? 'Close chat' : 'Open chat'}
       >

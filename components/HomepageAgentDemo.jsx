@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Loader2, Send } from 'lucide-react';
+import ChatMarkdown from '@/components/ChatMarkdown';
 import { NORTHSTAR_DEMO } from '@/lib/demo/northstar-public';
 
 const DEMO_SESSION_KEY = 'qlynk_home_demo_session';
@@ -226,7 +227,11 @@ export default function HomepageAgentDemo() {
                     </div>
                   )}
                   {message.content ? (
-                    <p className="text-sm leading-relaxed text-gray-100 whitespace-pre-wrap">{message.content}</p>
+                    message.role === 'assistant' ? (
+                      <ChatMarkdown content={message.content} compact />
+                    ) : (
+                      <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-100">{message.content}</p>
+                    )
                   ) : (
                     <div className="flex items-center gap-2 text-sm text-gray-300">
                       <Loader2 size={15} className="animate-spin text-orange" />

@@ -22,9 +22,9 @@ import {
 } from 'lucide-react';
 import QlynkBackground from '@/components/QlynkBackground';
 import AgentResponseIndicator from '@/components/AgentResponseIndicator';
+import ChatMarkdown from '@/components/ChatMarkdown';
 import { getAgentTypeDefinition } from '@/lib/agent-type-catalog';
 import { hasAgencyFeatures } from '@/lib/plans';
-import ReactMarkdown from 'react-markdown';
 
 export default function FullPageChat({ 
   username, 
@@ -626,23 +626,7 @@ export default function FullPageChat({
                           {m.role === 'user' ? (
                             m.content
                           ) : (
-                            <div className="markdown-content">
-                              <ReactMarkdown
-                                components={{
-                                  h1: (props) => <h1 className="text-xl font-bold mt-4 mb-2 first:mt-0 text-white" {...props} />,
-                                  h2: (props) => <h2 className="text-lg font-bold mt-4 mb-2 first:mt-0 text-blue-200" {...props} />,
-                                  h3: (props) => <h3 className="text-md font-bold mt-3 mb-2 first:mt-0 text-blue-300" {...props} />,
-                                  p: (props) => <p className="leading-relaxed mb-3 last:mb-0" {...props} />,
-                                  ul: (props) => <ul className="list-disc list-inside space-y-1 mb-3 last:mb-0" {...props} />,
-                                  ol: (props) => <ol className="list-decimal list-inside space-y-1 mb-3 last:mb-0" {...props} />,
-                                  li: (props) => <li className="pl-1" {...props} />,
-                                  strong: (props) => <strong className="font-bold text-white" {...props} />,
-                                  em: (props) => <em className="italic text-gray-300" {...props} />,
-                                }}
-                              >
-                                {m.content || (isLoading && m.id === messages[messages.length-1].id ? '...' : '')}
-                              </ReactMarkdown>
-                            </div>
+                            <ChatMarkdown content={m.content || (isLoading && m.id === messages[messages.length-1].id ? '...' : '')} />
                           )}
                         </div>
                         {m.role === 'assistant' && m.id !== 'welcome' && conversationId && m.content && (

@@ -18,7 +18,7 @@ import {
   Send,
   Reply
 } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
+import ChatMarkdown from '@/components/ChatMarkdown';
 import { toast } from 'react-hot-toast';
 import { useDashboardPageReady } from '@/lib/dashboard-page-ready';
 
@@ -453,20 +453,7 @@ export default function ConversationsPage() {
                             {msg.sender_type === 'owner' && (
                               <p className="text-[10px] text-blue-400 font-bold uppercase tracking-widest mb-1">You replied</p>
                             )}
-                            <div className="text-white text-sm">
-                              <ReactMarkdown
-                                components={{
-                                  h1: ({ ...props }) => <h1 className="text-lg font-bold mt-3 mb-1 first:mt-0 text-white" {...props} />,
-                                  h2: ({ ...props }) => <h2 className="text-md font-bold mt-3 mb-1 first:mt-0 text-gray-200" {...props} />,
-                                  p: ({ ...props }) => <p className="leading-relaxed mb-2 last:mb-0" {...props} />,
-                                  ul: ({ ...props }) => <ul className="list-disc list-inside space-y-0.5 mb-2 last:mb-0" {...props} />,
-                                  ol: ({ ...props }) => <ol className="list-decimal list-inside space-y-0.5 mb-2 last:mb-0" {...props} />,
-                                  strong: ({ ...props }) => <strong className="font-bold text-white" {...props} />,
-                                }}
-                              >
-                                {msg.content}
-                              </ReactMarkdown>
-                            </div>
+                            <ChatMarkdown content={msg.content} compact />
                             <p className="text-xs text-gray-500 mt-1">
                               {new Date(msg.created_at).toLocaleTimeString()}
                             </p>

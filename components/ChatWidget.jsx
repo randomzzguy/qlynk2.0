@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { MessageCircle, X, Send, Bot, User, Loader2 } from 'lucide-react';
 import AgentResponseIndicator from '@/components/AgentResponseIndicator';
+import ChatMarkdown from '@/components/ChatMarkdown';
 import { getAgentTypeDefinition } from '@/lib/agent-type-catalog';
 import { hasAgencyFeatures } from '@/lib/plans';
 import { isOriginAllowed } from '@/lib/widget-installations';
@@ -471,9 +472,11 @@ export default function ChatWidget({
                     }`}
                     style={{ backgroundColor: isUser ? widgetTheme.userBubbleColor : widgetTheme.aiBubbleColor }}
                   >
-                    <p className="text-sm whitespace-pre-wrap text-white">
-                      {text}
-                    </p>
+                    {isUser ? (
+                      <p className="whitespace-pre-wrap text-sm text-white">{text}</p>
+                    ) : (
+                      <ChatMarkdown content={text} compact />
+                    )}
                   </div>
                 </div>
               );

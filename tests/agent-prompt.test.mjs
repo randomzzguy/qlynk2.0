@@ -178,6 +178,11 @@ test('professional service enquiries are distinguished from personalized profess
   assert.match(responsePrompt, /lead with the useful verified service information/i);
   assert.match(responsePrompt, /qualified professional must assess the individual/i);
   assert.match(responsePrompt, /Never diagnose the visitor, prescribe exercises, medication, dosage/i);
+  assert.match(responsePrompt, /short bold section labels, bullet points, or numbered steps/i);
+  assert.match(responsePrompt, /Never use Markdown tables/i);
+  assert.match(responsePrompt, /Required format for answers with three or more items/i);
+  assert.match(responsePrompt, /✨ \*\*Key points\*\*/);
+  assert.match(responsePrompt, /valid Markdown list syntax/i);
 });
 
 test('invalid classifier output fails closed only for strict agents', () => {

@@ -24,7 +24,7 @@ import {
   ThumbsDown,
   Lightbulb
 } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
+import ChatMarkdown from '@/components/ChatMarkdown';
 import UpgradePrompt from '@/components/UpgradePrompt';
 import { useDashboardPageReady } from '@/lib/dashboard-page-ready';
 
@@ -377,20 +377,7 @@ export default function AnalyticsPage() {
                       ? 'bg-white/5 border border-white/10 text-white rounded-tr-none'
                       : 'bg-white/10 border border-white/10 text-gray-200 rounded-tl-none'
                   }`}>
-                    <div className="text-sm leading-relaxed text-gray-200">
-                      <ReactMarkdown
-                        components={{
-                          h1: ({ ...props }) => <h1 className="text-lg font-bold mt-3 mb-1 first:mt-0 text-white" {...props} />,
-                          h2: ({ ...props }) => <h2 className="text-md font-bold mt-3 mb-1 first:mt-0 text-gray-200" {...props} />,
-                          p: ({ ...props }) => <p className="leading-relaxed mb-2 last:mb-0" {...props} />,
-                          ul: ({ ...props }) => <ul className="list-disc list-inside space-y-0.5 mb-2 last:mb-0" {...props} />,
-                          ol: ({ ...props }) => <ol className="list-decimal list-inside space-y-0.5 mb-2 last:mb-0" {...props} />,
-                          strong: ({ ...props }) => <strong className="font-bold text-white" {...props} />,
-                        }}
-                      >
-                        {msg.content}
-                      </ReactMarkdown>
-                    </div>
+                    <ChatMarkdown content={msg.content} compact />
                     <p className="text-[10px] text-gray-500 mt-2 font-mono">
                       {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>

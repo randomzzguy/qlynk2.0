@@ -5,6 +5,10 @@ import {
   parseDemoChatBody,
 } from '@/lib/demo-chat';
 import { rateLimitResponse, rateLimitResponseForKey } from '@/lib/rate-limit';
+import {
+  getGroqDemoModel,
+  getGroqGenerationOptions,
+} from '@/lib/groq-models';
 
 export const maxDuration = 20;
 
@@ -75,6 +79,7 @@ export async function POST(request) {
 
   const groqApiKey = process.env.GROQ_DEMO_API_KEY || process.env.GROQ_API_KEY;
   if (!groqApiKey) return jsonError('The live demo is temporarily unavailable', 503);
+  const model = getGroqDemoModel();
 
   try {
     const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -84,10 +89,11 @@ export async function POST(request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: process.env.GROQ_DEMO_MODEL || 'llama-3.3-70b-versatile',
+        model,
         messages: buildNorthstarDemoMessages(questions),
         temperature: 0.35,
         max_completion_tokens: DEMO_CHAT_LIMITS.maxOutputTokens,
+        ...getGroqGenerationOptions(model),
         stream: true,
       }),
       signal: AbortSignal.any([request.signal, AbortSignal.timeout(PROVIDER_TIMEOUT_MS)]),

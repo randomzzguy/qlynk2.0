@@ -1,3 +1,10 @@
+import {
+  getGroqChatModel,
+  getGroqDemoModel,
+  getGroqFastModel,
+  getGroqKnowledgeGraphModel,
+} from '../lib/groq-models.js';
+
 const required = [
   'NEXT_PUBLIC_SUPABASE_URL',
   'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY',
@@ -49,7 +56,13 @@ const groqResponse = await expectOk('Groq models API', 'https://api.groq.com/ope
   headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}` },
 });
 const groqModels = (await groqResponse.json()).data || [];
-for (const model of ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant']) {
+const configuredGroqModels = new Set([
+  getGroqChatModel(),
+  getGroqFastModel(),
+  getGroqDemoModel(),
+  getGroqKnowledgeGraphModel(),
+]);
+for (const model of configuredGroqModels) {
   if (!groqModels.some((entry) => entry.id === model)) throw new Error(`Configured Groq model ${model} is unavailable`);
   console.log(`Groq model ${model}: available PASS`);
 }

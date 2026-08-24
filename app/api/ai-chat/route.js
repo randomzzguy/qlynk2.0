@@ -16,6 +16,11 @@ import {
 import { normalizeAgentRules } from '@/lib/agent-rules';
 import { normalizeKnowledgeGapQuestion, shouldRecordKnowledgeGap } from '@/lib/knowledge-gaps';
 import { isOriginAllowed, isWidgetId, normalizeWidgetOrigin } from '@/lib/widget-installations';
+import {
+  getGroqChatModel,
+  getGroqFastModel,
+  getGroqGenerationOptions,
+} from '@/lib/groq-models';
 
 export const maxDuration = 30;
 
@@ -41,6 +46,7 @@ function hashSecurityIdentifier(value) {
 }
 
 async function classifyRequestScope({ config, rules, latestMessage, trustedHistory }) {
+  const model = getGroqFastModel();
   const classifierPrompt = buildScopeClassifierPrompt({
     config,
     rules,
@@ -59,10 +65,11 @@ async function classifyRequestScope({ config, rules, latestMessage, trustedHisto
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
+        model,
         messages: [{ role: 'system', content: classifierPrompt }],
         temperature: 0,
-        max_tokens: 10,
+        max_completion_tokens: 32,
+        ...getGroqGenerationOptions(model),
       }),
     });
 
@@ -205,6 +212,7 @@ function isValidEmail(email) {
 
 async function analyzeAndSaveSentiment(conversationId, supabase) {
   try {
+    const model = getGroqFastModel();
     // 1. Fetch user's message logs for this conversation
     const { data: messages, error: fetchErr } = await supabase
       .from('agent_messages')
@@ -219,7 +227,7 @@ async function analyzeAndSaveSentiment(conversationId, supabase) {
     const userMessages = messages.filter(m => m.role === 'user').map(m => m.content);
     if (userMessages.length === 0) return;
 
-    // 2. Query Groq's fast Llama-3-8b model for instant classification
+    // 2. Query Groq's fast model for instant classification
     const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -227,7 +235,7 @@ async function analyzeAndSaveSentiment(conversationId, supabase) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
+        model,
         messages: [
           {
             role: 'system',
@@ -239,7 +247,8 @@ async function analyzeAndSaveSentiment(conversationId, supabase) {
           }
         ],
         temperature: 0.1,
-        max_tokens: 10,
+        max_completion_tokens: 32,
+        ...getGroqGenerationOptions(model),
       })
     });
 
@@ -671,6 +680,7 @@ export async function POST(req) {
     ].join('\n');
     const { knowledge: documents } = await getAgentKnowledge(profile.id, adminSupabase, knowledgeQuery);
     const systemPrompt = buildAgentSystemPrompt(config, documents, effectiveRules);
+    const model = getGroqChatModel();
 
     // TALK DIRECTLY TO GROQ
     const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -680,14 +690,15 @@ export async function POST(req) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model,
         messages: [
           { role: 'system', content: systemPrompt },
           ...trustedHistory,
           latestMessage,
         ],
         temperature: 0.5,
-        max_tokens: MAX_OUTPUT_TOKENS,
+        max_completion_tokens: MAX_OUTPUT_TOKENS,
+        ...getGroqGenerationOptions(model),
         stream: true,
       }),
     });

@@ -13,7 +13,13 @@ export async function generateMetadata({ params }) {
   const { slug } = await params;
   const article = authorityArticles[slug];
   if (!article) return {};
-  return createMetadata({ title: `${article.title} | Qlynk AI`, description: article.description, path: `/blog/${slug}`, type: 'article' });
+  return createMetadata({
+    title: `${article.title} | Qlynk AI`,
+    description: article.description,
+    path: `/blog/${slug}`,
+    type: 'article',
+    keywords: article.keywords,
+  });
 }
 
 export default async function AuthorityArticlePage({ params }) {

@@ -22,7 +22,7 @@ const routes = [
   ['/for-creators', 'monthly', 0.8],
   ['/for-job-seekers', 'monthly', 0.7],
   ['/faq', 'monthly', 0.8, '2026-08-02'],
-  ['/blog', 'weekly', 0.8, '2026-08-02'],
+  ['/blog', 'weekly', 0.8, '2026-08-26'],
   ['/blog/what-is-an-ai-clone', 'monthly', 0.7],
   ['/blog/how-to-create-ai-clone', 'monthly', 0.7],
   ['/blog/ai-clone-vs-chatbot', 'monthly', 0.7],

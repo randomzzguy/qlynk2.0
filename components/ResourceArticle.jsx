@@ -1,9 +1,9 @@
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Download, ExternalLink } from 'lucide-react';
 import Footer from '@/components/Footer';
 import JsonLd from '@/components/JsonLd';
 import MarketingHeader from '@/components/MarketingHeader';
-import { breadcrumbSchema, SITE_URL } from '@/lib/seo';
+import { breadcrumbSchema, DEFAULT_OG_IMAGE, SITE_URL } from '@/lib/seo';
 import { solutionPages } from '@/lib/solution-pages';
 import { authorityArticles } from '@/lib/authority-articles';
 
@@ -20,9 +20,13 @@ export default function ResourceArticle({ article, slug }) {
         mainEntityOfPage: `${SITE_URL}${path}`,
         author: { '@type': 'Organization', name: 'Qlynk AI' },
         publisher: { '@type': 'Organization', name: 'Qlynk AI' },
+        image: DEFAULT_OG_IMAGE,
         url: `${SITE_URL}${path}`,
         datePublished: article.datePublished || '2026-07-21',
         dateModified: article.dateModified || '2026-07-21',
+        ...(article.sources?.length > 0 ? {
+          citation: article.sources.map(([, href]) => href.startsWith('http') ? href : `${SITE_URL}${href}`),
+        } : {}),
       }} />
       {article.faqs && <JsonLd data={{
         '@context': 'https://schema.org',
@@ -52,6 +56,29 @@ export default function ResourceArticle({ article, slug }) {
             {' · '}{article.readTime}{' · '}Updated {article.dateModified || article.datePublished || '2026-07-21'}
           </p>
         </header>
+
+        {article.quickAnswer && (
+          <section aria-labelledby="in-brief-heading" className="mb-14 rounded-3xl border border-orange/30 bg-orange/10 p-7 md:p-9">
+            <p id="in-brief-heading" className="text-sm font-black uppercase tracking-[0.18em] text-orange">In brief</p>
+            <p className="mt-4 text-lg leading-relaxed text-gray-200">{article.quickAnswer}</p>
+          </section>
+        )}
+
+        {article.download && (
+          <section aria-labelledby="download-heading" className="mb-14 rounded-3xl border border-white/10 bg-white/5 p-7 md:flex md:items-center md:justify-between md:gap-8 md:p-9">
+            <div>
+              <h2 id="download-heading" className="text-2xl font-black">Free working template</h2>
+              <p className="mt-3 max-w-2xl leading-relaxed text-gray-400">{article.download.description}</p>
+            </div>
+            <a
+              href={article.download.href}
+              download={article.download.filename}
+              className="mt-6 inline-flex shrink-0 items-center gap-2 rounded-xl bg-white px-5 py-3 font-bold text-gray-950 transition-colors hover:bg-gray-200 md:mt-0"
+            >
+              <Download size={18} aria-hidden="true" /> {article.download.label}
+            </a>
+          </section>
+        )}
 
         <article className="space-y-14">
           {article.sections.map((section) => (
@@ -85,6 +112,26 @@ export default function ResourceArticle({ article, slug }) {
                 </details>
               ))}
             </div>
+          </section>
+        )}
+
+        {article.sources?.length > 0 && (
+          <section className="mt-16 border-t border-white/10 pt-12" aria-labelledby="sources-heading">
+            <h2 id="sources-heading" className="text-2xl font-black">Sources and further reading</h2>
+            <p className="mt-3 leading-relaxed text-gray-500">Primary guidance and documentation used to verify material claims on this page.</p>
+            <ul className="mt-6 space-y-3">
+              {article.sources.map(([label, href]) => (
+                <li key={href}>
+                  <a
+                    href={href}
+                    {...(href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                    className="inline-flex items-center gap-2 font-semibold text-gray-300 underline decoration-white/20 underline-offset-4 transition-colors hover:text-orange"
+                  >
+                    {label}{href.startsWith('http') && <ExternalLink size={15} aria-hidden="true" />}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </section>
         )}
 

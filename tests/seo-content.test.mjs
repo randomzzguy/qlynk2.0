@@ -38,10 +38,10 @@ test('all five requested topic clusters are represented', () => {
   );
 });
 
-test('authority cluster contains 23 substantive, unique guides and product updates', () => {
-  assert.equal(articles.length, 23);
-  assert.equal(new Set(articles.map((item) => item.title)).size, 23);
-  assert.equal(new Set(articles.map((item) => item.description)).size, 23);
+test('authority cluster contains 26 substantive, unique guides and product updates', () => {
+  assert.equal(articles.length, 26);
+  assert.equal(new Set(articles.map((item) => item.title)).size, 26);
+  assert.equal(new Set(articles.map((item) => item.description)).size, 26);
 
   for (const slug of ['qlynk-agent-understands-questions-better', 'embed-ai-agent-on-website', 'how-to-change-qlynk-username']) {
     assert.ok(authorityArticles[slug], `${slug} has an indexable article route`);
@@ -55,6 +55,30 @@ test('authority cluster contains 23 substantive, unique guides and product updat
     assert.ok(item.relatedSolutions.length >= 3, `${item.shortTitle} links to solutions`);
     for (const slug of item.relatedSolutions) assert.ok(solutionPages[slug], `${item.shortTitle} links to ${slug}`);
   }
+});
+
+test('search visibility cluster contains source-backed guides and a downloadable template', () => {
+  const slugs = [
+    'ai-model-retirement-migration-checklist',
+    'ai-knowledge-base-template',
+    'seo-aeo-geo-2026',
+  ];
+
+  for (const slug of slugs) {
+    const item = authorityArticles[slug];
+    assert.ok(item, `${slug} has an indexable article route`);
+    assert.equal(item.datePublished, '2026-08-26');
+    assert.equal(item.dateModified, '2026-08-26');
+    assert.ok(item.quickAnswer.length >= 180, `${slug} leads with a substantive direct answer`);
+    assert.ok(item.keywords.length >= 4, `${slug} defines focused search terms`);
+    assert.ok(item.sources.length >= 3, `${slug} cites supporting sources`);
+    assert.ok(item.relatedArticles.length >= 3, `${slug} links to related resources`);
+    for (const relatedSlug of item.relatedArticles) {
+      assert.ok(authorityArticles[relatedSlug], `${slug} links to a real resource: ${relatedSlug}`);
+    }
+  }
+
+  assert.equal(authorityArticles['ai-knowledge-base-template'].download.href, '/downloads/qlynk-ai-knowledge-base-template.md');
 });
 
 test('knowledge fabric SEO cluster explains connected retrieval, graphs, temporal memory, and their differences', () => {

@@ -71,7 +71,8 @@ export default function RootLayout({ children }) {
           "height": 512
         },
         "description": "Qlynk AI helps people and teams turn approved knowledge into trusted AI agents they can control and share through a simple link.",
-        "foundingDate": "2026"
+        "foundingDate": "2026",
+        "award": "Smol Hunt #1 Project of the Day — August 24, 2026"
       },
       {
         "@type": "WebSite",

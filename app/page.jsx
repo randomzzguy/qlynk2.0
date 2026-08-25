@@ -15,7 +15,9 @@ import {
   Link2,
   MessageSquare,
   Pencil,
+  PlayCircle,
   ShieldCheck,
+  Trophy,
   Upload,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -59,13 +61,18 @@ const AgentDemoHero = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-6 max-w-5xl mx-auto">
           <motion.div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-orange/30 bg-orange/10 backdrop-blur-md"
+            className="flex flex-wrap items-center justify-center gap-3"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <ShieldCheck size={17} className="text-orange" aria-hidden="true" />
-            <span className="text-sm font-bold text-[#ff8a5b]">No-code AI agent builder</span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-orange/30 bg-orange/10 px-4 py-2 backdrop-blur-md">
+              <ShieldCheck size={17} className="text-orange" aria-hidden="true" />
+              <span className="text-sm font-bold text-[#ff8a5b]">No-code AI agent builder</span>
+            </span>
+            <Link href="/blog/qlynk-project-of-the-day-smol-hunt" className="inline-flex items-center gap-2 rounded-full border border-amber-300/25 bg-amber-300/10 px-4 py-2 text-sm font-bold text-amber-200 transition-colors hover:border-amber-300/50 hover:bg-amber-300/15">
+              <Trophy size={16} aria-hidden="true" /> #1 Project of the Day
+            </Link>
           </motion.div>
 
           <motion.h1
@@ -85,7 +92,7 @@ const AgentDemoHero = () => {
             transition={{ duration: 0.5, delay: 0.4 }}
           >
             <p className="text-lg leading-relaxed text-gray-300 sm:text-xl">
-              Give customers, clients, and teams instant answers from the business knowledge you approve.
+              Turn the FAQs, services, policies, and documents you approve into an AI agent that gives customers and teams clear answers.
             </p>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-bold text-gray-400" aria-label="Qlynk benefits">
               {['Launch in minutes', 'Stay in control', 'Learn from every question'].map((benefit) => (
@@ -103,9 +110,14 @@ const AgentDemoHero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.55 }}
           >
-            <Link href="/auth/signup" className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange px-8 py-4 text-lg font-black text-white shadow-lg shadow-orange/25 transition-colors hover:bg-[#c14f22]">
-              Start Free <ArrowRight size={20} aria-hidden="true" />
-            </Link>
+            <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link href="/auth/signup" className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange px-8 py-4 text-lg font-black text-white shadow-lg shadow-orange/25 transition-colors hover:bg-[#c14f22] sm:w-auto">
+                Build Your Agent Free <ArrowRight size={20} aria-hidden="true" />
+              </Link>
+              <a href="#live-demo" className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-8 py-4 text-lg font-bold text-white transition-colors hover:border-white/30 hover:bg-white/10 sm:w-auto">
+                <PlayCircle size={20} aria-hidden="true" /> Try the Live Demo
+              </a>
+            </div>
             <p className="mt-4 text-[15px] leading-relaxed text-gray-300">14-day free trial · Every feature included · No payment today</p>
           </motion.div>
         </div>
@@ -116,7 +128,7 @@ const AgentDemoHero = () => {
 };
 
 const LiveDemoSection = () => (
-  <section aria-labelledby="live-demo-title" className="relative z-10 mt-10 overflow-hidden border-t border-white/[0.06] py-20 sm:mt-14 sm:py-24">
+  <section id="live-demo" aria-labelledby="live-demo-title" className="relative z-10 mt-10 scroll-mt-20 overflow-hidden border-t border-white/[0.06] py-20 sm:mt-14 sm:py-24">
     <div className="pointer-events-none absolute inset-0" aria-hidden="true">
       <div className="absolute left-1/2 top-1/2 h-[460px] w-[760px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange/[0.07] blur-[110px]" />
     </div>

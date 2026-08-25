@@ -32,7 +32,7 @@ const routes = [
   ['/compare', 'monthly', 0.7],
   ['/compare/qlynk-vs-chatbase', 'monthly', 0.8],
   ['/about', 'monthly', 0.6],
-  ['/press', 'monthly', 0.5],
+  ['/press', 'monthly', 0.5, '2026-08-26'],
   ['/privacy', 'yearly', 0.3],
   ['/terms', 'yearly', 0.3],
   ...Object.keys(featurePages).map((slug) => [`/features/${slug}`, 'monthly', 0.7]),

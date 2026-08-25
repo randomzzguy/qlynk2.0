@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, BookOpen, BrainCircuit, GitCompareArrows, Globe2, HelpCircle, Lightbulb, MessagesSquare, Network, RefreshCw, Sparkles } from 'lucide-react';
+import { ArrowRight, BookOpen, BrainCircuit, GitCompareArrows, Globe2, HelpCircle, Lightbulb, MessagesSquare, Network, RefreshCw, Sparkles, Trophy } from 'lucide-react';
 import Footer from '@/components/Footer';
 import MarketingHeader from '@/components/MarketingHeader';
 import { resourceArticles } from '@/lib/resource-articles';
@@ -20,6 +20,7 @@ const icons = {
   'qlynk-agent-understands-questions-better': Sparkles,
   'embed-ai-agent-on-website': Globe2,
   'how-to-change-qlynk-username': RefreshCw,
+  'qlynk-project-of-the-day-smol-hunt': Trophy,
   'qlynk-knowledge-fabric': Network,
   'what-is-ai-knowledge-graph': Network,
   'ai-agent-memory-patterns': BrainCircuit,

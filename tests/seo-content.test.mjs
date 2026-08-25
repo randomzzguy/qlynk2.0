@@ -38,10 +38,10 @@ test('all five requested topic clusters are represented', () => {
   );
 });
 
-test('authority cluster contains 26 substantive, unique guides and product updates', () => {
-  assert.equal(articles.length, 26);
-  assert.equal(new Set(articles.map((item) => item.title)).size, 26);
-  assert.equal(new Set(articles.map((item) => item.description)).size, 26);
+test('authority cluster contains 27 substantive, unique guides and product updates', () => {
+  assert.equal(articles.length, 27);
+  assert.equal(new Set(articles.map((item) => item.title)).size, 27);
+  assert.equal(new Set(articles.map((item) => item.description)).size, 27);
 
   for (const slug of ['qlynk-agent-understands-questions-better', 'embed-ai-agent-on-website', 'how-to-change-qlynk-username']) {
     assert.ok(authorityArticles[slug], `${slug} has an indexable article route`);
@@ -55,6 +55,16 @@ test('authority cluster contains 26 substantive, unique guides and product updat
     assert.ok(item.relatedSolutions.length >= 3, `${item.shortTitle} links to solutions`);
     for (const slug of item.relatedSolutions) assert.ok(solutionPages[slug], `${item.shortTitle} links to ${slug}`);
   }
+});
+
+test('Smol Hunt recognition is represented as a factual, internally linked milestone', () => {
+  const item = authorityArticles['qlynk-project-of-the-day-smol-hunt'];
+  assert.ok(item, 'the recognition has an indexable article route');
+  assert.equal(item.category, 'Milestone');
+  assert.equal(item.datePublished, '2026-08-26');
+  assert.match(JSON.stringify(item), /71 upvotes/);
+  assert.match(JSON.stringify(item), /August 24, 2026/);
+  assert.ok(item.relatedArticles.length >= 3);
 });
 
 test('search visibility cluster contains source-backed guides and a downloadable template', () => {

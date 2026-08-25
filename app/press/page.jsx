@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { Trophy } from 'lucide-react';
 import Footer from '@/components/Footer';
 import JsonLd from '@/components/JsonLd';
 import MarketingHeader from '@/components/MarketingHeader';
@@ -22,6 +23,20 @@ export default function PressPage() {
           <h1 className="text-5xl md:text-7xl font-black mb-7">Qlynk AI brand and product resources</h1>
           <p className="text-xl text-gray-300">Approved assets and concise descriptions for articles, directories, and other coverage.</p>
         </header>
+
+        <section className="mb-16 rounded-3xl border border-amber-300/20 bg-amber-300/[0.07] p-8 md:p-10" aria-labelledby="recognition-heading">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-amber-300/25 bg-amber-300/10 text-amber-200">
+              <Trophy size={28} aria-hidden="true" />
+            </div>
+            <div>
+              <p className="text-sm font-black uppercase tracking-[0.18em] text-amber-200">Recognition</p>
+              <h2 id="recognition-heading" className="mt-3 text-3xl font-black">#1 Project of the Day on Smol Hunt</h2>
+              <p className="mt-4 max-w-3xl text-lg leading-relaxed text-gray-300">Smol Hunt ranked Qlynk #1 in its Daily Winners for August 24, 2026. The result displayed 71 upvotes for Qlynk.</p>
+              <Link href="/blog/qlynk-project-of-the-day-smol-hunt" className="mt-5 inline-flex font-bold text-orange hover:underline">Read the milestone note →</Link>
+            </div>
+          </div>
+        </section>
 
         <section className="mb-16">
           <h2 className="text-3xl font-bold mb-7">Logos and product image</h2>

@@ -73,6 +73,15 @@ const AgentDemoHero = () => {
             <Link href="/blog/qlynk-project-of-the-day-smol-hunt" className="inline-flex items-center gap-2 rounded-full border border-amber-300/25 bg-amber-300/10 px-4 py-2 text-sm font-bold text-amber-200 transition-colors hover:border-amber-300/50 hover:bg-amber-300/15">
               <Trophy size={16} aria-hidden="true" /> #1 Project of the Day
             </Link>
+            <a href="https://findtoolfor.com/projects/qlynk?utm_source=badge" target="_blank" rel="noopener noreferrer">
+              <Image
+                src="https://findtoolfor.com/findtoolfor/images/badges/featured-on-dark.svg"
+                alt="Featured on Find Tool For"
+                width={150}
+                height={44}
+                unoptimized
+              />
+            </a>
           </motion.div>
 
           <motion.h1

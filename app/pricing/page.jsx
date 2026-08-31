@@ -157,17 +157,22 @@ export default function PricingPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [loadingPlan, setLoadingPlan] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
     const checkUser = async () => {
-      const currentUser = await getCurrentUser();
-      setUser(currentUser);
-      if (currentUser) {
-        const userProfile = await getCurrentProfile();
-        setProfile(userProfile);
+      try {
+        const currentUser = await getCurrentUser();
+        setUser(currentUser);
+        if (currentUser) {
+          const userProfile = await getCurrentProfile(currentUser);
+          setProfile(userProfile);
+        }
+      } finally {
+        setAuthLoading(false);
       }
     };
     checkUser();
@@ -203,6 +208,8 @@ export default function PricingPage() {
   };
 
   const handleCheckout = async (plan) => {
+    if (authLoading) return;
+
     if (plan.name === 'Trial') {
       router.push('/auth/signup');
       return;
@@ -234,15 +241,20 @@ export default function PricingPage() {
 
       const data = await response.json();
 
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        // If not logged in, redirect to signup
-        window.location.href = `/auth/signup?plan=${plan.name.toLowerCase()}&cycle=${billingCycle}`;
+      if (response.status === 401) {
+        router.push(`/auth/login?next=${encodeURIComponent('/pricing')}`);
+        return;
       }
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Could not start checkout.');
+      }
+
+      if (!data.url) throw new Error('Stripe did not return a checkout URL.');
+      window.location.href = data.url;
     } catch (error) {
       console.error('Checkout error:', error);
-      alert('Something went wrong. Please try again.');
+      alert(error.message || 'Something went wrong. Please try again.');
     } finally {
       setLoadingPlan(null);
     }
@@ -557,7 +569,7 @@ export default function PricingPage() {
                     {/* CTA */}
                     <button
                       onClick={() => handleCheckout(plan)}
-                      disabled={loadingPlan !== null}
+                      disabled={authLoading || loadingPlan !== null}
                       className={`w-full block text-center py-3 rounded-lg font-bold transition-all mb-8 flex items-center justify-center gap-2 ${plan.highlight
                         ? 'bg-[#f46530] hover:bg-[#c14f22] text-white shadow-lg shadow-[#f46530]/30 hover:shadow-[#f46530]/50'
                         : 'bg-gray-700 text-white hover:bg-gray-600'

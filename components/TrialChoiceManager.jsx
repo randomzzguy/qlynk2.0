@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Pause, Zap, Crown, Check, AlertCircle, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatUsd, PAID_PLAN_PRICING } from '@/lib/pricing';
 
 export default function TrialChoiceManager({ subscription, userId }) {
   const [choice, setChoice] = useState(subscription?.post_trial_choice || 'pause');
@@ -24,8 +25,7 @@ export default function TrialChoiceManager({ subscription, userId }) {
     {
       id: 'creator',
       name: 'Creator Plan',
-      regularPrice: '$18/mo',
-      offerPrice: '$9/mo',
+      price: `${formatUsd(PAID_PLAN_PRICING.creator.monthly)}/mo`,
       description: 'For one professional or focused use case.',
       icon: Zap,
       color: 'bg-emerald-900/30',
@@ -35,8 +35,7 @@ export default function TrialChoiceManager({ subscription, userId }) {
     {
       id: 'agency',
       name: 'Agency Plan',
-      regularPrice: '$38/mo',
-      offerPrice: '$19/mo',
+      price: `${formatUsd(PAID_PLAN_PRICING.agency.monthly)}/mo`,
       description: 'For higher volume without the “Powered by Qlynk” label.',
       icon: Crown,
       color: 'bg-purple-900/30',
@@ -138,13 +137,7 @@ export default function TrialChoiceManager({ subscription, userId }) {
                     </div>
                     <div className="pr-5">
                       <h4 className="font-bold text-white text-sm mb-1">{item.name}</h4>
-                      {item.offerPrice && (
-                        <p className="mb-1 text-xs font-bold text-[#ff8a5b]">
-                          <span className="mr-1.5 text-gray-500 line-through">{item.regularPrice}</span>
-                          {item.offerPrice} first payment · Offer ends Aug 31, 2026
-                        </p>
-                      )}
-                      {item.offerPrice && <p className="mb-1 text-xs text-gray-400">Renews at {item.regularPrice}.</p>}
+                      {item.price && <p className="mb-1 text-xs font-bold text-[#ff8a5b]">{item.price}</p>}
                       <p className="text-xs text-gray-300 leading-relaxed">{item.description}</p>
                     </div>
                     {isActive && (

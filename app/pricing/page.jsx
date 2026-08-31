@@ -9,6 +9,7 @@ import { getCurrentUser, getCurrentProfile, signOut } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import QlynkBackground from '@/components/QlynkBackground';
 import Footer from '@/components/Footer';
+import { formatUsd, PAID_PLAN_PRICING } from '@/lib/pricing';
 
 // Glowing Orb component matching home page
 const GlowingOrb = ({ top, left, size = 300, color = 'orange', delay = 0 }) => (
@@ -79,7 +80,7 @@ const faqs = [
       },
       {
         q: 'Are the current prices discounted?',
-        a: 'Yes. Through August 31, 2026, the first Creator payment is $9 monthly or $84 annually (regularly $18 monthly or $168 annually), and the first Agency payment is $19 monthly or $180 annually (regularly $38 monthly or $360 annually). The 50% discount applies only to the first payment. Every renewal is charged at the plan’s regular price.',
+        a: 'No. Creator is $18 monthly or $168 annually, and Agency is $38 monthly or $360 annually. Annual billing saves at least 21% compared with paying monthly.',
       },
       {
         q: 'Can I cancel anytime?',
@@ -271,8 +272,7 @@ export default function PricingPage() {
     {
       name: 'Creator',
       description: 'For one professional or focused use case',
-      price: billingCycle === 'monthly' ? '$9' : '$84',
-      regularPrice: billingCycle === 'monthly' ? '$18' : '$168',
+      price: formatUsd(PAID_PLAN_PRICING.creator[billingCycle]),
       period: billingCycle === 'monthly' ? '/month' : '/year',
       cta: 'Choose Plan',
       icon: Crown,
@@ -291,8 +291,7 @@ export default function PricingPage() {
     {
       name: 'Agency',
       description: 'For higher-volume professional use',
-      price: billingCycle === 'monthly' ? '$19' : '$180',
-      regularPrice: billingCycle === 'monthly' ? '$38' : '$360',
+      price: formatUsd(PAID_PLAN_PRICING.agency[billingCycle]),
       period: billingCycle === 'monthly' ? '/month' : '/year (Save 21%)',
       cta: 'Upgrade Now',
       icon: Crown,
@@ -479,10 +478,6 @@ export default function PricingPage() {
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
             Your trial includes everything in Agency. After 14 days, choose Creator or Agency to keep the agent live.
           </p>
-          <div className="mx-auto mt-7 inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-[#f46530]/40 bg-[#f46530]/10 px-5 py-2.5 text-sm font-bold text-orange-100">
-            <span className="rounded-full bg-[#f46530] px-2.5 py-1 text-xs uppercase tracking-wider text-white">50% off</span>
-            First payment only through August 31, 2026 · Renewals are full price
-          </div>
         </motion.div>
 
         {/* Billing Toggle */}
@@ -552,22 +547,11 @@ export default function PricingPage() {
                     {/* Price */}
                     <div className="mb-8">
                       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                        {plan.regularPrice && (
-                          <span className="text-xl font-bold text-gray-500 line-through decoration-2" aria-label={`Regular price ${plan.regularPrice}`}>
-                            {plan.regularPrice}
-                          </span>
-                        )}
                         <div className="text-4xl font-black text-white">
                           {plan.price}
                           <span className="text-lg text-gray-400 font-normal"> {plan.period}</span>
                         </div>
                       </div>
-                      {plan.regularPrice && (
-                        <p className="mt-2 text-sm font-bold leading-relaxed text-[#ff8a5b]">
-                          50% off your first payment through August 31, 2026<br />
-                          <span className="font-medium text-gray-400">Renews at {plan.regularPrice}{billingCycle === 'monthly' ? '/month' : '/year'}.</span>
-                        </p>
-                      )}
                     </div>
 
                     {/* CTA */}

@@ -4,6 +4,7 @@ import ToasterClient from '../components/ToasterClient'
 import QlynkBackground from '../components/QlynkBackground'
 import JsonLd from '../components/JsonLd'
 import { createMetadata, HOME_DESCRIPTION, HOME_TITLE, SITE_URL } from '../lib/seo'
+import { PAID_PLAN_PRICING } from '../lib/pricing'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 
@@ -118,19 +119,17 @@ export default function RootLayout({ children }) {
           {
             "@type": "Offer",
             "name": "Creator monthly plan",
-            "price": "9",
+            "price": String(PAID_PLAN_PRICING.creator.monthly),
             "priceCurrency": "USD",
-            "priceValidUntil": "2026-08-31",
-            "description": "August offer: the first payment is 50% off through August 31, 2026. Monthly renewals are charged at the regular USD 18 price.",
+            "description": "Creator includes one Qlynk Agent and 5,000 messages per month.",
             "url": `${SITE_URL}/pricing`
           },
           {
             "@type": "Offer",
             "name": "Agency monthly plan",
-            "price": "19",
+            "price": String(PAID_PLAN_PRICING.agency.monthly),
             "priceCurrency": "USD",
-            "priceValidUntil": "2026-08-31",
-            "description": "August offer: the first payment is 50% off through August 31, 2026. Monthly renewals are charged at the regular USD 38 price.",
+            "description": "Agency includes one Qlynk Agent, 10,000 messages per month, and no visible Qlynk branding.",
             "url": `${SITE_URL}/pricing`
           }
         ]

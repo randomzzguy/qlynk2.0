@@ -6,7 +6,6 @@ import {
   buildSubscriptionUpdateFlow,
   canUpdateExistingSubscription,
   getSingleSubscriptionItem,
-  portalConfigurationSupportsPrice,
 } from '../lib/checkout-upgrade.js';
 
 test('active Creator and legacy Pro members update their existing Stripe subscription', () => {
@@ -57,23 +56,6 @@ test('upgrade flow deep-links to Stripe confirmation and returns to billing', ()
       redirect: { return_url: 'https://www.qlynk.site/dashboard/billing' },
     },
   });
-});
-
-test('portal configuration must enable the selected target price', () => {
-  const configuration = {
-    features: {
-      subscription_update: {
-        enabled: true,
-        products: [{ product: 'prod_qlynk', prices: ['price_creator', 'price_agency'] }],
-      },
-    },
-  };
-
-  assert.equal(portalConfigurationSupportsPrice(configuration, 'price_agency'), true);
-  assert.equal(portalConfigurationSupportsPrice(configuration, 'price_unknown'), false);
-  assert.equal(portalConfigurationSupportsPrice({
-    features: { subscription_update: { enabled: false, products: configuration.features.subscription_update.products } },
-  }, 'price_agency'), false);
 });
 
 test('checkout errors never send an authenticated member to signup', async () => {

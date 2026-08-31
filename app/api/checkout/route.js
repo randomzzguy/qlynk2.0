@@ -7,7 +7,6 @@ import {
   buildSubscriptionUpdateFlow,
   canUpdateExistingSubscription,
   getSingleSubscriptionItem,
-  portalConfigurationSupportsPrice,
 } from '@/lib/checkout-upgrade';
 
 export async function POST(req) {
@@ -66,9 +65,20 @@ export async function POST(req) {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
     if (canUpdateExistingSubscription(existingSubscription)) {
-      const stripeSubscription = await stripe.subscriptions.retrieve(
-        existingSubscription.stripe_subscription_id
-      );
+      let stripeSubscription;
+      try {
+        stripeSubscription = await stripe.subscriptions.retrieve(
+          existingSubscription.stripe_subscription_id
+        );
+      } catch (error) {
+        if (error.code === 'resource_missing') {
+          return NextResponse.json(
+            { error: 'This subscription is connected to a previous billing account. Please contact support from Billing to change plans safely.' },
+            { status: 409 }
+          );
+        }
+        throw error;
+      }
       const stripeCustomerId = typeof stripeSubscription.customer === 'string'
         ? stripeSubscription.customer
         : stripeSubscription.customer?.id;
@@ -93,15 +103,8 @@ export async function POST(req) {
         return NextResponse.json({ error: 'You are already subscribed to this plan.' }, { status: 409 });
       }
 
-      const portalConfigurations = await stripe.billingPortal.configurations.list({
-        active: true,
-        limit: 100,
-      });
-      const portalConfiguration = portalConfigurations.data.find((configuration) =>
-        portalConfigurationSupportsPrice(configuration, priceId)
-      );
-
-      if (!portalConfiguration) {
+      const portalConfigurationId = process.env.STRIPE_PORTAL_CONFIGURATION_ID;
+      if (!portalConfigurationId) {
         return NextResponse.json(
           { error: 'Plan changes are temporarily unavailable. Please contact support from Billing.' },
           { status: 503 }
@@ -111,7 +114,7 @@ export async function POST(req) {
       const returnUrl = `${siteUrl}/dashboard/billing`;
       const portalSession = await stripe.billingPortal.sessions.create({
         customer: customerId,
-        configuration: portalConfiguration.id,
+        configuration: portalConfigurationId,
         return_url: returnUrl,
         flow_data: buildSubscriptionUpdateFlow({
           subscriptionId: existingSubscription.stripe_subscription_id,

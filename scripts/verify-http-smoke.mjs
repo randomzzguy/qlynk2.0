@@ -42,6 +42,10 @@ const privateRules = await request('/api/agent/rules');
 assert(privateRules.response.status === 401, '/api/agent/rules did not require owner authentication');
 
 const homepage = await request('/');
+assert(homepage.body.includes('Creator is free forever'), 'Homepage does not describe permanent free Creator');
+const pricing = await request('/pricing');
+assert(pricing.body.includes('5,000 messages/month') && pricing.body.includes('10,000 messages/month'), 'Pricing allowances are missing');
+assert(!pricing.body.includes('free for 14 days'), 'Pricing still advertises the retired trial');
 const csp = homepage.response.headers.get('content-security-policy') || '';
 assert(csp.includes("frame-ancestors 'none'"), 'Homepage CSP does not deny framing');
 assert(csp.includes("frame-src 'self'"), 'Homepage CSP blocks the same-origin Qlynk widget iframe');

@@ -9,10 +9,10 @@ const required = [
   'NEXT_PUBLIC_SUPABASE_URL',
   'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY',
   'GROQ_API_KEY',
-  'STRIPE_SECRET_KEY',
-  'RESEND_API_KEY',
-  'EMAIL_FROM',
 ];
+const billingEnabled = process.env.NEXT_PUBLIC_BILLING_ENABLED !== '0';
+if (billingEnabled) required.push('STRIPE_SECRET_KEY', 'NEXT_PUBLIC_STRIPE_PRICE_AGENCY_MONTHLY', 'NEXT_PUBLIC_STRIPE_PRICE_AGENCY_ANNUAL');
+if (process.env.RESEND_API_KEY || process.env.EMAIL_FROM) required.push('RESEND_API_KEY', 'EMAIL_FROM');
 for (const name of required) {
   if (!process.env[name]) throw new Error(`Missing ${name}`);
 }
@@ -67,13 +67,12 @@ for (const model of configuredGroqModels) {
   console.log(`Groq model ${model}: available PASS`);
 }
 
+if (billingEnabled) {
 await expectOk('Stripe account API', 'https://api.stripe.com/v1/account', {
   headers: { Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}` },
 });
 
 for (const name of [
-  'NEXT_PUBLIC_STRIPE_PRICE_CREATOR_MONTHLY',
-  'NEXT_PUBLIC_STRIPE_PRICE_CREATOR_ANNUAL',
   'NEXT_PUBLIC_STRIPE_PRICE_AGENCY_MONTHLY',
   'NEXT_PUBLIC_STRIPE_PRICE_AGENCY_ANNUAL',
 ]) {
@@ -83,6 +82,9 @@ for (const name of [
   });
   const price = await priceResponse.json();
   if (!price.active || price.type !== 'recurring') throw new Error(`${name} is not an active recurring price`);
+}
+} else {
+  console.log('Stripe verification skipped: hosted Agency billing is disabled.');
 }
 
 const captchaPayload = new URLSearchParams({
@@ -100,6 +102,7 @@ if (captchaResult.success !== false || captchaResult['error-codes']?.includes('i
 }
 console.log('hCaptcha secret accepted and intentionally invalid response rejected: PASS');
 
+if (process.env.RESEND_API_KEY) {
 const resendResponse = await fetch('https://api.resend.com/domains', {
   headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}` },
   signal: AbortSignal.timeout(10_000),
@@ -144,6 +147,9 @@ if (resendResponse.ok) {
   console.log(`Resend idempotent email accepted for the configured smoke-test inbox: HTTP ${sendResponse.status} PASS`);
 } else {
   throw new Error(`Resend domain listing returned HTTP ${resendResponse.status}; use ALLOW_EMAIL_SMOKE_TEST=1 to verify a restricted send-only key`);
+}
+} else {
+  console.log('Resend verification skipped: transactional notifications are not configured. Supabase Auth email must be configured separately.');
 }
 
 console.log('Production integration verification passed without exposing credentials.');

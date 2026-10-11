@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { AlertCircle, ArrowRight, Clock, Zap, X } from 'lucide-react';
+import { ArrowRight, Zap, X } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
-import { getTrialDaysRemaining, isTrialExpired } from '@/lib/subscriptionHelpers';
+import { getEffectiveTier, isSubscriptionLive } from '@/lib/plans';
 
 export default function UpgradePrompt() {
   const [subscription, setSubscription] = useState(null);
@@ -42,91 +42,22 @@ export default function UpgradePrompt() {
     return null;
   }
 
-  // Show trial expiring soon
-  if (subscription.tier?.toLowerCase() === 'trial' && !isTrialExpired(subscription.trial_ends_at)) {
-    const daysLeft = getTrialDaysRemaining(subscription.trial_ends_at);
-    if (daysLeft <= 3) {
-      return (
-        <div className="bg-amber-500/10 backdrop-blur-sm border border-amber-500/30 rounded-2xl p-5 flex items-start gap-5 mb-8 relative group">
-          <div className="w-10 h-10 bg-amber-500/20 rounded-xl flex items-center justify-center shrink-0 border border-amber-500/20">
-            <Clock className="text-amber-500" size={22} />
-          </div>
-          <div className="flex-1">
-            <h3 className="font-bold text-white mb-1">Trial Ending Soon</h3>
-            <p className="text-amber-200/70 text-sm mb-4 leading-relaxed">
-              You have {daysLeft} day{daysLeft !== 1 ? 's' : ''} left on your free trial. Upgrade now to keep your agent live and maintain your presence.
-            </p>
-            <Link
-              href="/pricing"
-              className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-5 py-2 rounded-xl font-bold text-sm transition-all shadow-lg shadow-amber-500/20"
-            >
-              View Plans
-              <Zap size={14} />
-            </Link>
-          </div>
-          <button
-            onClick={() => setDismissed(true)}
-            className="text-amber-500/50 hover:text-amber-500 p-2 transition-colors"
-          >
-            <X size={18} />
-          </button>
-        </div>
-      );
-    }
-  }
-
-  // Show trial expired or paused
-  if ((subscription.tier?.toLowerCase() === 'trial' && isTrialExpired(subscription.trial_ends_at)) || subscription.status === 'paused') {
-    const isPaused = subscription.status === 'paused';
-    const choice = subscription.post_trial_choice || 'pause';
-    
-    return (
-      <div className="bg-red-500/10 backdrop-blur-sm border border-red-500/30 rounded-2xl p-5 flex items-start gap-5 mb-8 relative group">
-        <div className="w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center shrink-0 border border-red-500/20">
-          <AlertCircle className="text-red-500" size={22} />
-        </div>
-        <div className="flex-1">
-          <h3 className="font-bold text-white mb-1">{isPaused ? 'Account Paused' : 'Trial Expired'}</h3>
-          <p className="text-red-200/70 text-sm mb-4 leading-relaxed">
-            {isPaused 
-              ? 'Your account is currently on hold. Your agent is offline, but your data is safe for 14 days. Upgrade now to go back live.' 
-              : `Your trial has ended. You chose the ${choice} plan. Please complete your upgrade to bring your agent back online.`}
-          </p>
-          <Link
-            href="/pricing"
-            className="inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-xl font-bold text-sm transition-all shadow-lg shadow-red-500/20"
-          >
-            Upgrade Now
-            <Zap size={14} />
-          </Link>
-        </div>
-        <button
-          onClick={() => setDismissed(true)}
-          className="text-red-500/50 hover:text-red-500 p-2 transition-colors"
-        >
-          <X size={18} />
-        </button>
-      </div>
-    );
-  }
-
-  // Show upsell for free tier
-  if ((subscription.tier?.toLowerCase() === 'pro' || subscription.tier?.toLowerCase() === 'creator') && subscription.status === 'active') {
+  if (isSubscriptionLive(subscription) && getEffectiveTier(subscription) === 'creator') {
     return (
       <div className="bg-emerald-500/10 backdrop-blur-sm border border-emerald-500/30 rounded-2xl p-5 flex items-start gap-5 mb-8 relative group">
         <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center shrink-0 border border-emerald-500/20">
           <Zap className="text-emerald-500" size={22} />
         </div>
         <div className="flex-1">
-          <h3 className="font-bold text-white mb-1">Ready to Scale?</h3>
+          <h3 className="font-bold text-white mb-1">Creator is free. Upgrade when you need more.</h3>
           <p className="text-emerald-200/70 text-sm mb-4 leading-relaxed">
-            Upgrade to the Agency plan for 10,000 messages per month and removal of the “Powered by Qlynk” label.
+            Stay on Creator at no cost, or choose Agency for 10,000 messages per month and removal of the “Powered by Qlynk” label.
           </p>
           <Link
             href="/pricing"
             className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2 rounded-xl font-bold text-sm transition-all shadow-lg shadow-emerald-500/20"
           >
-            Scale Now
+            Explore Agency
             <ArrowRight size={14} />
           </Link>
         </div>

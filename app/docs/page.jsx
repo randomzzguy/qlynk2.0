@@ -4,6 +4,7 @@ import Footer from '@/components/Footer';
 import JsonLd from '@/components/JsonLd';
 import MarketingHeader from '@/components/MarketingHeader';
 import { breadcrumbSchema, createMetadata, SITE_URL } from '@/lib/seo';
+import { QLYNK_SOURCE_URL } from '@/lib/qlynk-product-facts';
 
 export const metadata = createMetadata({
   title: 'Qlynk Documentation | Build and Maintain an AI Agent',
@@ -12,7 +13,7 @@ export const metadata = createMetadata({
 });
 
 const groups = [
-  { icon: Rocket, title: 'Start and choose the job', description: 'Begin with one audience and one repeated question before adding knowledge.', links: [['Create an AI agent', '/blog/how-to-create-ai-clone'], ['Explore agent solutions', '/solutions'], ['Plans and 14-day trial', '/pricing']] },
+  { icon: Rocket, title: 'Start and choose the job', description: 'Begin with one audience and one repeated question before adding knowledge.', links: [['Create an AI agent', '/blog/how-to-create-ai-clone'], ['Explore agent solutions', '/solutions'], ['Free Creator and optional Agency', '/pricing']] },
   { icon: ShieldCheck, title: 'Configure scope and behavior', description: 'Define purpose, audience, allowed and blocked topics, uncertainty, tone, and handoff.', links: [['Scope and controls', '/features/security'], ['Custom AI agents', '/solutions/custom-ai-agents'], ['AI hallucinations and controls', '/blog/ai-hallucinations-approved-knowledge']] },
   { icon: Brain, title: 'Add approved knowledge', description: 'Use reviewed facts, FAQs, links, notes, and supported documents appropriate for the audience.', links: [['Knowledge base', '/features/knowledge-base'], ['Knowledge-based AI', '/solutions/knowledge-based-ai'], ['Documentation best practices', '/blog/ai-documentation-best-practices']] },
   { icon: Eye, title: 'Test and improve', description: 'Test expected, uncertain, sensitive, and out-of-scope questions, then review real knowledge gaps.', links: [['How the agent understands context', '/blog/qlynk-agent-understands-questions-better'], ['Analytics and review', '/features/analytics'], ['AI knowledge management', '/blog/ai-knowledge-management']] },
@@ -31,6 +32,11 @@ export default function DocsPage() {
           <h1 className="mt-5 text-5xl font-black tracking-tight md:text-7xl">Build a useful agent you can maintain</h1>
           <p className="mt-7 text-xl leading-relaxed text-gray-300">The practical path from one repeated question to approved knowledge, tested limits, a public experience, and an ongoing review loop.</p>
         </header>
+        <section className="mt-10 rounded-3xl border border-emerald-500/30 bg-emerald-500/10 p-8">
+          <h2 className="text-2xl font-black">Free hosted Creator or your own deployment</h2>
+          <p className="mt-3 leading-relaxed text-gray-300">Creator is free forever with one agent and 5,000 messages per month. Agency is optional for higher usage and removal of Qlynk attribution. Qlynk’s source is licensed under MIT; self-hosting uses your own infrastructure and provider credentials, with any provider costs paid by you.</p>
+          <a href={QLYNK_SOURCE_URL} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-2 font-bold text-emerald-300 hover:underline">Get the source and setup guide <ArrowRight size={15} /></a>
+        </section>
         <section className="mt-16 grid gap-6 md:grid-cols-2">
           {groups.map(({ icon: Icon, title, description, links }) => (
             <div key={title} className="rounded-3xl border border-white/10 bg-white/5 p-8">

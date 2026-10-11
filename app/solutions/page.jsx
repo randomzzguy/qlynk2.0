@@ -46,8 +46,8 @@ export default function SolutionsPage() {
         </div>
         <section className="px-6 pb-24 text-center">
           <div className="mx-auto max-w-5xl rounded-3xl bg-orange p-10 md:p-14">
-            <h2 className="text-3xl font-black md:text-5xl">Start with every feature free for 14 days</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-orange-50">14-day free trial · Every feature included · No payment today</p>
+            <h2 className="text-3xl font-black md:text-5xl">Start with free Creator. Keep building.</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-orange-50">Creator is free forever · 5,000 messages/month · No card required</p>
             <Link href="/auth/signup" className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-4 font-bold text-[#9a3412] transition-colors hover:bg-orange-50 hover:text-[#7c2d12]">Start Free <ArrowRight size={18} aria-hidden="true" /></Link>
           </div>
         </section>

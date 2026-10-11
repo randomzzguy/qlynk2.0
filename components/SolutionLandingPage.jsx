@@ -57,7 +57,7 @@ export default function SolutionLandingPage({ page }) {
               </Link>
               <Link href="/pricing" className="rounded-xl border border-white/15 px-7 py-4 font-bold text-white hover:border-orange/50">See transparent pricing</Link>
             </div>
-            <p className="mt-4 text-[15px] leading-relaxed text-gray-300">14-day free trial · Every feature included · No payment today</p>
+            <p className="mt-4 text-[15px] leading-relaxed text-gray-300">Creator is free forever · 5,000 messages/month · No card required</p>
           </div>
         </header>
 

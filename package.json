@@ -2,6 +2,11 @@
   "name": "webapp2.0",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/randomzzguy/qlynk2.0.git"
+  },
   "type": "module",
   "scripts": {
     "predev": "node ./scripts/clear-next-lock.js",
@@ -15,7 +20,9 @@
     "verify:http": "node scripts/verify-http-smoke.mjs",
     "verify:integrations": "node --env-file=.env.local scripts/verify-production-integrations.mjs",
     "verify:migrations": "node scripts/verify-migrations.mjs",
-    "verify:backups": "node scripts/verify-backup-readiness.mjs"
+    "verify:backups": "node scripts/verify-backup-readiness.mjs",
+    "verify:open-source": "node scripts/verify-open-source.mjs",
+    "verify:free-creator": "node --env-file=.env.local scripts/verify-free-creator-readiness.mjs"
   },
   "dependencies": {
     "@hcaptcha/react-hcaptcha": "^1.17.1",
@@ -29,7 +36,7 @@
     "framer-motion": "^11.0.0",
     "lucide-react": "^0.548.0",
     "mammoth": "^1.12.0",
-    "next": "^16.2.10",
+    "next": "~16.3.8",
     "pdf-parse": "^2.4.5",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.6",
@@ -50,7 +57,8 @@
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.21",
     "eslint": "^9",
-    "eslint-config-next": "^16.1.0",
+    "eslint-config-next": "16.1.0",
+    "eslint-plugin-react-hooks": "7.0.1",
     "postcss": "^8.5.16",
     "tailwindcss": "^3.4.18",
     "tailwindcss-animate": "^1.0.7",

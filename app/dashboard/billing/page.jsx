@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { getCurrentUser } from '@/lib/supabase';
-import { CreditCard, Zap, Check, ArrowRight, Loader2, Clock, FileText, Download, Receipt, AlertTriangle } from 'lucide-react';
-import { getTrialDaysRemaining, PLAN_LIMITS } from '@/lib/subscriptionHelpers';
+import { CreditCard, Zap, Check, ArrowRight, Loader2, FileText, Download, Receipt, AlertTriangle } from 'lucide-react';
+import { getEffectiveTier, getMessageLimit, getCurrentMessagesUsed, isComplimentaryAgency } from '@/lib/plans';
 import { useDashboardPageReady } from '@/lib/dashboard-page-ready';
 
 export default function BillingPage() {
@@ -82,11 +82,13 @@ export default function BillingPage() {
     );
   }
 
-  const tier = subscription?.tier || 'trial';
-  const isTrial = tier.toLowerCase() === 'trial';
-  const isPastDue = subscription?.status?.toLowerCase() === 'past_due';
-  const messagesUsed = subscription?.messages_used || 0;
-  const messagesLimit = PLAN_LIMITS[tier.toLowerCase()] || 1000;
+  const tier = getEffectiveTier(subscription);
+  const isFree = tier === 'creator';
+  const isComplimentary = isComplimentaryAgency(subscription);
+  const hasBilling = Boolean(subscription?.stripe_customer_id);
+  const isPastDue = ['past_due', 'unpaid'].includes(subscription?.status?.toLowerCase());
+  const messagesUsed = getCurrentMessagesUsed(subscription);
+  const messagesLimit = getMessageLimit(tier);
   const usagePercent = Math.min(100, (messagesUsed / messagesLimit) * 100);
 
   return (
@@ -97,7 +99,7 @@ export default function BillingPage() {
             <p className="text-sm font-bold uppercase tracking-widest text-amber-300 mb-1">Payment issue</p>
             <h2 className="text-xl font-black text-white">Your latest payment failed</h2>
             <p className="text-sm text-amber-100/80 mt-1">
-              Update your billing details in Stripe to keep your agent and subscriptions active.
+              Update billing to restore Agency benefits. Your agent can continue with the free Creator allowance.
             </p>
           </div>
           <button
@@ -130,7 +132,8 @@ export default function BillingPage() {
               </div>
               <div>
                 <p className="text-sm text-gray-500 font-bold uppercase tracking-widest">Current Plan</p>
-                <h2 className="text-2xl font-black text-white capitalize">{tier} Plan</h2>
+                <h2 className="text-2xl font-black text-white capitalize">{tier} Plan {isFree && <span className="text-sm text-emerald-400">· Free forever</span>}</h2>
+                {isComplimentary && <p className="mt-1 text-sm text-emerald-400">Complimentary access · No payment required</p>}
               </div>
             </div>
 
@@ -141,7 +144,7 @@ export default function BillingPage() {
               </div>
               <div className="flex items-center gap-3 text-gray-300">
                 <Check className="text-green-500" size={18} />
-                <span>Priority Qlynk Agent AI</span>
+                <span>Qlynk Agent AI</span>
               </div>
               <div className="flex items-center gap-3 text-gray-300">
                 <Check className="text-green-500" size={18} />
@@ -149,14 +152,14 @@ export default function BillingPage() {
               </div>
             </div>
 
-            <button
+            {!isComplimentary && <button
               onClick={handlePortal}
               disabled={portalLoading}
               className="px-8 py-4 bg-white text-black rounded-2xl font-black flex items-center gap-3 hover:bg-gray-200 transition-all active:scale-95 disabled:opacity-50"
             >
               {portalLoading ? <Loader2 className="animate-spin" /> : <CreditCard size={20} />}
-              {isTrial ? 'Choose a Paid Plan' : 'Manage Subscription'}
-            </button>
+              {hasBilling ? 'Manage Billing' : 'Explore Agency'}
+            </button>}
           </div>
         </div>
 
@@ -177,7 +180,7 @@ export default function BillingPage() {
               </div>
             </div>
             <p className="text-sm text-gray-400">
-              Resetting in {30 - new Date().getDate()} days
+              Usage resets on the first day of each month (UTC)
             </p>
             {usagePercent >= 80 && (
               <div className={`mt-5 p-4 rounded-2xl border flex items-start gap-3 ${usagePercent >= 100
@@ -197,15 +200,7 @@ export default function BillingPage() {
             )}
           </div>
 
-          {isTrial && (
-            <div className="mt-8 p-4 rounded-2xl bg-orange/10 border border-orange/20 flex items-center gap-3">
-              <Clock className="text-orange" size={20} />
-              <div className="text-xs">
-                <p className="text-white font-bold">{getTrialDaysRemaining(subscription?.trial_ends_at)} days left</p>
-                <p className="text-gray-400">in your free trial</p>
-              </div>
-            </div>
-          )}
+          {isFree && <p className="mt-8 text-sm text-emerald-400">No card required. Agency is optional.</p>}
         </div>
       </div>
 
@@ -225,7 +220,7 @@ export default function BillingPage() {
             <FileText className="mx-auto mb-3 text-gray-600" size={32} />
             <p className="text-gray-400 text-sm">No invoices yet</p>
             <p className="text-gray-600 text-xs mt-1">
-              {isTrial ? 'Upgrade to see your billing history' : 'Invoices will appear here after your first payment'}
+              {isComplimentary ? 'Your Agency access is complimentary. No payment is required.' : isFree ? 'Creator is free. Only paid subscriptions generate invoices.' : 'Invoices will appear here after your first payment'}
             </p>
           </div>
         ) : (
@@ -296,7 +291,7 @@ export default function BillingPage() {
             </div>
             <div>
               <h3 className="text-xl font-bold text-white">Unlock Full Potential</h3>
-              <p className="text-gray-400">Upgrade your plan for more monthly messages and additional agent features.</p>
+              <p className="text-gray-400">Agency doubles your monthly messages and removes the visible Qlynk branding.</p>
             </div>
           </div>
           <Link

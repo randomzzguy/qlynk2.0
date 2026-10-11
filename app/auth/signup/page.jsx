@@ -146,6 +146,7 @@ function SignupForm() {
           <div className="text-center mb-8">
             <h1 className="text-3xl font-black text-cream mb-2">Create Your Qlynk Agent</h1>
             <p className="text-beige">Start with the questions you answer repeatedly</p>
+            <p className="mt-3 text-sm text-emerald-300">Creator is free forever · 5,000 messages/month · No card required</p>
           </div>
 
           {error && (

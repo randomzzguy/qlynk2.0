@@ -8,7 +8,7 @@ import QlynkBackground from '@/components/QlynkBackground';
 import Footer from '@/components/Footer';
 
 export default function TermsPage() {
-  const lastUpdated = "July 11, 2026";
+  const lastUpdated = "October 11, 2026";
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-gray-300">
@@ -75,8 +75,9 @@ export default function TermsPage() {
               <section>
                 <h2 className="text-2xl font-bold text-white mb-4">5. Payment and Refunds</h2>
                 <p className="leading-relaxed">
-                  The Service offers a 14-day free trial without requiring a credit card. Paid plans begin only after you choose a paid subscription through checkout. All fees are non-refundable except as required by law.
+                  Creator is free with no expiry or credit card required, subject to its published usage limits. Agency is an optional paid subscription that begins only after you choose it through checkout. When Agency cancellation takes effect, your account returns to Creator and its limits. All fees are non-refundable except as required by law.
                 </p>
+                <p className="leading-relaxed mt-4">Qlynk&apos;s source code is provided under the MIT license in its source repository. That software license is separate from these terms for the hosted service. Self-hosting operators use their own infrastructure and provider accounts and are responsible for any associated costs.</p>
               </section>
 
               <section>

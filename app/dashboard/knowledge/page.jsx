@@ -26,6 +26,7 @@ import { useSearchParams } from 'next/navigation';
 import { createClientBrowser, getCurrentUser } from '@/lib/supabase';
 import { AgentConfigPage } from '@/app/dashboard/agent/page';
 import { useDashboardPageReady } from '@/lib/dashboard-page-ready';
+import QlynkProductFactsUpdate from '@/components/QlynkProductFactsUpdate';
 
 export default function KnowledgeDashboard() {
   const searchParams = useSearchParams();
@@ -34,6 +35,7 @@ export default function KnowledgeDashboard() {
     return ['gaps', 'connections', 'memory'].includes(requestedTab) ? requestedTab : 'profile';
   });
   const [knowledge, setKnowledge] = useState([]);
+  const [isProductAccount, setIsProductAccount] = useState(false);
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   useDashboardPageReady(loading);
@@ -95,6 +97,8 @@ export default function KnowledgeDashboard() {
     try {
       const user = await getCurrentUser();
       if (!user) return;
+      const { data: profile } = await supabase.from('profiles').select('username').eq('id', user.id).maybeSingle();
+      setIsProductAccount(profile?.username === 'qlynk');
 
       const [{ data: facts }, { data: docs }] = await Promise.all([
         supabase
@@ -601,6 +605,8 @@ export default function KnowledgeDashboard() {
 
       {/* Main View */}
       <div className="min-h-[400px]">
+        {isProductAccount && <QlynkProductFactsUpdate onUpdated={fetchAllData} />}
+
         {activeTab === 'profile' && (
           <AgentConfigPage sectionOverride="profile" embedded />
         )}
@@ -678,6 +684,7 @@ export default function KnowledgeDashboard() {
                         <Trash2 size={18} />
                       </button>
                     </div>
+                    {item.is_active === false && <p className="mb-2 text-xs font-bold text-amber-300">Archived · excluded from answers</p>}
                     <p className="text-gray-400 text-sm leading-relaxed line-clamp-4">{item.content}</p>
                     <div className="mt-6 flex items-center gap-2 pt-4 border-t border-white/5">
                       <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest bg-blue-500/10 px-3 py-1 rounded-full">Text Block</span>
@@ -858,6 +865,7 @@ export default function KnowledgeDashboard() {
                             <Trash2 size={16} />
                           </button>
                         </div>
+                        {item.is_active === false && <p className="mb-2 text-xs font-bold text-amber-300">Archived · excluded from answers</p>}
                         <p className="text-gray-400 text-xs leading-relaxed line-clamp-3 mb-4">{item.content}</p>
                       </div>
                       <div className="pt-4 border-t border-white/5 flex items-center justify-between">
@@ -984,6 +992,7 @@ export default function KnowledgeDashboard() {
                               {item.category || 'general'}
                             </span>
                           </div>
+                          {item.is_active === false && <p className="mb-2 text-xs font-bold text-amber-300">Archived · excluded from answers</p>}
                           <p className="text-gray-400 text-sm leading-relaxed">{item.content}</p>
                         </div>
                         <button onClick={() => handleDeleteFact(item.id)} className="text-gray-600 hover:text-red-500 transition-colors p-2 shrink-0">

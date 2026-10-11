@@ -17,11 +17,7 @@ import {
   Sparkles,
   CreditCard
 } from 'lucide-react';
-import { 
-  getTrialDaysRemaining, 
-  isTrialExpired,
-  PLAN_LIMITS 
-} from '@/lib/subscriptionHelpers';
+import { getEffectiveTier, getMessageLimit, getCurrentMessagesUsed } from '@/lib/plans';
 import UpgradePrompt from '@/components/UpgradePrompt';
 import TrialChoiceManager from '@/components/TrialChoiceManager';
 import { announceDashboardTourCheckoutState } from '@/lib/dashboard-tour';
@@ -37,7 +33,7 @@ export default function DashboardPage() {
     avgMessagesPerConvo: 0,
     messagesUsed: 0,
     messagesLimit: 0,
-    tier: 'Trial'
+    tier: 'creator'
   });
   const [recentConversations, setRecentConversations] = useState([]);
   const [subscription, setSubscription] = useState(null);
@@ -46,7 +42,7 @@ export default function DashboardPage() {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [newPlanName, setNewPlanName] = useState('');
   const [readinessData, setReadinessData] = useState({ knowledgeCount: 0, openGaps: 0, rules: null });
-  const isPaymentPastDue = subscription?.status?.toLowerCase() === 'past_due';
+  const isPaymentPastDue = ['past_due', 'unpaid'].includes(subscription?.status?.toLowerCase());
   const isAccountDeletionScheduled = !!profile?.account_deletion_scheduled_for;
   useDashboardPageReady(loading);
 
@@ -148,9 +144,9 @@ export default function DashboardPage() {
           totalMessages: totalMsgs,
           messagesThisWeek: msgsThisWeek,
           avgMessagesPerConvo: totalConvos > 0 ? Math.round(totalMsgs / totalConvos) : 0,
-          messagesUsed: subData?.messages_used || 0,
-          messagesLimit: PLAN_LIMITS[subData?.tier?.toLowerCase()] || 1000,
-          tier: subData?.tier || 'Trial'
+          messagesUsed: getCurrentMessagesUsed(subData),
+          messagesLimit: getMessageLimit(getEffectiveTier(subData)),
+          tier: getEffectiveTier(subData)
         });
 
         setRecentConversations(conversations.slice(0, 5));
@@ -374,9 +370,9 @@ export default function DashboardPage() {
         <div className="mb-8 rounded-3xl border border-amber-500/30 bg-amber-500/10 p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <p className="text-sm font-bold uppercase tracking-widest text-amber-300 mb-1">Payment issue</p>
-            <h2 className="text-xl font-black text-white">Your subscription is past due</h2>
+            <h2 className="text-xl font-black text-white">Your Agency payment is past due</h2>
             <p className="text-sm text-amber-100/80 mt-1">
-              Update your payment method to keep your agent live and restore full access.
+              Update billing to restore Agency benefits. Your agent can continue within the free Creator allowance.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
@@ -567,11 +563,7 @@ export default function DashboardPage() {
                 <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Current Plan</p>
                 <div className="flex items-baseline gap-2">
                   <h3 className="text-2xl font-black text-white capitalize">{stats.tier}</h3>
-                  {stats.tier?.toLowerCase() === 'trial' && !isTrialExpired(subscription?.trial_ends_at) && (
-                    <span className="text-[#f46530] text-sm font-bold bg-[#f46530]/10 px-2 py-0.5 rounded-lg">
-                      {getTrialDaysRemaining(subscription?.trial_ends_at)}d left
-                    </span>
-                  )}
+                  {stats.tier === 'creator' && <span className="text-emerald-400 text-sm font-bold">Free forever</span>}
                 </div>
               </div>
               <Link href="/dashboard/billing" className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors">

@@ -157,9 +157,11 @@ export async function POST(request) {
         .from('subscriptions')
         .insert({
           user_id: signUpData.user.id,
-          tier: 'trial',
-          status: 'trialing',
-          trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+          tier: 'creator',
+          status: 'active',
+          trial_ends_at: null,
+          post_trial_choice: 'creator',
+          last_reset_at: new Date().toISOString()
         });
 
       if (subError) {

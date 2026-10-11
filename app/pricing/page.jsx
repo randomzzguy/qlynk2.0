@@ -2,14 +2,15 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Check, X, Zap, Crown, ArrowRight, ChevronDown } from 'lucide-react';
+import { Check, X, Crown, ArrowRight, ChevronDown } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCurrentUser, getCurrentProfile, signOut } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import QlynkBackground from '@/components/QlynkBackground';
 import Footer from '@/components/Footer';
-import { formatUsd, PAID_PLAN_PRICING } from '@/lib/pricing';
+import { formatUsd, PLAN_PRICING } from '@/lib/pricing';
+import { QLYNK_PRICING_FAQS } from '@/lib/qlynk-product-facts';
 
 // Glowing Orb component matching home page
 const GlowingOrb = ({ top, left, size = 300, color = 'orange', delay = 0 }) => (
@@ -55,7 +56,7 @@ const faqs = [
       },
       {
         q: 'Can I customize how my Qlynk Agent looks and sounds?',
-        a: 'Yes. Every plan includes agent type, purpose, audience, response rules, name, avatar, welcome message, tone, response length, and visual colors. Agency removes the visible “Powered by Qlynk” label, and the 14-day trial includes that Agency feature too.',
+        a: 'Yes. Every plan includes agent type, purpose, audience, response rules, name, avatar, welcome message, tone, response length, and visual colors. The optional Agency plan removes the visible “Powered by Qlynk” label.',
       },
       {
         q: 'What does my public page look like?',
@@ -63,34 +64,13 @@ const faqs = [
       },
       {
         q: 'Is my Qlynk Agent available all the time?',
-        a: 'During your active trial or paid subscription, visitors can use the published agent whenever the service is available. If your trial expires without an upgrade, the agent goes offline until you subscribe.',
+        a: 'Creator has no expiry. Visitors can use your enabled agent whenever the service is available and within your monthly allowance. Agency is optional.',
       },
     ],
   },
   {
-    category: 'Billing & Plans',
-    items: [
-      {
-        q: 'Do I need a credit card for the free trial?',
-        a: "No. The 14-day free trial includes everything in the Agency plan, including the 10,000-message allowance and removal of the visible “Powered by Qlynk” label. No credit card is required.",
-      },
-      {
-        q: 'What happens when my trial expires?',
-        a: 'At the end of 14 days, your agent goes offline unless you choose a paid plan. If you pause instead, your account data remains available so you can return and upgrade later.',
-      },
-      {
-        q: 'Are the current prices discounted?',
-        a: 'No. Creator is $18 monthly or $168 annually, and Agency is $38 monthly or $360 annually. Annual billing saves at least 21% compared with paying monthly.',
-      },
-      {
-        q: 'Can I cancel anytime?',
-        a: 'Yes. Cancel from your account settings at any time with no questions asked and no hidden fees. Your agent stays live until the end of your current billing period.',
-      },
-      {
-        q: 'What if I exceed my monthly message limit?',
-        a: "You will receive an in-dashboard notification when you reach 80% of your limit. Once the limit is hit, the chat widget stays visible but shows a polite message that the agent is temporarily at capacity. Upgrading your plan restores full access immediately.",
-      },
-    ],
+    category: 'Plans, billing & source',
+    items: QLYNK_PRICING_FAQS,
   },
 ];
 
@@ -198,11 +178,9 @@ export default function PricingPage() {
 
   const priceIds = {
     monthly: {
-      creator: process.env.NEXT_PUBLIC_STRIPE_PRICE_CREATOR_MONTHLY || '',
       agency: process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY_MONTHLY || '',
     },
     annual: {
-      creator: process.env.NEXT_PUBLIC_STRIPE_PRICE_CREATOR_ANNUAL || '',
       agency: process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY_ANNUAL || '',
     }
   };
@@ -210,10 +188,12 @@ export default function PricingPage() {
   const handleCheckout = async (plan) => {
     if (authLoading) return;
 
-    if (plan.name === 'Trial') {
-      router.push('/auth/signup');
+    if (plan.name === 'Creator') {
+      router.push(user ? (profile?.onboarding_completed ? '/dashboard' : '/onboarding') : '/auth/signup');
       return;
     }
+
+    if (process.env.NEXT_PUBLIC_BILLING_ENABLED === '0') return;
 
     if (!user) {
       router.push(`/auth/signup?plan=${plan.name.toLowerCase()}&cycle=${billingCycle}`);
@@ -262,35 +242,17 @@ export default function PricingPage() {
 
   const plans = [
     {
-      name: 'Trial',
-      description: 'Everything in Agency for 14 days',
-      price: 'Free',
-      period: 'for 14 days',
-      cta: 'Start Free',
-      icon: Zap,
-      color: 'from-[#f46530] to-[#c14f22]',
-      features: [
-        { name: 'All Agency features', included: true },
-        { name: '10,000 messages during the trial', included: true },
-        { name: 'Knowledge, documents, links & FAQs', included: true },
-        { name: 'Conversations, analytics & knowledge gaps', included: true },
-        { name: 'Website embed, access controls & customization', included: true },
-        { name: '“Powered by Qlynk” label removed', included: true },
-        { name: 'No credit card required', included: true },
-      ],
-      highlight: true,
-      badge: 'Full Agency Access',
-    },
-    {
       name: 'Creator',
-      description: 'For one professional or focused use case',
-      price: formatUsd(PAID_PLAN_PRICING.creator[billingCycle]),
-      period: billingCycle === 'monthly' ? '/month' : '/year',
-      cta: 'Choose Plan',
+      description: 'Build and share one focused agent at no cost',
+      price: 'Free',
+      period: 'forever',
+      cta: user ? 'Open dashboard' : 'Start free',
+      highlight: true,
+      badge: 'No card required',
       icon: Crown,
       color: 'from-emerald-500 to-emerald-600',
       features: [
-        { name: 'Published agent access', included: true },
+        { name: 'No expiry or payment required', included: true },
         { name: '5,000 messages/month', included: true },
         { name: 'One Qlynk Agent', included: true },
         { name: 'Knowledge, documents, links & FAQs', included: true },
@@ -303,9 +265,9 @@ export default function PricingPage() {
     {
       name: 'Agency',
       description: 'For higher-volume professional use',
-      price: formatUsd(PAID_PLAN_PRICING.agency[billingCycle]),
+      price: formatUsd(PLAN_PRICING.agency[billingCycle]),
       period: billingCycle === 'monthly' ? '/month' : '/year (Save 21%)',
-      cta: 'Upgrade Now',
+      cta: process.env.NEXT_PUBLIC_BILLING_ENABLED === '0' ? 'Agency billing unavailable here' : 'Upgrade to Agency',
       icon: Crown,
       color: 'from-purple-500 to-purple-600',
       features: [
@@ -485,10 +447,10 @@ export default function PricingPage() {
           transition={{ duration: 0.6 }}
         >
           <h1 className="text-5xl md:text-6xl font-black text-white mb-6">
-            Try every Agency feature <span className="text-[#f46530]">free for 14 days</span>
+            Start free. <span className="text-[#f46530]">Upgrade when you need more.</span>
           </h1>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-            Your trial includes everything in Agency. After 14 days, choose Creator or Agency to keep the agent live.
+            Creator is free forever with 5,000 messages per month. Agency doubles your allowance and removes the Qlynk attribution.
           </p>
         </motion.div>
 
@@ -507,7 +469,7 @@ export default function PricingPage() {
                 : 'text-gray-400 hover:text-gray-300'
                 }`}
             >
-              Monthly
+              Agency monthly
             </button>
             <button
               onClick={() => setBillingCycle('annual')}
@@ -523,7 +485,7 @@ export default function PricingPage() {
 
         {/* Pricing Cards */}
         <div className="max-w-7xl mx-auto px-4 mb-24">
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 gap-8">
             {plans.map((plan, index) => {
               const Icon = plan.icon;
               return (
@@ -569,7 +531,7 @@ export default function PricingPage() {
                     {/* CTA */}
                     <button
                       onClick={() => handleCheckout(plan)}
-                      disabled={authLoading || loadingPlan !== null}
+                      disabled={authLoading || loadingPlan !== null || (plan.name === 'Agency' && process.env.NEXT_PUBLIC_BILLING_ENABLED === '0')}
                       className={`w-full block text-center py-3 rounded-lg font-bold transition-all mb-8 flex items-center justify-center gap-2 ${plan.highlight
                         ? 'bg-[#f46530] hover:bg-[#c14f22] text-white shadow-lg shadow-[#f46530]/30 hover:shadow-[#f46530]/50'
                         : 'bg-gray-700 text-white hover:bg-gray-600'
@@ -614,7 +576,7 @@ export default function PricingPage() {
           <h2 className="text-3xl font-black text-white mb-4 text-center">
             Frequently Asked <span className="text-[#f46530]">Questions</span>
           </h2>
-          <p className="text-gray-400 text-center mb-12">What happens during the trial, after the trial, and when usage limits are reached.</p>
+          <p className="text-gray-400 text-center mb-12">How free Creator, optional Agency billing, monthly usage and self-hosting work.</p>
           <FAQAccordion />
         </motion.div>
 

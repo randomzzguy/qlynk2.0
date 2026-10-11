@@ -628,8 +628,8 @@ export default function SettingsPage() {
                   <Clock size={18} className="text-amber-400" />
                 </div>
                 <div>
-                  <p className="text-white font-semibold text-sm">Trial & Expiry Reminders</p>
-                  <p className="text-gray-500 text-xs">Warnings before your trial ends and expiry notices</p>
+                  <p className="text-white font-semibold text-sm">Legacy Trial Reminders (retired)</p>
+                  <p className="text-gray-500 text-xs">Legacy preference; trial expiry reminders have been retired</p>
                 </div>
               </div>
               <button

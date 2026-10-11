@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { QLYNK_SOURCE_URL } from '@/lib/qlynk-product-facts';
 
 export default function Footer() {
   return (
@@ -67,8 +68,9 @@ export default function Footer() {
         </div>
 
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
-          <p>&copy; {new Date().getFullYear()} qlynk. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} qlynk. Source code licensed under MIT.</p>
           <div className="flex gap-6">
+            <a href={QLYNK_SOURCE_URL} target="_blank" rel="noopener noreferrer" className="hover:text-white">Source on GitHub</a>
             <Link href="/about" className="hover:text-white transition-colors">About</Link>
             <Link href="/press" className="hover:text-white transition-colors">Press Kit</Link>
             <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>

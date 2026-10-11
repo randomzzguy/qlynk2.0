@@ -3,6 +3,7 @@ import { stripe } from '@/lib/stripe';
 import { createAdminClient, createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import { STRIPE_PRICE_PLAN_MAP } from '@/lib/stripe-subscriptions';
+import { isComplimentaryAgency } from '@/lib/plans';
 import {
   buildSubscriptionUpdateFlow,
   canUpdateExistingSubscription,
@@ -10,11 +11,14 @@ import {
 } from '@/lib/checkout-upgrade';
 
 export async function POST(req) {
+  if (process.env.NEXT_PUBLIC_BILLING_ENABLED === '0') {
+    return NextResponse.json({ error: 'Paid billing is disabled on this deployment. Creator remains free.' }, { status: 503 });
+  }
   try {
     const { priceId } = await req.json();
     const normalizedPlanName = STRIPE_PRICE_PLAN_MAP[priceId];
 
-    if (!normalizedPlanName) {
+    if (normalizedPlanName !== 'agency') {
       return NextResponse.json({ error: 'Invalid plan selected' }, { status: 400 });
     }
 
@@ -42,6 +46,10 @@ export async function POST(req) {
 
     if (subscriptionError) {
       throw new Error(`Could not load subscription: ${subscriptionError.message}`);
+    }
+
+    if (isComplimentaryAgency(existingSubscription)) {
+      return NextResponse.json({ error: 'Your account already has complimentary Agency access. No payment is required.' }, { status: 409 });
     }
 
     let customerId = existingSubscription?.stripe_customer_id;
@@ -128,10 +136,7 @@ export async function POST(req) {
       return NextResponse.json({ url: portalSession.url, flow: 'subscription_update' });
     }
 
-    // Create checkout session.
-    // NOTE: We do NOT pass trial_period_days to Stripe.
-    // Trials are managed entirely in our database (set at signup).
-    // When a user reaches checkout, they are always paying immediately.
+    // Creator never enters Stripe. Agency checkout charges immediately.
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [
@@ -148,7 +153,6 @@ export async function POST(req) {
         plan_name: normalizedPlanName,
       },
       subscription_data: {
-        // No trial_period_days — trials are DB-side only
         metadata: {
           supabase_user_id: user.id,
           plan_name: normalizedPlanName,

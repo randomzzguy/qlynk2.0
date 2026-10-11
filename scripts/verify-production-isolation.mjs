@@ -60,9 +60,9 @@ async function createFixture(fixture) {
   }), `private agent rules ${fixture.label}`);
   await requireResult(admin.from('subscriptions').upsert({
     user_id: fixture.id,
-    tier: 'trial',
-    status: 'trialing',
-    trial_ends_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    tier: 'creator',
+    status: 'active',
+    trial_ends_at: null,
   }), `subscription ${fixture.label}`);
   const graphEntityName = `secret-${fixture.label}-${suffix}`;
   const graphAlias = `alias-${fixture.label}-${suffix}`;

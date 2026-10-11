@@ -1,5 +1,6 @@
 'use client';
 
+import { getEffectiveTier } from '@/lib/plans';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { getCurrentProfile, signOut, getCurrentUser, createClientBrowser } from '@/lib/supabase';
@@ -56,7 +57,7 @@ function DashboardLayoutContent({ children }) {
           getCurrentProfile(user),
           supabase
             .from('subscriptions')
-            .select('tier')
+            .select('tier, status')
             .eq('user_id', user.id)
             .maybeSingle(),
         ]);
@@ -65,7 +66,7 @@ function DashboardLayoutContent({ children }) {
           return;
         }
 
-        setProfile({ ...userProfile, tier: sub?.tier || 'Trial' });
+        setProfile({ ...userProfile, tier: getEffectiveTier(sub) });
         setIsAuthenticated(true);
       } catch (error) {
         console.error('Auth check error:', error);

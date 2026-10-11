@@ -8,7 +8,9 @@
 - [ ] Configure all environment variables
 - [ ] Test environment variable validation
 - [ ] Set up Stripe production account
-- [ ] Add production Stripe price IDs for Creator monthly/annual and Agency monthly/annual
+- [ ] Add production Stripe price IDs for Agency monthly/annual; Creator is free and must not appear in checkout or the Stripe portal product catalog
+- [ ] Follow [Free Creator rollout](FREE_CREATOR_OPEN_SOURCE_ROLLOUT.md), including the migration and product-agent update
+- [ ] Keep historical Creator price IDs only if needed to recognize existing billing events; reconcile any existing paid Creator subscriptions before release
 - [ ] Configure hCaptcha production keys
 
 ### Security 🛡️

@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { PGlite } from '@electric-sql/pglite';
 import { pgcrypto } from '@electric-sql/pglite/contrib/pgcrypto';
 import { vector } from '@electric-sql/pglite-pgvector';
+import { getManagedProductFacts, getQlynkProductRuleUpdate, PRODUCT_PACK_KEY } from '../lib/qlynk-product-update.js';
 
 const migrationsDirectory = join(process.cwd(), 'supabase', 'migrations');
 const migrationFiles = (await readdir(migrationsDirectory))
@@ -72,8 +73,25 @@ const bootstrapSql = `
 await db.exec(bootstrapSql);
 
 const fixtureUserId = '11111111-1111-4111-8111-111111111111';
+const fixtureDate = daysAgo => new Date(Date.now() - daysAgo * 86400000).toISOString();
+const fixtureExpiry = new Date(Date.now() + 365 * 86400000).toISOString();
+const transitionUserId = number => `a1000000-0000-4000-8000-00000000000${number}`;
 
 for (const file of migrationFiles) {
+  if (file === '20261011010000_free_creator_plan.sql') {
+    for (let index = 1; index <= 8; index++) {
+      await db.query(`INSERT INTO auth.users (id) VALUES ($1)`, [transitionUserId(index)]);
+      await db.query(`INSERT INTO public.profiles (id, username) VALUES ($1, $2)`, [transitionUserId(index), index === 7 ? 'qlynk' : `plan_fixture_${index}`]);
+    }
+    for (const [index, tier, status, stripeId] of [
+      [1, 'trial', 'trialing', null], [2, 'trial', 'canceled', null], [3, 'free', 'canceled', null],
+      [4, 'trial', 'paused', null], [5, 'creator', 'active', 'sub_legacy_creator'], [6, 'agency', 'active', 'sub_keep_agency'],
+      [8, 'agency', 'active', null],
+    ]) {
+      await db.query(`INSERT INTO public.subscriptions (user_id, tier, status, stripe_subscription_id, messages_used, trial_ends_at)
+        VALUES ($1, $2, $3, $4, 42, now() - interval '1 day')`, [transitionUserId(index), tier, status, stripeId]);
+    }
+  }
   if (file === '20260711030000_hash_agent_access_passwords.sql') {
     await db.exec(`
       INSERT INTO auth.users (id, email)
@@ -405,7 +423,7 @@ assert(
   'Anonymous role cannot read the safe agent view.'
 );
 assert(
-  await scalar('SELECT count(*)::int AS value FROM public.profiles_public') === 1,
+  await scalar(`SELECT count(*)::int AS value FROM public.profiles_public WHERE id = '${fixtureUserId}'`) === 1,
   'Anonymous role cannot read the safe profile view.'
 );
 assert(
@@ -413,7 +431,7 @@ assert(
   'Anonymous role cannot read the safe agent projection.'
 );
 assert(
-  await scalar('SELECT count(*)::int AS value FROM public.profiles_public_data') === 1,
+  await scalar(`SELECT count(*)::int AS value FROM public.profiles_public_data WHERE id = '${fixtureUserId}'`) === 1,
   'Anonymous role cannot read the safe profile projection.'
 );
 
@@ -762,7 +780,7 @@ const studioEntityId = await scalar(`
 assert(Boolean(studioEntityId), 'Verified graph entity was unavailable for temporal memory tests.');
 
 const recurringObservationIds = [];
-for (const occurredAt of ['2026-07-01T09:00:00Z', '2026-07-08T09:00:00Z', '2026-07-15T09:00:00Z']) {
+for (const occurredAt of [fixtureDate(28), fixtureDate(21), fixtureDate(14)]) {
   recurringObservationIds.push(await scalar(`
     SELECT public.record_agent_memory_observation(
       '${fixtureUserId}',
@@ -771,7 +789,7 @@ for (const occurredAt of ['2026-07-01T09:00:00Z', '2026-07-08T09:00:00Z', '2026-
       'delivery_day',
       'Qlynk Studio commonly schedules delivery on Tuesdays.',
       '${occurredAt}'::timestamptz,
-      '2027-01-01T00:00:00Z'::timestamptz
+      '${fixtureExpiry}'::timestamptz
     ) AS value
   `));
 }
@@ -833,13 +851,13 @@ assert(
 );
 
 for (const [value, occurredAt] of [
-  ['Qlynk Studio package price was $500.', '2026-05-01T00:00:00Z'],
-  ['Qlynk Studio package price is $700.', '2026-06-01T00:00:00Z'],
+  ['Qlynk Studio package price was $500.', fixtureDate(60)],
+  ['Qlynk Studio package price is $700.', fixtureDate(30)],
 ]) {
   await db.query(`
     SELECT public.record_agent_memory_observation(
       '${fixtureUserId}', '${studioEntityId}', 'state', 'package_price',
-      '${value.replaceAll("'", "''")}', '${occurredAt}'::timestamptz, '2027-01-01T00:00:00Z'::timestamptz
+      '${value.replaceAll("'", "''")}', '${occurredAt}'::timestamptz, '${fixtureExpiry}'::timestamptz
     )
   `);
 }
@@ -1050,6 +1068,80 @@ for (const table of ['profiles_public_data', 'agent_configs_public_data']) {
     `Authenticated clients can write ${table}.`
   );
 }
+
+// Free Creator migration preserves usage/data, paid Agency, and explicit pauses.
+for (const index of [1, 2, 3]) {
+  const row = (await db.query('SELECT * FROM public.subscriptions WHERE user_id = $1', [transitionUserId(index)])).rows[0];
+  assert(row.tier === 'creator' && row.status === 'active' && row.trial_ends_at === null && row.messages_used === 42, 'Legacy free/trial migration changed usage or did not activate Creator.');
+}
+assert(await scalar(`SELECT status = 'paused' AS value FROM public.subscriptions WHERE user_id = '${transitionUserId(4)}'`) === true, 'An explicit pause was lifted by migration.');
+assert(await scalar(`SELECT stripe_subscription_id = 'sub_legacy_creator' AS value FROM public.subscriptions WHERE user_id = '${transitionUserId(5)}'`) === true, 'Legacy Stripe billing was detached without reconciliation.');
+assert(await scalar(`SELECT tier = 'agency' AND status = 'active' AS value FROM public.subscriptions WHERE user_id = '${transitionUserId(6)}'`) === true, 'Paid Agency was downgraded by migration.');
+assert(await scalar(`SELECT tier = 'agency' AND status = 'active' AND stripe_subscription_id IS NULL AND messages_used = 42 AS value FROM public.subscriptions WHERE user_id = '${transitionUserId(8)}'`) === true, 'Complimentary Agency or its usage was changed by migration.');
+assert(await scalar(`SELECT tier = 'creator' AND status = 'active' AS value FROM public.subscriptions WHERE user_id = '${transitionUserId(7)}'`) === true, 'Missing subscription was not repaired as free Creator.');
+
+await db.exec(`UPDATE public.subscriptions SET messages_used = 5000, last_reset_at = now() - interval '2 months' WHERE user_id = '${transitionUserId(1)}'`);
+const rollover = (await db.query(`SELECT * FROM public.consume_agent_message_credit('${transitionUserId(1)}', 5000)`)).rows[0];
+assert(rollover.allowed && rollover.messages_used === 1 && rollover.remaining === 4999, 'Monthly credit reset failed.');
+await db.exec(`UPDATE public.subscriptions SET messages_used = 4999 WHERE user_id = '${transitionUserId(1)}'`);
+assert((await db.query(`SELECT * FROM public.consume_agent_message_credit('${transitionUserId(1)}', 10000)`)).rows[0].allowed === true, 'Final Creator credit was not reserved.');
+assert((await db.query(`SELECT * FROM public.consume_agent_message_credit('${transitionUserId(1)}', 10000)`)).rows[0].allowed === false, 'Caller could increase Creator allowance above 5,000.');
+await db.exec(`UPDATE public.subscriptions SET status = 'past_due', messages_used = 5000 WHERE user_id = '${transitionUserId(6)}'`);
+assert((await db.query(`SELECT * FROM public.consume_agent_message_credit('${transitionUserId(6)}', 10000)`)).rows[0].allowed === false, 'Past-due Agency retained paid allowance.');
+assert((await db.query(`SELECT * FROM public.consume_agent_message_credit('${transitionUserId(4)}', 5000)`)).rows[0].allowed === false, 'Paused account consumed credits.');
+await db.exec(`UPDATE public.subscriptions SET messages_used = 9999, last_reset_at = now() WHERE user_id = '${transitionUserId(8)}'`);
+assert((await db.query(`SELECT * FROM public.consume_agent_message_credit('${transitionUserId(8)}', 10000)`)).rows[0].allowed === true, 'Complimentary Agency did not receive its final Agency credit.');
+assert((await db.query(`SELECT * FROM public.consume_agent_message_credit('${transitionUserId(8)}', 10000)`)).rows[0].allowed === false, 'Complimentary Agency exceeded its 10,000-message allowance.');
+
+// Product update is atomic, owner-scoped, reversible and excludes obsolete sources.
+const productUser = transitionUserId(7);
+const staleId = (await db.query(`INSERT INTO public.agent_knowledge (user_id, title, content, source_type) VALUES ($1, 'Old pricing', 'Creator costs $18 with a 14-day Trial.', 'text') RETURNING id`, [productUser])).rows[0].id;
+const pack = getManagedProductFacts();
+const originalProductRules = {
+  purpose: 'Explain Qlynk.', uncertainty_message: 'Ask Qlynk support.',
+  allowed_topics: ['Trial, plans, pricing, and message allowances'],
+  behavior_rules: ['For prices, state the promotion period, first-payment scope, and regular renewal price'],
+  custom_instructions: 'Current public plans are Trial, Creator, and Agency. Pricing verified August 14, 2026: Creator is $18. The discount applies only to the first payment.',
+  daily_message_limit: 100,
+};
+await db.query('SELECT public.save_agent_rule_config($1, $2, $3::jsonb)', [productUser, 'product', JSON.stringify(originalProductRules)]);
+const originalProductVersion = await scalar(`SELECT prompt_version AS value FROM public.agent_rule_configs WHERE user_id = '${productUser}'`);
+const updatedProductRules = getQlynkProductRuleUpdate(originalProductRules);
+let refused = false;
+try { await db.query('SELECT public.apply_qlynk_product_facts($1, $2, $3, $4::jsonb)', [fixtureUserId, PRODUCT_PACK_KEY, [], JSON.stringify(pack)]); }
+catch { refused = true; }
+assert(refused, 'An unrelated account could receive the product pack.');
+refused = false;
+const invalidPack = pack.map((fact, index) => index === 1 ? { ...fact, title: 'invalid' } : fact);
+try { await db.query('SELECT public.apply_qlynk_product_facts($1, $2, $3, $4::jsonb)', [productUser, PRODUCT_PACK_KEY, [staleId], JSON.stringify(invalidPack)]); }
+catch { refused = true; }
+assert(refused && await scalar(`SELECT is_active AS value FROM public.agent_knowledge WHERE id = '${staleId}'`) === true, 'Failed product update left partially archived sources.');
+assert(await scalar(`SELECT count(*)::int AS value FROM public.agent_knowledge WHERE user_id = '${productUser}' AND title LIKE '[Qlynk product facts]%'`) === 0, 'Failed product update left partial facts.');
+refused = false;
+try { await db.query('SELECT public.apply_qlynk_product_facts($1, $2, $3, $4::jsonb, $5::jsonb, $6)', [productUser, PRODUCT_PACK_KEY, [staleId], JSON.stringify(pack), JSON.stringify(updatedProductRules), originalProductVersion - 1]); }
+catch { refused = true; }
+assert(refused && await scalar(`SELECT is_active AS value FROM public.agent_knowledge WHERE id = '${staleId}'`) === true, 'A stale rule review changed product knowledge.');
+refused = false;
+try { await db.query('SELECT public.apply_qlynk_product_facts($1, $2, $3, $4::jsonb, $5::jsonb, $6)', [productUser, PRODUCT_PACK_KEY, [staleId], JSON.stringify(pack), JSON.stringify({ ...updatedProductRules, custom_instructions: 'x'.repeat(2001) }), originalProductVersion]); }
+catch { refused = true; }
+assert(refused && await scalar(`SELECT is_active AS value FROM public.agent_knowledge WHERE id = '${staleId}'`) === true, 'Invalid rules left partially archived knowledge.');
+assert(await scalar(`SELECT count(*)::int AS value FROM public.agent_knowledge WHERE user_id = '${productUser}' AND title LIKE '[Qlynk product facts]%'`) === 0, 'Invalid rules left partial replacement facts.');
+await db.query('SELECT public.apply_qlynk_product_facts($1, $2, $3, $4::jsonb, $5::jsonb, $6)', [productUser, PRODUCT_PACK_KEY, [staleId], JSON.stringify(pack), JSON.stringify(updatedProductRules), originalProductVersion]);
+assert(await scalar(`SELECT custom_instructions AS value FROM public.agent_rule_configs WHERE user_id = '${productUser}'`) === updatedProductRules.custom_instructions, 'Updated product instructions were not applied.');
+assert(await scalar(`SELECT daily_message_limit AS value FROM public.agent_rule_configs WHERE user_id = '${productUser}'`) === 100, 'Product update changed the owner daily limit.');
+assert(await scalar(`SELECT prompt_version AS value FROM public.agent_rule_configs WHERE user_id = '${productUser}'`) === originalProductVersion + 1, 'Product update did not create a rule version.');
+assert(await scalar(`SELECT is_active AS value FROM public.agent_knowledge WHERE id = '${staleId}'`) === false, 'Old product source remained active.');
+assert(await scalar(`SELECT count(*)::int AS value FROM public.agent_knowledge WHERE user_id = '${productUser}' AND is_active AND title LIKE '[Qlynk product facts]%'`) === 8, 'Approved fact pack was not applied.');
+await db.query('SELECT public.undo_qlynk_product_facts($1)', [productUser]);
+assert(await scalar(`SELECT custom_instructions AS value FROM public.agent_rule_configs WHERE user_id = '${productUser}'`) === originalProductRules.custom_instructions, 'Undo did not restore product instructions.');
+assert(await scalar(`SELECT prompt_version AS value FROM public.agent_rule_configs WHERE user_id = '${productUser}'`) === originalProductVersion + 2, 'Undo did not create a restored rule version.');
+assert(await scalar(`SELECT is_active AS value FROM public.agent_knowledge WHERE id = '${staleId}'`) === true, 'Undo did not restore the old product source.');
+assert(await scalar(`SELECT count(*)::int AS value FROM public.agent_knowledge WHERE user_id = '${productUser}' AND is_active AND title LIKE '[Qlynk product facts]%'`) === 0, 'Undo left the replacement pack active.');
+for (const role of ['anon', 'authenticated']) {
+  assert(await scalar(`SELECT has_function_privilege('${role}', 'public.apply_qlynk_product_facts(uuid,text,uuid[],jsonb,jsonb,integer)', 'EXECUTE') AS value`) === false, `${role} can execute the product-update RPC.`);
+  assert(await scalar(`SELECT has_function_privilege('${role}', 'public.undo_qlynk_product_facts(uuid)', 'EXECUTE') AS value`) === false, `${role} can execute the product undo RPC.`);
+}
+assert(await scalar(`SELECT has_table_privilege('anon', 'public.qlynk_product_update_backups', 'SELECT') AS value`) === false, 'Anonymous users can read product update backups.');
 
 await db.close();
 

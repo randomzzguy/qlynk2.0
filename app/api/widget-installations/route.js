@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createAdminClient, createClient } from '@/utils/supabase/server';
-import { isSubscriptionLive } from '@/lib/plans';
+import { isSubscriptionLive, getEffectiveTier } from '@/lib/plans';
 import { rateLimitResponse } from '@/lib/rate-limit';
 import { sanitizeWidgetInput } from '@/lib/widget-installations';
 
@@ -51,7 +51,7 @@ export async function GET(request) {
     widget: widget || null,
     agent: context.agentConfig,
     subscription: {
-      tier: context.subscription?.tier || null,
+      tier: getEffectiveTier(context.subscription),
       is_live: context.isLive,
     },
   });

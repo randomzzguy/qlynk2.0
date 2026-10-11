@@ -12,8 +12,8 @@ const CATEGORY_COPY = {
     description: 'You will no longer receive an email when someone starts a new conversation with your Qlynk agent.',
   },
   trial_expiry: {
-    title: 'Turn off trial reminder emails?',
-    description: 'You will no longer receive trial expiry warnings or trial-ended emails.',
+    title: 'Disable the retired trial-email preference?',
+    description: 'Creator has no expiry. Trial warnings and trial-ended emails have been retired.',
   },
   subscription: {
     title: 'Turn off subscription emails?',
@@ -21,7 +21,7 @@ const CATEGORY_COPY = {
   },
   all: {
     title: 'Turn off all optional emails?',
-    description: 'You will no longer receive conversation, trial, renewal, or billing notification emails from Qlynk.',
+    description: 'You will no longer receive conversation, renewal, or billing notification emails from Qlynk.',
   },
 };
 

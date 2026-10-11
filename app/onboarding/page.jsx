@@ -514,6 +514,7 @@ export default function OnboardingPage() {
                 <h1 className="text-4xl font-black text-white mb-4 tracking-tight">
                   Your agent is ready to launch
                 </h1>
+                <p className="mb-4 text-sm font-semibold text-emerald-300">Creator is free forever with 5,000 messages per month. Agency is optional.</p>
                 <p className="text-lg text-gray-200 mb-8 max-w-md mx-auto leading-relaxed">
                   We&apos;ve applied smart defaults so you can publish now and customize the advanced options whenever you&apos;re ready.
                 </p>

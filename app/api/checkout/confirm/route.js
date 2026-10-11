@@ -52,9 +52,7 @@ export async function POST(req) {
 
     console.log(`[Checkout Confirm] Reconciling paid plan for user ${userId}`);
 
-    // Update database synchronously.
-    // status is forced to 'active' and trial_ends_at is cleared —
-    // the user has paid so their trial is done regardless of Stripe's subscription state.
+    // Preserve the verified current Stripe state without resetting monthly usage.
     const { data, error } = await supabaseAdmin
       .from('subscriptions')
       .update(update)

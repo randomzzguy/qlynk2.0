@@ -127,7 +127,7 @@ const AgentDemoHero = () => {
                 <PlayCircle size={20} aria-hidden="true" /> Try the Live Demo
               </a>
             </div>
-            <p className="mt-4 text-[15px] leading-relaxed text-gray-300">14-day free trial · Every feature included · No payment today</p>
+            <p className="mt-4 text-[15px] leading-relaxed text-gray-300">Creator is free forever · 5,000 messages/month · No card required</p>
           </motion.div>
         </div>
 
@@ -167,7 +167,7 @@ const LiveDemoSection = () => (
 );
 
 const productFacts = [
-  { icon: ShieldCheck, title: '14-day free trial', description: 'Every feature included' },
+  { icon: ShieldCheck, title: 'Free Creator plan', description: '5,000 messages every month' },
   { icon: CreditCard, title: 'No payment today', description: 'Try the complete product first' },
   { icon: Link2, title: 'One link or embed', description: 'Share it wherever people need answers' },
   { icon: MessageSquare, title: 'Human handoff', description: 'Choose when a person should step in' },
@@ -185,11 +185,11 @@ const homepageFaqs = [
   ['Can I update my AI later?', 'Yes. Add, edit, or remove knowledge whenever your information changes. You do not need to retrain the underlying model.'],
   ['Does it work on my website?', 'Yes. Share the hosted qlynk.site link or embed the Qlynk agent on an existing website.'],
   ['Can I change my public Qlynk URL?', 'Yes. Change your username from Account Settings once every 30 days. Your old URL stops working immediately, so update links and bookmarks after the change.'],
-  ['Is there a free plan?', 'Qlynk offers a 14-day free trial with every feature included and no payment today. After the trial, choose the paid plan that fits your needs.'],
+  ['Is there a free plan?', 'Yes. Creator is free with no expiry and no credit card required. Each account includes one agent and 5,000 messages per calendar month. Agency is an optional paid upgrade.'],
 ];
 
 const ProofStrip = () => (
-  <section aria-label="Qlynk trial and product facts" className="relative z-10 overflow-hidden border-y border-white/10 bg-[#0d111b] py-12 sm:py-14">
+  <section aria-label="Qlynk free plan and product facts" className="relative z-10 overflow-hidden border-y border-white/10 bg-[#0d111b] py-12 sm:py-14">
     <div className="pointer-events-none absolute inset-0" aria-hidden="true">
       <div className="absolute left-1/2 top-0 h-px w-2/3 -translate-x-1/2 bg-gradient-to-r from-transparent via-orange/70 to-transparent" />
       <div className="absolute -left-20 top-1/2 h-56 w-56 -translate-y-1/2 rounded-full bg-orange/10 blur-[90px]" />
@@ -209,7 +209,7 @@ const ProofStrip = () => (
           <h2 className="mt-3 text-3xl font-black leading-tight text-white sm:text-4xl">Try the complete Qlynk experience before you pay</h2>
         </div>
         <p className="mx-auto max-w-xl leading-relaxed text-gray-400 lg:mx-0 lg:justify-self-end lg:text-right">
-          Build it, share it, and see how it handles real questions before choosing a paid plan.
+          Build it, share it, and keep using Creator free. Upgrade to Agency when you need more monthly messages or no Qlynk attribution.
         </p>
       </motion.div>
 
@@ -733,14 +733,14 @@ export default function App() {
               Ready to stop answering the same questions?
             </motion.h2>
             <motion.p className="mx-auto mt-5 max-w-2xl text-xl text-[#ffecd9]" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.15 }}>
-              Build your AI agent free for 14 days using the knowledge you already have.
+              Build your AI agent free using the knowledge you already have.
             </motion.p>
             <motion.div className="mt-9" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }}>
               <Link href="/auth/signup" className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-10 py-5 text-xl font-black text-[#9a3412] shadow-lg transition-colors hover:bg-gray-100 hover:text-[#7c2d12]">
                 Start Free <ArrowRight size={23} aria-hidden="true" />
               </Link>
             </motion.div>
-            <p className="mt-7 text-[15px] leading-relaxed text-white">14-day free trial · Every feature included · No payment today</p>
+            <p className="mt-7 text-[15px] leading-relaxed text-white">Creator is free forever · 5,000 messages/month · No card required</p>
           </div>
         </section>
       </main>

@@ -32,7 +32,7 @@ const codexPluginUrl = 'https://chatgpt.com/plugins/plugins_6a7a8eef28608191869f
 
 export const metadata = createMetadata({
   title: 'Official Qlynk Agent Builder Plugin for Codex',
-  description: 'Install the official Qlynk Agent Builder plugin for Codex. Interview clients, configure accurate Qlynk Agents, test their answers, and hand off a client-owned subscription. Claude directory review is pending.',
+  description: 'Install the official Qlynk Agent Builder plugin for Codex. Interview clients, configure accurate Qlynk Agents, test their answers, and hand off a client-owned account. Claude directory review is pending.',
   path,
   keywords: ['Qlynk Agent Builder', 'official Codex plugin', 'AI agent freelancer', 'AI chatbot setup service', 'build AI agents for clients'],
 });
@@ -72,7 +72,7 @@ const freelancerGuides = [
 ];
 
 const faqs = [
-  ['Is the Qlynk Agent Builder free?', 'Yes. The downloadable workflow is free. A live Qlynk Agent still requires the client’s own trial or paid Qlynk subscription.'],
+  ['Is the Qlynk Agent Builder free?', 'Yes. The downloadable workflow is free. The client can run their agent on the free Creator plan and optionally upgrade to Agency.'],
   ['Can freelancers charge for using it?', 'Yes. Freelancers can charge for discovery, configuration, knowledge preparation, testing, website installation, training, and ongoing maintenance.'],
   ['Who should own the Qlynk account?', 'The client should control the account email, recovery, billing, public username, and source files from the beginning.'],
   ['Does it guarantee every answer is correct?', 'No. It reduces avoidable errors through approved sources, explicit boundaries, client review, and structured testing. Generated answers still require responsible oversight.'],
@@ -311,7 +311,7 @@ export default function AgentBuilderPage() {
           <div className="mx-auto max-w-6xl overflow-hidden rounded-[2.25rem] border border-orange/30 bg-gradient-to-br from-orange/20 via-orange/10 to-cyan-500/10 p-9 text-center sm:p-14">
             <Wrench size={34} className="mx-auto text-orange" />
             <h2 className="mx-auto mt-6 max-w-4xl text-4xl font-black tracking-tight sm:text-5xl">Build the first agent for your own service, then show clients the result.</h2>
-            <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-gray-300">Use the free workflow to prepare the agent. Start a Qlynk trial when you are ready to configure, test, and demonstrate the live experience.</p>
+            <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-gray-300">Use the free workflow to prepare the agent. Create a free Creator account when you are ready to configure, test, and demonstrate the live experience.</p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <a href={downloadPath} download className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-7 py-4 font-black text-gray-950 transition hover:bg-gray-200"><Download size={18} /> Get the free skill</a>
               <Link href="/auth/signup" className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange px-7 py-4 font-black text-white transition hover:bg-[#c14f22]">Start Qlynk free <ArrowRight size={18} /></Link>

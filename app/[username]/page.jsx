@@ -5,6 +5,7 @@ import { Sparkles, ArrowRight, Lock } from 'lucide-react';
 import QlynkBackground from '@/components/QlynkBackground';
 import FullPageChat from '@/components/FullPageChat';
 import { isAgentLive } from '@/lib/subscriptionHelpers';
+import { getEffectiveTier } from '@/lib/plans';
 import { notFound } from 'next/navigation';
 import { getAgentTypeDefinition } from '@/lib/agent-type-catalog';
 
@@ -164,7 +165,7 @@ export default async function PublicPage({ params }) {
   // 3. Fetch Subscription
   const { data: subscription } = await adminSupabase
     .from('subscriptions')
-    .select('tier')
+    .select('tier, status')
     .eq('user_id', profile.id)
     .maybeSingle();
 
@@ -173,7 +174,7 @@ export default async function PublicPage({ params }) {
       username={username}
       agentConfig={agentConfig}
       profile={pageData}
-      tier={subscription?.tier}
+      tier={getEffectiveTier(subscription)}
     />
   );
 }

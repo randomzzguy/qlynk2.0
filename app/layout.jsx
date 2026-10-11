@@ -4,7 +4,7 @@ import ToasterClient from '../components/ToasterClient'
 import QlynkBackground from '../components/QlynkBackground'
 import JsonLd from '../components/JsonLd'
 import { createMetadata, HOME_DESCRIPTION, HOME_TITLE, SITE_URL } from '../lib/seo'
-import { PAID_PLAN_PRICING } from '../lib/pricing'
+import { PLAN_PRICING } from '../lib/pricing'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 
@@ -111,23 +111,16 @@ export default function RootLayout({ children }) {
         "offers": [
           {
             "@type": "Offer",
-            "name": "14-day trial",
-            "price": "0",
+            "name": "Free Creator plan",
+            "price": String(PLAN_PRICING.creator.monthly),
             "priceCurrency": "USD",
-            "url": `${SITE_URL}/pricing`
-          },
-          {
-            "@type": "Offer",
-            "name": "Creator monthly plan",
-            "price": String(PAID_PLAN_PRICING.creator.monthly),
-            "priceCurrency": "USD",
-            "description": "Creator includes one Qlynk Agent and 5,000 messages per month.",
+            "description": "Creator is free with no expiry. Includes one Qlynk Agent and 5,000 messages per month; no card required.",
             "url": `${SITE_URL}/pricing`
           },
           {
             "@type": "Offer",
             "name": "Agency monthly plan",
-            "price": String(PAID_PLAN_PRICING.agency.monthly),
+            "price": String(PLAN_PRICING.agency.monthly),
             "priceCurrency": "USD",
             "description": "Agency includes one Qlynk Agent, 10,000 messages per month, and no visible Qlynk branding.",
             "url": `${SITE_URL}/pricing`

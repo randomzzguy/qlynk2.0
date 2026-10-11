@@ -20,7 +20,7 @@ const rows = [
   ['Publishing', 'A hosted qlynk.site link for the agent plus an embeddable website widget.', 'Website embed plus a wider set of integrations and deployment channels documented by Chatbase.'],
   ['External actions', 'Knowledge answers, guidance, links, and a defined human handoff; no claim of general API actions or account transactions.', 'Built-in and custom actions can connect services and APIs, with availability and limits varying by plan.'],
   ['Review', 'Conversation history, visitor feedback, knowledge gaps, and analytics for improving the maintained agent.', 'Conversation activity, topics, sentiment, feedback, contacts, and plan-dependent analytics.'],
-  ['Current entry pricing', 'Creator is $18 monthly or $168 annually. Agency is $38 monthly or $360 annually. The 14-day trial includes everything in Agency, and each account has one agent.', 'Free plan plus paid Hobby, Standard, Pro, and Enterprise tiers; credits, seats, sources, actions, integrations, and analytics vary by tier.'],
+  ['Current entry pricing', 'Creator is free forever with 5,000 messages per month. Agency is $38 monthly or $360 annually with 10,000 messages per month and no Qlynk attribution. Each account has one agent.', 'Free plan plus paid Hobby, Standard, Pro, and Enterprise tiers; credits, seats, sources, actions, integrations, and analytics vary by tier.'],
 ];
 
 export default function QlynkVsChatbasePage() {
@@ -41,7 +41,7 @@ export default function QlynkVsChatbasePage() {
             <div className="rounded-3xl border border-orange/40 bg-orange/10 p-8">
               <h2 className="text-2xl font-black">Choose Qlynk when</h2>
               <ul className="mt-6 space-y-4 text-gray-300">
-                {['You want one focused agent for a person, business, property, operation, product, support role, or custom guide.', 'A simple public link, website embed, approved knowledge, clear boundaries, and human handoff cover the job.', 'You prefer transparent entry pricing and a 14-day trial containing the full Agency feature set.'].map((item) => <li key={item} className="flex gap-3"><CheckCircle2 className="mt-0.5 shrink-0 text-orange" size={20} />{item}</li>)}
+                {['You want one focused agent for a person, business, property, operation, product, support role, or custom guide.', 'A simple public link, website embed, approved knowledge, clear boundaries, and human handoff cover the job.', 'You want a permanent free hosted plan, MIT-licensed source, and an optional paid upgrade with clear usage limits.'].map((item) => <li key={item} className="flex gap-3"><CheckCircle2 className="mt-0.5 shrink-0 text-orange" size={20} />{item}</li>)}
               </ul>
             </div>
             <div className="rounded-3xl border border-white/10 bg-white/5 p-8">
@@ -84,7 +84,7 @@ export default function QlynkVsChatbasePage() {
         <section className="px-6 pb-24 text-center">
           <div className="mx-auto max-w-5xl rounded-3xl bg-orange p-10 md:p-14">
             <h2 className="text-3xl font-black md:text-5xl">Build the focused agent first</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-orange-50">14-day free trial · Every feature included · No payment today</p>
+            <p className="mx-auto mt-4 max-w-2xl text-orange-50">Creator is free forever · 5,000 messages/month · No card required</p>
             <Link href="/auth/signup" className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-4 font-bold text-[#9a3412] transition-colors hover:bg-orange-50 hover:text-[#7c2d12]">Start Free <ArrowRight size={18} aria-hidden="true" /></Link>
           </div>
         </section>

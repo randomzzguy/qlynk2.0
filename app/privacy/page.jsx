@@ -8,7 +8,7 @@ import QlynkBackground from '@/components/QlynkBackground';
 import Footer from '@/components/Footer';
 
 export default function PrivacyPage() {
-  const lastUpdated = "July 11, 2026";
+  const lastUpdated = "October 11, 2026";
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-gray-300">
@@ -84,6 +84,9 @@ export default function PrivacyPage() {
 
               <section>
                 <h2 className="text-2xl font-bold text-white mb-4">4. Sharing of Information</h2>
+                <p className="leading-relaxed mb-4">
+                  Qlynk publishes its software source under the MIT license. This does not make hosted account records, private agent knowledge, uploaded documents, credentials or visitor conversations public. Independently hosted deployments are operated by their own administrators and may have their own privacy policies and service providers.
+                </p>
                 <p className="leading-relaxed">
                   We use service providers to operate Qlynk, including Supabase for authentication, database, and file storage; Groq for AI inference and sentiment classification; Stripe for checkout, subscriptions, and invoices; Resend for transactional email; hCaptcha for bot protection; and Vercel for application hosting and delivery. These providers receive information only as needed to perform their services. We may also disclose information when required by law, to protect rights and safety, or as part of a business transaction. We do not sell personal information or private AI training data.
                 </p>

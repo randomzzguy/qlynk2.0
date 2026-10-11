@@ -25,6 +25,7 @@ jobs:
       NEXT_PUBLIC_STRIPE_PRICE_AGENCY_MONTHLY: price_ci_agency_monthly
       NEXT_PUBLIC_STRIPE_PRICE_AGENCY_ANNUAL: price_ci_agency_annual
       NEXT_PUBLIC_SITE_URL: https://www.qlynk.site
+      NEXT_PUBLIC_BILLING_ENABLED: '1'
       GROQ_API_KEY: ci-placeholder
       HCAPTCHA_SECRET_KEY: ci-placeholder
       NEXT_PUBLIC_HCAPTCHA_SITE_KEY: ci-placeholder
@@ -40,6 +41,7 @@ jobs:
       - run: npm test
       - run: npm run lint
       - run: npm run verify:migrations
+      - run: npm run verify:open-source
       - run: npm run build
       - name: Production HTTP smoke
         run: |

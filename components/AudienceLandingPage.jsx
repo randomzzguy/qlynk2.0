@@ -70,7 +70,7 @@ export default function AudienceLandingPage({ page, path }) {
           <Link href="/auth/signup" className="mt-9 inline-flex items-center gap-2 rounded-xl bg-orange px-8 py-4 font-bold text-white transition-colors hover:bg-[#c14f22]">
             Start Free <ArrowRight size={18} aria-hidden="true" />
           </Link>
-          <p className="mt-4 text-[15px] leading-relaxed text-gray-300">14-day free trial · Every feature included · No payment today</p>
+          <p className="mt-4 text-[15px] leading-relaxed text-gray-300">Creator is free forever · 5,000 messages/month · No card required</p>
         </section>
       </main>
 

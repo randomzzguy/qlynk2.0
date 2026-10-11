@@ -1,7 +1,7 @@
 import { createAdminClient } from '@/utils/supabase/server';
 import { createHash } from 'node:crypto';
 import { buildAgentSystemPrompt, getAgentKnowledge } from '@/lib/agent';
-import { getMessageLimit, isSubscriptionLive, normalizeTier } from '@/lib/plans';
+import { getMessageLimit, isSubscriptionLive, getEffectiveTier } from '@/lib/plans';
 import { checkRateLimitKey, rateLimitResponse, rateLimitResponseForKey } from '@/lib/rate-limit';
 import { sendEmail } from '@/lib/email/send';
 import { newMessageEmail } from '@/lib/email/templates/new-message';
@@ -397,7 +397,7 @@ export async function POST(req) {
       return jsonError('Agent subscription not found', 403);
     }
 
-    const tier = normalizeTier(subscription.tier);
+    const tier = getEffectiveTier(subscription);
 
     if (!isSubscriptionLive(subscription)) {
       return jsonError('Agent is not active on the current plan', 403);

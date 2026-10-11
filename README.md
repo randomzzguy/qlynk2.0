@@ -1,119 +1,89 @@
 # Qlynk
 
-AI-powered agent platform that lets creators build personalized chatbots for their websites.
+Build focused AI agents from knowledge you approve, then share a public link or embed a website widget.
 
-## Features
+**Qlynk is open source under [MIT](LICENSE).** Use [hosted Qlynk](https://www.qlynk.site) or run your own deployment.
 
-- **AI Chat Widget** - Embeddable chat agent that answers questions based on user knowledge
-- **Customizable Themes** - Dark tech aesthetic with color, position, and branding options
-- **Knowledge Base** - Upload documents, add custom facts, or scrape URLs
-- **Agent Types & Rules** - Personal, business, property, operations, product, support, and custom guides with structured scope controls
-- **Analytics Dashboard** - Track conversations, sentiment, and engagement
-- **Free Trial** - 14-day trial with automatic subscription management
-- **Stripe Integration** - Subscription billing with webhook support
+| Hosted plan | USD price | Messages per calendar month | Agents | Branding |
+| --- | --- | --- | --- | --- |
+| Creator | Free, no expiry or card | 5,000 | 1 | Powered by Qlynk |
+| Agency | $38/month or $360/year | 10,000 | 1 | Attribution removed |
 
-## Tech Stack
+Both hosted plans include knowledge, facts, FAQs, PDF/DOCX/TXT documents (up to 3 MB per file), scope and response rules, public pages, website widgets, visitor access controls, conversations, analytics and knowledge gaps. There is no separate Agency storage allowance in this release. Message usage resets at the start of each UTC calendar month. Agency is optional; cancellation returns accounts to Creator when it takes effect.
 
-| Layer | Technology |
-|-------|------------|
-| Framework | Next.js 16 (App Router) |
-| Database | Supabase (PostgreSQL) |
-| Auth | Supabase Auth with hCaptcha |
-| AI | Groq API (LLM streaming) |
-| Payments | Stripe |
-| Styling | Tailwind CSS + Framer Motion |
+Self-hosting uses your own infrastructure and provider credentials. The source is free to use under MIT; hosting and AI provider usage can incur costs. The hosted plan allowances describe Qlynk’s managed service. A self-hosting operator controls their deployment’s configuration and must apply consistent app and database changes if they change allowances.
 
-## Quick Start
+## Stack
 
-```bash
-# Install dependencies
-npm install
+Next.js 16 (App Router), React 19, Supabase Auth/Postgres/Storage, Groq inference, Tailwind CSS and Framer Motion. Stripe supports optional Agency billing; Resend supports optional transactional notifications. Supabase handles signup and password-reset email separately.
 
-# Copy environment template and fill in values
-cp .env.local.example .env.local
+## Local setup
 
-# Run dev server
-npm run dev
-```
+Prerequisites: Node.js 22 or later, npm, a Supabase project you control, and a Groq API key. Use development providers and Stripe test mode for local work.
 
-Open [http://localhost:3000](http://localhost:3000)
+1. Clone the repository and install the locked dependencies:
 
-## Environment Variables
+   ```bash
+   git clone https://github.com/randomzzguy/qlynk2.0.git
+   cd qlynk2.0
+   npm ci
+   ```
 
-```
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=
-SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
+2. Copy `.env.example` to `.env.local` and fill in your Supabase URL, browser publishable key, server-only service-role key, and Groq key. On PowerShell, use `Copy-Item .env.example .env.local`; on macOS/Linux use `cp .env.example .env.local`. Never put the service-role key in a `NEXT_PUBLIC_` variable.
 
-# AI
-GROQ_API_KEY=
-# Optional model overrides (defaults: GPT-OSS 120B chat, GPT-OSS 20B background tasks)
-GROQ_CHAT_MODEL=
-GROQ_FAST_MODEL=
-GROQ_DEMO_MODEL=
-GROQ_KNOWLEDGE_GRAPH_MODEL=
+3. Initialize a **fresh development database**, applying every SQL file in `supabase/migrations/` in filename order. With an authenticated Supabase CLI:
 
-# Payments
-STRIPE_SECRET_KEY=
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
-STRIPE_WEBHOOK_SECRET=
-NEXT_PUBLIC_STRIPE_PRICE_CREATOR_MONTHLY=
-NEXT_PUBLIC_STRIPE_PRICE_CREATOR_ANNUAL=
-NEXT_PUBLIC_STRIPE_PRICE_AGENCY_MONTHLY=
-NEXT_PUBLIC_STRIPE_PRICE_AGENCY_ANNUAL=
-STRIPE_PORTAL_CONFIGURATION_ID=
+   ```bash
+   supabase link --project-ref YOUR_DEVELOPMENT_PROJECT_REF
+   supabase db push
+   ```
 
-# Security
-NEXT_PUBLIC_HCAPTCHA_SITE_KEY=
-HCAPTCHA_SECRET_KEY=
-```
+   Review the CLI’s pending migration list before applying. Never link local development to Qlynk production. Existing installations must compare their migration ledger with the repository before applying only missing migrations; do not replay migrations blindly. `npm run verify:migrations` checks the complete chain in embedded Postgres without touching any provider.
 
-## Deployment
+4. In Supabase Auth, configure Site URL as `http://localhost:3000` and allow `http://localhost:3000/auth/callback`. Configure Auth email delivery/confirmation and the templates in `supabase/email-templates/`. Use your production HTTPS origin and callback when deploying. Create an account through the app’s signup flow; it creates the profile, subscription and initial agent.
 
-See [docs/DEPLOYMENT_CHECKLIST.md](./docs/DEPLOYMENT_CHECKLIST.md) for production deployment steps.
+5. Start the app:
+
+   ```bash
+   npm run dev
+   ```
+
+   Open [localhost:3000](http://localhost:3000). The existing hCaptcha bypass is limited to localhost development; use real hCaptcha keys for public deployments.
+
+## Optional services
+
+- **Agency billing:** Set `NEXT_PUBLIC_BILLING_ENABLED=1` and configure Stripe secret/webhook keys, Agency monthly/annual price IDs and a Customer Portal configuration. Allow only Agency prices in the portal catalog. Send Stripe webhook events to `/api/webhooks/stripe`; the legacy `/api/webhook` delegates there. Creator never needs checkout. Historical Creator price IDs are recognized only to reconcile old billing.
+- **Email notifications:** Set a Resend key and verified `EMAIL_FROM`. Missing notification credentials must not be confused with Supabase’s separate Auth email requirements.
+- **Scheduled workers:** Set a long random `CRON_SECRET` and schedule the relevant protected routes. Trial-expiry scheduling has been retired. Knowledge workers and account deletion still need scheduling. See `vercel.json` for hosted schedules.
+- **Advanced knowledge processing:** Read [Knowledge Fabric](docs/KNOWLEDGE_FABRIC.md) before enabling embeddings, graph or memory. The embedding function and its dedicated secret require separate setup; do not enable flags without their dependencies.
+
+## Deploy your instance
+
+Set `NEXT_PUBLIC_SITE_URL` to your own HTTPS origin. Configure Supabase redirects, hCaptcha domains, verified email sender, secrets, backups and any optional Stripe integration for that instance. Build with `npm run build` and serve with `npm start`, or use a supported Next.js host. The site URL and billing flag are also build-time public variables: rebuild after changing them.
+
+Database row-level security, private document storage, service-only billing updates, atomic message reservations and rate limits are required parts of the deployment. Public agents should contain only knowledge appropriate for their audience.
+
+See [Deployment Checklist](docs/DEPLOYMENT_CHECKLIST.md), [Operations Runbook](docs/OPERATIONS_RUNBOOK.md), and [Free Creator rollout](docs/FREE_CREATOR_OPEN_SOURCE_ROLLOUT.md).
 
 ## Verification
-
-Run the same quality gates used by CI before deployment:
 
 ```bash
 npm test
 npm run lint
 npm run verify:migrations
-npm run verify:env
+npm run verify:open-source
 npm run build
-npm run verify:http # while npm start is running; set SMOKE_BASE_URL if not port 3100
-npm run verify:integrations # read-only production provider connectivity/domain checks
-npm audit --omit=dev --audit-level=high
+npm run verify:http # with npm start running on port 3100; override SMOKE_BASE_URL as needed
 ```
 
-`npm test` contains focused regression coverage for safe URL scraping, document validation, Stripe plan activation, Stripe webhook idempotency, and trusted client-IP selection. `verify:migrations` executes every migration in embedded Postgres and verifies RLS, privileges, private views/storage, webhook isolation, and the shared rate limiter.
+The tests cover subscription transitions, authoritative Stripe state, quota behavior, authorization boundaries, safe document/URL processing, agent scope, and knowledge retrieval. CI uses placeholder providers for build and public HTTP checks; it does not prove live provider connectivity or a real checkout.
 
-Agent behavior is composed server-side in a fixed priority order: immutable Qlynk policy, approved agent-type template, validated owner rules, bounded relevant knowledge, and untrusted visitor messages. Owner rules and version history are service-managed private data and are never returned by the public agent view. Chat requests also use atomic monthly credit reservation, per-IP, per-agent, and per-visitor limits, optional owner daily caps, direct jailbreak detection, scope classification, and a fixed output-token ceiling.
+Production operators can additionally run `npm run verify:env`, `npm run verify:integrations` and `npm run verify:free-creator` using their deployment configuration. The last command is read-only: it checks Agency prices and detects historical paid Creator subscriptions requiring reconciliation. `npm run verify:production-isolation` creates test fixtures and should only be run against an explicitly selected test project.
 
-`npm run verify:env` validates `.env.local` as production configuration without printing secret values. Run the equivalent check against the deployment environment before promoting a release.
+## Contribute and report issues
 
-Authenticated browser smoke tests still require a configured Supabase/Stripe test environment; follow `LAUNCHREADY.md` before a production launch.
-
-## Project Structure
-
-```
-app/
-  api/           # API routes (AI chat, webhooks, auth)
-  auth/          # Login/signup pages
-  dashboard/     # User dashboard (agent config, analytics)
-  [username]/    # Public profile pages with chat widget
-  embed/         # Embeddable widget for external sites
-
-components/      # React components
-lib/            # Utilities, database helpers
-utils/          # Supabase clients
-supabase/       # Database migrations
-public/         # Static assets
-scripts/        # Build scripts
-```
+Read [CONTRIBUTING.md](CONTRIBUTING.md). Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md). Do not include provider secrets, customer documents or visitor transcripts in issues or pull requests.
 
 ## License
 
-Private - All rights reserved.
+The source is licensed under [MIT](LICENSE), using the [OSI MIT license text](https://opensource.org/license/mit). Third-party dependencies and separately licensed assets retain their own terms. The hosted service’s [Terms](https://www.qlynk.site/terms) and [Privacy Policy](https://www.qlynk.site/privacy) govern use of hosted Qlynk; publishing source code does not publish customer data.

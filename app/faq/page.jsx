@@ -4,6 +4,7 @@ import Footer from '@/components/Footer';
 import JsonLd from '@/components/JsonLd';
 import MarketingHeader from '@/components/MarketingHeader';
 import { breadcrumbSchema, createMetadata } from '@/lib/seo';
+import { QLYNK_PRICING_FAQS } from '@/lib/qlynk-product-facts';
 
 export const metadata = createMetadata({
   title: 'Qlynk AI FAQ | AI Agent Platform Questions',
@@ -12,6 +13,7 @@ export const metadata = createMetadata({
 });
 
 const faqs = [
+  { category: 'Free Creator, Agency & open source', items: QLYNK_PRICING_FAQS },
   {
     category: "General",
     items: [
@@ -45,7 +47,7 @@ const faqs = [
       },
       {
         q: "How much does Qlynk cost?",
-        a: "Qlynk offers a 14-day free trial with no charge today. After the trial, you can choose a plan based on your message, document, branding, analytics, and agent needs. Current details are available on the Pricing page."
+        a: "Creator is free forever with one agent and 5,000 messages per month. Agency is an optional paid upgrade for 10,000 messages per month and removal of Qlynk branding. See the Pricing page for current details."
       },
       {
         q: "How long does setup take?",
@@ -179,7 +181,7 @@ export default function FAQPage() {
 
         <div className="mt-20 text-center bg-gradient-to-r from-blue-900/40 to-purple-900/40 border border-white/10 rounded-3xl p-10 backdrop-blur-md">
           <h3 className="text-2xl font-bold text-white mb-4">Ready to create your Qlynk Agent?</h3>
-          <p className="mb-8 text-[15px] leading-relaxed text-gray-300">14-day free trial · Every feature included · No payment today</p>
+          <p className="mb-8 text-[15px] leading-relaxed text-gray-300">Creator is free forever · 5,000 messages/month · No card required</p>
           <Link 
             href="/auth/signup"
             className="inline-flex items-center justify-center px-8 py-4 text-base font-medium text-white bg-white/10 hover:bg-white/20 border border-white/20 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]"

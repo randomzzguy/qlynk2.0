@@ -10,7 +10,8 @@ import {
   completeStripeWebhookEvent,
   failStripeWebhookEvent,
 } from '@/lib/stripe-webhook-events';
-import { getPaidSubscriptionUpdate, getPlanFromStripeSubscription } from '@/lib/stripe-subscriptions';
+import { getPaidSubscriptionUpdate, getPlanFromStripeSubscription, getInvoiceSubscriptionId } from '@/lib/stripe-subscriptions';
+import { reconcileStripeSubscription } from '@/lib/stripe-reconciliation';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -87,37 +88,19 @@ export async function POST(req) {
       }
 
       case 'customer.subscription.updated': {
-        const sub = event.data.object;
-        const updates = {
-          stripe_customer_id: sub.customer,
-          status: sub.status,
-        };
-
-        const configuredTier = getPlanFromStripeSubscription(sub);
-        if (configuredTier) updates.tier = configuredTier;
-
-        // Only update trial_ends_at for genuinely trialing (DB-managed) subscriptions.
-        // For active paid plans we never overwrite trial_ends_at from Stripe
-        // to avoid re-gifting trials or erasing trial history.
-        if (sub.status === 'trialing' && sub.trial_end) {
-          updates.trial_ends_at = new Date(sub.trial_end * 1000).toISOString();
-        } else if (sub.status === 'active') {
-          updates.trial_ends_at = null; // Clear trial: they transitioned to active paid
-        }
-
-        const { data, error } = await supabaseAdmin
-          .from('subscriptions')
-          .update(updates)
-          .eq('stripe_subscription_id', sub.id)
-          .select('user_id');
-        requireUpdatedRows(data, error, 'Stripe subscription update');
+        // Fetch current state: Stripe events can arrive out of order.
+        const sub = await stripe.subscriptions.retrieve(event.data.object.id);
+        await reconcileStripeSubscription(supabaseAdmin, sub);
         break;
       }
 
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object;
-        if (invoice.billing_reason === 'subscription_cycle' && invoice.subscription) {
-          const sub = await stripe.subscriptions.retrieve(invoice.subscription);
+        const subscriptionId = getInvoiceSubscriptionId(invoice);
+        if (invoice.billing_reason === 'subscription_cycle' && subscriptionId) {
+          const sub = await stripe.subscriptions.retrieve(subscriptionId);
+          const reconciliation = await reconcileStripeSubscription(supabaseAdmin, sub);
+          if (!reconciliation.updated || sub.status !== 'active') break;
           const userId = sub.metadata?.supabase_user_id;
           if (userId) {
             const [{ data: authUser }, notificationEnabled] = await Promise.all([
@@ -126,9 +109,10 @@ export async function POST(req) {
             ]);
             const userEmail = authUser?.user?.email;
             const username = authUser?.user?.user_metadata?.username || 'there';
-            const planName = sub.metadata?.plan_name || sub.items?.data?.[0]?.price?.nickname || 'Pro';
-            const nextRenewal = sub.current_period_end
-              ? new Date(sub.current_period_end * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+            const planName = getPlanFromStripeSubscription(sub) === 'agency' ? 'Agency' : 'Legacy Creator';
+            const periodEnd = sub.items?.data?.[0]?.current_period_end || sub.current_period_end;
+            const nextRenewal = periodEnd
+              ? new Date(periodEnd * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
               : null;
             if (userEmail && notificationEnabled) {
               await sendRequiredWebhookEmail(event.id, 'renewal', {
@@ -148,8 +132,11 @@ export async function POST(req) {
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object;
-        if (invoice.subscription) {
-          const sub = await stripe.subscriptions.retrieve(invoice.subscription);
+        const subscriptionId = getInvoiceSubscriptionId(invoice);
+        if (subscriptionId) {
+          const sub = await stripe.subscriptions.retrieve(subscriptionId);
+          const reconciliation = await reconcileStripeSubscription(supabaseAdmin, sub);
+          if (!reconciliation.updated || !['past_due', 'unpaid'].includes(sub.status)) break;
           const userId = sub.metadata?.supabase_user_id;
           if (userId) {
             const [{ data: authUser }, notificationEnabled] = await Promise.all([
@@ -158,20 +145,10 @@ export async function POST(req) {
             ]);
             const userEmail = authUser?.user?.email;
             const username = authUser?.user?.user_metadata?.username || 'there';
-            const planName = sub.metadata?.plan_name || sub.items?.data?.[0]?.price?.nickname || 'Pro';
+            const planName = getPlanFromStripeSubscription(sub) === 'agency' ? 'Agency' : 'Legacy Creator';
             const amountDue = typeof invoice.amount_due === 'number'
               ? `${(invoice.amount_due / 100).toFixed(2)} ${String(invoice.currency || 'usd').toUpperCase()}`
               : null;
-
-            const { data, error } = await supabaseAdmin
-              .from('subscriptions')
-              .update({
-                status: 'past_due',
-                stripe_customer_id: sub.customer,
-              })
-              .eq('stripe_subscription_id', sub.id)
-              .select('user_id');
-            requireUpdatedRows(data, error, 'Failed-payment subscription update');
 
             if (userEmail && notificationEnabled) {
               await sendRequiredWebhookEmail(event.id, 'payment-failed', {
@@ -192,15 +169,7 @@ export async function POST(req) {
 
       case 'customer.subscription.deleted': {
         const sub = event.data.object;
-        const { data, error } = await supabaseAdmin
-          .from('subscriptions')
-          .update({
-            status: 'canceled',
-            tier: 'free',
-          })
-          .eq('stripe_subscription_id', sub.id)
-          .select('user_id');
-        requireUpdatedRows(data, error, 'Deleted-subscription update');
+        await reconcileStripeSubscription(supabaseAdmin, { ...sub, status: 'canceled' });
         break;
       }
     }

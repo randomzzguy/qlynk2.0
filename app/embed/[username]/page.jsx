@@ -1,7 +1,7 @@
 import { createClient, createAdminClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import ChatWidget from '@/components/ChatWidget';
-import { isSubscriptionLive } from '@/lib/plans';
+import { isSubscriptionLive, getEffectiveTier } from '@/lib/plans';
 import { isWidgetId } from '@/lib/widget-installations';
 
 export const dynamic = 'force-dynamic';
@@ -107,7 +107,7 @@ export default async function EmbedPage({ params }) {
           ctaTextColor={agentConfig.cta_text_color}
           gatekeeperTextColor={agentConfig.gatekeeper_text_color}
           fontFamily={agentConfig.font_family}
-          tier={subscription?.tier}
+          tier={getEffectiveTier(subscription)}
           widgetId={widget?.id || null}
           allowedOrigins={widget?.allowed_origins || []}
           preChatEnabled={widget?.pre_chat_enabled === true}

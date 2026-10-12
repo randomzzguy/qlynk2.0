@@ -15,15 +15,13 @@ import {
   Link2,
   MessageSquare,
   Pencil,
-  PlayCircle,
   ShieldCheck,
-  Trophy,
   Upload,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import QlynkBackground from '@/components/QlynkBackground';
 import Footer from '@/components/Footer';
-import HomepageAgentDemo from '@/components/HomepageAgentDemo';
+import HomepageHero from '@/components/HomepageHero';
 import JsonLd from '@/components/JsonLd';
 import { getCurrentUser, getCurrentProfile, signOut } from '@/lib/supabase';
 
@@ -54,118 +52,6 @@ const GlowingOrb = ({ top, left, size = 300, color = 'orange', delay = 0 }) => (
   />
 );
 
-// ====== AI Agent Demo Hero Component ======
-const AgentDemoHero = () => {
-  return (
-    <div className="w-full py-12 sm:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center space-y-6 max-w-5xl mx-auto">
-          <motion.div
-            className="flex flex-wrap items-center justify-center gap-3"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <span className="inline-flex items-center gap-2 rounded-full border border-orange/30 bg-orange/10 px-4 py-2 backdrop-blur-md">
-              <ShieldCheck size={17} className="text-orange" aria-hidden="true" />
-              <span className="text-sm font-bold text-[#ff8a5b]">No-code AI agent builder</span>
-            </span>
-            <Link href="/blog/qlynk-project-of-the-day-smol-hunt" className="inline-flex items-center gap-2 rounded-full border border-amber-300/25 bg-amber-300/10 px-4 py-2 text-sm font-bold text-amber-200 transition-colors hover:border-amber-300/50 hover:bg-amber-300/15">
-              <Trophy size={16} aria-hidden="true" /> #1 Project of the Day
-            </Link>
-            <a href="https://findtoolfor.com/projects/qlynk?utm_source=badge" target="_blank" rel="noopener noreferrer">
-              <Image
-                src="https://findtoolfor.com/findtoolfor/images/badges/featured-on-dark.svg"
-                alt="Featured on Find Tool For"
-                width={150}
-                height={44}
-                unoptimized
-              />
-            </a>
-          </motion.div>
-
-          <motion.h1
-            className="text-5xl sm:text-6xl lg:text-7xl font-black leading-[1.1] text-white tracking-tight"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            Build a Trusted AI Agent
-            <span className="block bg-gradient-to-r from-orange via-[#f46530] to-[#c14f22] bg-clip-text text-transparent">No Code Required</span>
-          </motion.h1>
-
-          <motion.div
-            className="mx-auto max-w-3xl"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            <p className="text-lg leading-relaxed text-gray-300 sm:text-xl">
-              Turn the FAQs, services, policies, and documents you approve into an AI agent that gives customers and teams clear answers.
-            </p>
-            <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-bold text-gray-400" aria-label="Qlynk benefits">
-              {['Launch in minutes', 'Stay in control', 'Learn from every question'].map((benefit) => (
-                <span key={benefit} className="inline-flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-orange" aria-hidden="true" />
-                  {benefit}
-                </span>
-              ))}
-            </div>
-          </motion.div>
-
-          <motion.div
-            className="pt-2"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.55 }}
-          >
-            <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link href="/auth/signup" className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange px-8 py-4 text-lg font-black text-white shadow-lg shadow-orange/25 transition-colors hover:bg-[#c14f22] sm:w-auto">
-                Build Your Agent Free <ArrowRight size={20} aria-hidden="true" />
-              </Link>
-              <a href="#live-demo" className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-8 py-4 text-lg font-bold text-white transition-colors hover:border-white/30 hover:bg-white/10 sm:w-auto">
-                <PlayCircle size={20} aria-hidden="true" /> Try the Live Demo
-              </a>
-            </div>
-            <p className="mt-4 text-[15px] leading-relaxed text-gray-300">Creator is free forever · 5,000 messages/month · No card required</p>
-          </motion.div>
-        </div>
-
-      </div>
-    </div>
-  );
-};
-
-const LiveDemoSection = () => (
-  <section id="live-demo" aria-labelledby="live-demo-title" className="relative z-10 mt-10 scroll-mt-20 overflow-hidden border-t border-white/[0.06] py-20 sm:mt-14 sm:py-24">
-    <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-      <div className="absolute left-1/2 top-1/2 h-[460px] w-[760px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange/[0.07] blur-[110px]" />
-    </div>
-    <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <motion.div
-        className="mx-auto mb-12 max-w-4xl text-center"
-        initial={{ opacity: 0, y: 22 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.5 }}
-        transition={{ duration: 0.55 }}
-      >
-        <p className="text-sm font-black tracking-[0.18em] text-[#ff8a5b]">LIVE PRODUCT DEMO</p>
-        <h2 id="live-demo-title" className="mt-4 text-3xl font-black leading-tight text-white sm:text-4xl md:text-5xl">Try the live Qlynk demo with a fictional business ↓</h2>
-        <p className="mx-auto mt-5 max-w-2xl leading-relaxed text-gray-400">See how a Qlynk agent turns approved business knowledge into clear, useful answers.</p>
-      </motion.div>
-      <motion.div
-        className="relative mx-auto max-w-5xl"
-        initial={{ opacity: 0, y: 30, scale: 0.98 }}
-        whileInView={{ opacity: 1, y: 0, scale: 1 }}
-        viewport={{ once: true, amount: 0.2 }}
-        transition={{ duration: 0.65, ease: 'easeOut' }}
-      >
-        <HomepageAgentDemo />
-      </motion.div>
-    </div>
-  </section>
-);
-
 const productFacts = [
   { icon: ShieldCheck, title: 'Free Creator plan', description: '5,000 messages every month' },
   { icon: CreditCard, title: 'No payment today', description: 'Try the complete product first' },
@@ -189,7 +75,7 @@ const homepageFaqs = [
 ];
 
 const ProofStrip = () => (
-  <section aria-label="Qlynk free plan and product facts" className="relative z-10 overflow-hidden border-y border-white/10 bg-[#0d111b] py-12 sm:py-14">
+  <section aria-label="Qlynk free plan and product facts" className="relative z-10 overflow-hidden border-y border-white/10 py-16 sm:py-20">
     <div className="pointer-events-none absolute inset-0" aria-hidden="true">
       <div className="absolute left-1/2 top-0 h-px w-2/3 -translate-x-1/2 bg-gradient-to-r from-transparent via-orange/70 to-transparent" />
       <div className="absolute -left-20 top-1/2 h-56 w-56 -translate-y-1/2 rounded-full bg-orange/10 blur-[90px]" />
@@ -247,7 +133,7 @@ const ProofStrip = () => (
 );
 
 const WhyQlynk = () => (
-  <section className="relative z-10 overflow-hidden py-24 sm:py-28">
+  <section className="relative z-10 overflow-hidden py-20 sm:py-24">
     <div className="pointer-events-none absolute inset-0" aria-hidden="true">
       <div className="absolute left-1/2 top-1/2 h-[460px] w-[460px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-orange/[0.07]" />
       <div className="absolute left-1/2 top-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.04]" />
@@ -408,7 +294,7 @@ const ProductShowcase = () => {
   ];
 
   return (
-    <section className="relative z-10 bg-gray-900/55 py-20">
+    <section className="relative z-10 py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto mb-12 max-w-3xl text-center">
           <p className="mb-3 text-sm font-bold text-[#ff8a5b]">SEE QLYNK IN ACTION</p>
@@ -429,7 +315,7 @@ const ProductShowcase = () => {
 };
 
 const HomepageFAQ = () => (
-  <section className="relative z-10 py-20">
+  <section className="relative z-10 py-20 sm:py-24">
     <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
       <div className="mb-10 text-center">
         <CircleHelp size={30} className="mx-auto text-orange" aria-hidden="true" />
@@ -717,36 +603,37 @@ export default function App() {
       </motion.nav>
 
       <main>
-        <section className="relative z-10 pt-24 pb-10">
-          <AgentDemoHero />
+        <section aria-labelledby="qlynk-hero-title" className="relative z-10 pb-12 pt-28 sm:pb-16 sm:pt-32">
+          <HomepageHero isSignedIn={Boolean(user)} />
         </section>
 
-        <LiveDemoSection />
         <ProofStrip />
         <WhyQlynk />
         <ProductShowcase />
         <HomepageFAQ />
 
-        <section className="relative z-10 bg-gradient-to-r from-[#f46530] to-[#c14f22] py-20">
-          <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-            <motion.h2 className="text-4xl font-black text-white md:text-5xl" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              Ready to stop answering the same questions?
-            </motion.h2>
-            <motion.p className="mx-auto mt-5 max-w-2xl text-xl text-[#ffecd9]" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.15 }}>
-              Build your AI agent free using the knowledge you already have.
-            </motion.p>
-            <motion.div className="mt-9" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }}>
-              <Link href="/auth/signup" className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-10 py-5 text-xl font-black text-[#9a3412] shadow-lg transition-colors hover:bg-gray-100 hover:text-[#7c2d12]">
-                Start Free <ArrowRight size={23} aria-hidden="true" />
-              </Link>
-            </motion.div>
-            <p className="mt-7 text-[15px] leading-relaxed text-white">Creator is free forever · 5,000 messages/month · No card required</p>
+        <section className="relative z-10 pb-20 pt-4 sm:pb-24">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="rounded-3xl border border-orange/25 bg-orange/10 px-6 py-14 text-center backdrop-blur-sm sm:px-12 sm:py-16">
+              <motion.h2 className="mx-auto max-w-3xl text-4xl font-black text-white md:text-5xl" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+                Ready to stop answering the same questions?
+              </motion.h2>
+              <motion.p className="mx-auto mt-5 max-w-2xl text-xl text-gray-300" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.15 }}>
+                Build your AI agent free using the knowledge you already have.
+              </motion.p>
+              <motion.div className="mt-9" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }}>
+                <Link href="/auth/signup" className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange px-8 py-4 text-lg font-black text-white shadow-lg shadow-orange/20 transition-colors hover:bg-[#cc4b1c]">
+                  Start Free <ArrowRight size={23} aria-hidden="true" />
+                </Link>
+              </motion.div>
+              <p className="mt-7 text-sm leading-relaxed text-gray-400">Creator is free forever · 5,000 messages/month · No card required</p>
+            </div>
           </div>
         </section>
       </main>
 
       {/* Footer */}
-      <Footer />
+      <Footer transparent />
 
       <Script
         id="qlynk-homepage-widget"

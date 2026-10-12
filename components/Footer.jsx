@@ -2,9 +2,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { QLYNK_SOURCE_URL } from '@/lib/qlynk-product-facts';
 
-export default function Footer() {
+export default function Footer({ transparent = false }) {
   return (
-    <footer className="py-16 bg-[#0c0c12] text-gray-400 relative z-10 border-t border-white/5">
+    <footer className={`py-16 text-gray-400 relative z-10 border-t border-white/5 ${transparent ? '' : 'bg-[#0c0c12]'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           {/* Brand Col */}

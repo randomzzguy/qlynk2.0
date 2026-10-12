@@ -183,38 +183,31 @@ export default function HomepageAgentDemo() {
 
   return (
     <div className="relative">
-      <div className="pointer-events-none absolute right-2 top-0 z-20 -translate-y-1/2 rounded-2xl border-2 border-orange/50 bg-gray-800 px-5 py-3 shadow-2xl shadow-black/40 sm:right-6 sm:px-6 sm:py-4">
-        <div className="flex items-center gap-3">
-          <div className="h-3 w-3 shrink-0 animate-pulse rounded-full bg-green-500" />
-          <span className="text-base font-black uppercase tracking-wider text-white sm:text-xl">Try the Live Demo</span>
-        </div>
-      </div>
-
-      <div className="rounded-[2.5rem] bg-gray-900 shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden border-[8px] border-gray-800/80 relative">
-        <div className="bg-gray-800/50 px-6 py-4 flex items-center gap-3 border-b border-white/5">
-          <div className="flex gap-2">
+      <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-gray-900 shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
+        <div className="flex items-center gap-3 border-b border-white/10 bg-gray-800/60 px-4 py-3">
+          <div className="flex gap-1.5" aria-hidden="true">
             <div className="w-3 h-3 rounded-full bg-white/10" />
             <div className="w-3 h-3 rounded-full bg-white/10" />
             <div className="w-3 h-3 rounded-full bg-white/10" />
           </div>
-          <div className="flex-1 mx-4 bg-black/20 rounded-full px-4 py-1.5 text-[11px] text-gray-500 font-mono text-center border border-white/5">
+          <div className="min-w-0 flex-1 text-center font-mono text-[11px] text-gray-400">
             qlynk.site/northstar
           </div>
         </div>
 
-        <div className="bg-[#0c0c12] p-5 sm:p-8 min-h-[520px] flex flex-col">
-          <div className="flex items-center gap-5 mb-6 pb-5 border-b border-white/5">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange to-[#c14f22] flex items-center justify-center text-xl text-white font-black shadow-lg shadow-orange/20">
+        <div className="flex h-[540px] flex-col bg-[#0c0c12] p-4 sm:p-5">
+          <div className="mb-4 flex shrink-0 items-center gap-3 border-b border-white/10 pb-4">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange to-[#c14f22] text-base font-black text-white shadow-lg shadow-orange/20">
               NS
             </div>
             <div>
               <h3 className="text-lg font-bold text-white leading-none mb-1.5">{NORTHSTAR_DEMO.name}</h3>
-              <p className="text-sm text-gray-500 font-medium tracking-wide uppercase">{NORTHSTAR_DEMO.role}</p>
-              <p className="text-[11px] text-gray-600 mt-1">Fictional example business</p>
+              <p className="text-xs text-gray-400 font-medium tracking-wide uppercase">{NORTHSTAR_DEMO.role}</p>
+              <p className="text-[11px] text-gray-400 mt-1">Fictional example business</p>
             </div>
           </div>
 
-          <div ref={scrollRef} className="flex-1 min-h-0 max-h-[310px] space-y-4 overflow-y-auto pr-1 custom-scrollbar" aria-live="polite">
+          <div ref={scrollRef} className="flex-1 min-h-0 space-y-4 overflow-y-auto pr-1 custom-scrollbar" role="log" aria-label="Demo conversation" aria-live="polite" tabIndex={0}>
             {messages.map((message) => (
               <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={message.role === 'user'
@@ -244,7 +237,7 @@ export default function HomepageAgentDemo() {
           </div>
 
           {questionCount === 0 && (
-            <div className="mt-5 flex flex-wrap gap-2">
+            <div className="mt-4 flex shrink-0 flex-wrap gap-2">
               {NORTHSTAR_DEMO.suggestedQuestions.map((question) => (
                 <button
                   key={question}
@@ -260,7 +253,7 @@ export default function HomepageAgentDemo() {
           )}
 
           {hasAnswered && !limitReached && (
-            <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-orange/20 bg-orange/5 px-4 py-3">
+            <div className="mt-4 flex shrink-0 items-center justify-between gap-3 rounded-xl border border-orange/20 bg-orange/5 px-3 py-3">
               <p className="text-xs text-gray-300">Want an agent that answers for your business?</p>
               <Link href="/auth/signup" className="shrink-0 inline-flex items-center gap-1 text-xs font-bold text-[#ff8a5b] hover:text-white transition-colors">
                 Start Free <ArrowRight size={13} aria-hidden="true" />
@@ -269,7 +262,7 @@ export default function HomepageAgentDemo() {
           )}
 
           {limitReached ? (
-            <div className="mt-5 rounded-2xl border border-orange/25 bg-orange/10 p-4 text-center">
+            <div className="mt-4 shrink-0 rounded-2xl border border-orange/25 bg-orange/10 p-4 text-center">
               <p className="text-sm font-semibold text-white">You have tried all three demo questions.</p>
               <p className="mt-1 text-xs text-gray-400">Now give an agent your knowledge and let people ask their own questions.</p>
               <Link href="/auth/signup" className="mt-3 inline-flex items-center justify-center gap-2 rounded-xl bg-orange px-5 py-3 text-sm font-bold text-white hover:bg-orange/90 transition-colors">
@@ -277,7 +270,7 @@ export default function HomepageAgentDemo() {
               </Link>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="mt-5 flex items-center gap-2 bg-white/5 border border-white/10 focus-within:border-orange/40 rounded-2xl p-2.5 transition-colors">
+            <form onSubmit={handleSubmit} className="mt-4 flex shrink-0 items-center gap-2 bg-white/5 border border-white/10 focus-within:border-orange/40 rounded-xl p-2 transition-colors">
               <label htmlFor="homepage-demo-question" className="sr-only">Ask the Northstar Studio demo agent a question</label>
               <input
                 id="homepage-demo-question"
@@ -286,7 +279,7 @@ export default function HomepageAgentDemo() {
                 maxLength={500}
                 disabled={isLoading}
                 placeholder="Ask a question"
-                className="min-w-0 flex-1 bg-transparent text-white placeholder-gray-600 text-sm px-3 py-2 outline-none disabled:opacity-60"
+                className="min-w-0 flex-1 bg-transparent text-white placeholder-gray-400 text-sm px-2 py-2 outline-none disabled:opacity-60"
               />
               <button
                 type="submit"
@@ -299,7 +292,7 @@ export default function HomepageAgentDemo() {
             </form>
           )}
 
-          <p className="mt-3 text-center text-xs leading-relaxed text-gray-400">
+          <p className="mt-3 shrink-0 text-center text-[11px] leading-relaxed text-gray-400">
             Free demo · {MAX_QUESTIONS - questionCount} of {MAX_QUESTIONS} questions remaining · Conversations are not saved.
           </p>
         </div>

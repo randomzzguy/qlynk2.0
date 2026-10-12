@@ -2,19 +2,19 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const [homepage, pressPage, socialPack, conversionAudit] = await Promise.all([
-  readFile(new URL('../app/page.jsx', import.meta.url), 'utf8'),
+const [hero, pressPage, socialPack, conversionAudit] = await Promise.all([
+  readFile(new URL('../components/HomepageHero.jsx', import.meta.url), 'utf8'),
   readFile(new URL('../app/press/page.jsx', import.meta.url), 'utf8'),
   readFile(new URL('../docs/growth/linkedin-content-plan-2026-08.md', import.meta.url), 'utf8'),
   readFile(new URL('../docs/growth/homepage-conversion-audit-2026-08-26.md', import.meta.url), 'utf8'),
 ]);
 
 test('homepage exposes factual recognition and a no-signup demo path', () => {
-  assert.match(homepage, /#1 Project of the Day/);
-  assert.match(homepage, /\/blog\/qlynk-project-of-the-day-smol-hunt/);
-  assert.match(homepage, /href="#live-demo"/);
-  assert.match(homepage, /id="live-demo"/);
-  assert.match(homepage, /Build Your Agent Free/);
+  assert.match(hero, /#1 Project of the Day on Smol Hunt/);
+  assert.match(hero, /\/blog\/qlynk-project-of-the-day-smol-hunt/);
+  assert.match(hero, /href="#live-demo"/);
+  assert.match(hero, /id="live-demo"/);
+  assert.match(hero, /Create your free guide/);
 });
 
 test('press kit records the dated Smol Hunt result without unsupported customer claims', () => {

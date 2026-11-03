@@ -51,6 +51,10 @@ next-env.d.ts
 /.tmp-codex/
 /tmp/
 
+# Local Brag / HyperFrames launch video projects and exports
+/brag-output/
+/brag-output-*/
+
 # Generated plugin distribution copies
 /distribution/
 

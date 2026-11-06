@@ -4,25 +4,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Script from 'next/script';
-import {
-  ArrowRight,
-  BarChart3,
-  ChevronUp,
-  CircleHelp,
-  Code2,
-  CreditCard,
-  FileText,
-  Link2,
-  MessageSquare,
-  Pencil,
-  ShieldCheck,
-  Upload,
-} from 'lucide-react';
+import { ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import QlynkBackground from '@/components/QlynkBackground';
 import Footer from '@/components/Footer';
 import HomepageHero from '@/components/HomepageHero';
 import JsonLd from '@/components/JsonLd';
+import {
+  ControlSection,
+  FinalCTA,
+  FreePlanSection,
+  HomeFAQ,
+  QuestionsWall,
+  WhereItLives,
+} from '@/components/home/HomeSections';
 import { getCurrentUser, getCurrentProfile, signOut } from '@/lib/supabase';
 
 // ====== Animated Components ======
@@ -52,19 +47,6 @@ const GlowingOrb = ({ top, left, size = 300, color = 'orange', delay = 0 }) => (
   />
 );
 
-const productFacts = [
-  { icon: ShieldCheck, title: 'Free Creator plan', description: '5,000 messages every month' },
-  { icon: CreditCard, title: 'No payment today', description: 'Try the complete product first' },
-  { icon: Link2, title: 'One link or embed', description: 'Share it wherever people need answers' },
-  { icon: MessageSquare, title: 'Human handoff', description: 'Choose when a person should step in' },
-];
-
-const whyQlynk = [
-  { icon: Code2, title: 'Launch Without Coding', desc: 'Build and update your agent from one straightforward dashboard.' },
-  { icon: ShieldCheck, title: 'Stay in Complete Control', desc: 'Choose the approved knowledge, set the limits, and change answers whenever needed.' },
-  { icon: Link2, title: 'Share With One Simple Link', desc: 'Use a hosted Qlynk page or embed the agent on your existing website.' },
-];
-
 const homepageFaqs = [
   ['Can a Qlynk agent hallucinate?', 'Generative AI can make mistakes. Qlynk helps reduce unsupported answers by using the knowledge you provide, a defined purpose, topic limits, uncertainty instructions, and human handoff. Important answers should still be tested and reviewed.'],
   ['What files can I upload?', 'Qlynk supports PDF, DOCX, and TXT files. You can also add FAQs, facts, links, notes, profile details, and other structured knowledge from the dashboard.'],
@@ -73,266 +55,6 @@ const homepageFaqs = [
   ['Can I change my public Qlynk URL?', 'Yes. Change your username from Account Settings once every 30 days. Your old URL stops working immediately, so update links and bookmarks after the change.'],
   ['Is there a free plan?', 'Yes. Creator is free with no expiry and no credit card required. Each account includes one agent and 5,000 messages per calendar month. Agency is an optional paid upgrade.'],
 ];
-
-const ProofStrip = () => (
-  <section aria-label="Qlynk free plan and product facts" className="relative z-10 overflow-hidden border-y border-white/10 py-16 sm:py-20">
-    <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-      <div className="absolute left-1/2 top-0 h-px w-2/3 -translate-x-1/2 bg-gradient-to-r from-transparent via-orange/70 to-transparent" />
-      <div className="absolute -left-20 top-1/2 h-56 w-56 -translate-y-1/2 rounded-full bg-orange/10 blur-[90px]" />
-      <div className="absolute -right-24 bottom-0 h-64 w-64 rounded-full bg-[#2AB59E]/10 blur-[100px]" />
-    </div>
-
-    <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <motion.div
-        className="mb-9 grid gap-4 text-center lg:grid-cols-[1fr_0.8fr] lg:items-end lg:text-left"
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.4 }}
-        transition={{ duration: 0.55 }}
-      >
-        <div>
-          <p className="text-sm font-black tracking-[0.18em] text-[#ff8a5b]">START WITH CONFIDENCE</p>
-          <h2 className="mt-3 text-3xl font-black leading-tight text-white sm:text-4xl">Try the complete Qlynk experience before you pay</h2>
-        </div>
-        <p className="mx-auto max-w-xl leading-relaxed text-gray-400 lg:mx-0 lg:justify-self-end lg:text-right">
-          Build it, share it, and keep using Creator free. Upgrade to Agency when you need more monthly messages or no Qlynk attribution.
-        </p>
-      </motion.div>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {productFacts.map((item, index) => (
-          <motion.article
-            key={item.title}
-            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.075] to-white/[0.025] p-6 shadow-xl shadow-black/10 backdrop-blur-sm"
-            initial={{ opacity: 0, y: 28, scale: 0.97 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            whileHover={{ y: -7, borderColor: 'rgba(235, 94, 40, 0.5)' }}
-            viewport={{ once: true, amount: 0.35 }}
-            transition={{ duration: 0.45, delay: index * 0.08, ease: 'easeOut' }}
-          >
-            <motion.div
-              className="absolute inset-x-0 top-0 h-0.5 origin-left bg-gradient-to-r from-orange via-[#ff8a5b] to-transparent"
-              initial={{ scaleX: 0 }}
-              whileInView={{ scaleX: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.18 + index * 0.08 }}
-            />
-            <div className="flex items-center justify-between">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-orange/25 bg-orange/10 text-[#ff8a5b] shadow-lg shadow-orange/5 transition-transform duration-300 group-hover:-rotate-3 group-hover:scale-110">
-                <item.icon size={23} aria-hidden="true" />
-              </div>
-              <span className="font-mono text-xs font-bold tracking-[0.2em] text-gray-600">0{index + 1}</span>
-            </div>
-            <h3 className="mt-6 text-xl font-black text-white">{item.title}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-gray-400">{item.description}</p>
-          </motion.article>
-        ))}
-      </div>
-    </div>
-  </section>
-);
-
-const WhyQlynk = () => (
-  <section className="relative z-10 overflow-hidden py-20 sm:py-24">
-    <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-      <div className="absolute left-1/2 top-1/2 h-[460px] w-[460px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-orange/[0.07]" />
-      <div className="absolute left-1/2 top-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.04]" />
-      <div className="absolute left-1/2 top-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange/[0.06] blur-[80px]" />
-    </div>
-
-    <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <motion.div
-        className="mx-auto max-w-4xl text-center"
-        initial={{ opacity: 0, y: 22 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.5 }}
-        transition={{ duration: 0.55 }}
-      >
-        <p className="text-sm font-black tracking-[0.18em] text-[#ff8a5b]">WHY QLYNK?</p>
-        <h2 className="mt-4 text-4xl font-black leading-tight text-white md:text-5xl">Simple to launch. Easy to control. Ready to share.</h2>
-        <p className="mx-auto mt-5 max-w-2xl leading-relaxed text-gray-400">
-          Want to know more about Qlynk?{' '}
-          <Link href="https://www.qlynk.site/qlynk" className="inline-flex items-center gap-1 font-bold text-[#ff8a5b] transition-colors hover:text-orange hover:underline">
-            Ask the Qlynk Guide <ArrowRight size={16} aria-hidden="true" />
-          </Link>
-        </p>
-      </motion.div>
-
-      <div className="relative mx-auto mt-16 hidden max-w-6xl pb-8 lg:block">
-        <svg className="pointer-events-none absolute left-0 top-0 h-44 w-full" viewBox="0 0 1200 180" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M 200 124 C 335 124, 455 44, 600 44 C 745 44, 865 124, 1000 124" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="2" strokeDasharray="8 10" />
-          <motion.path
-            d="M 200 124 C 335 124, 455 44, 600 44 C 745 44, 865 124, 1000 124"
-            fill="none"
-            stroke="url(#whyQlynkGradient)"
-            strokeWidth="3"
-            strokeLinecap="round"
-            initial={{ pathLength: 0, opacity: 0 }}
-            whileInView={{ pathLength: 1, opacity: 1 }}
-            viewport={{ once: true, amount: 0.5 }}
-            transition={{ duration: 1.2, ease: 'easeInOut' }}
-          />
-          <defs>
-            <linearGradient id="whyQlynkGradient" x1="0" x2="1">
-              <stop offset="0%" stopColor="#eb5e28" stopOpacity="0.18" />
-              <stop offset="50%" stopColor="#ff8a5b" stopOpacity="0.95" />
-              <stop offset="100%" stopColor="#2AB59E" stopOpacity="0.25" />
-            </linearGradient>
-          </defs>
-        </svg>
-
-        <div className="grid grid-cols-3 gap-14">
-          {whyQlynk.map((item, index) => (
-            <motion.article
-              key={item.title}
-              className={`group relative text-center ${index === 1 ? '' : 'pt-20'}`}
-              initial={{ opacity: 0, y: 28 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.5 }}
-              transition={{ duration: 0.5, delay: 0.35 + index * 0.13 }}
-            >
-              <div className="relative mx-auto h-24 w-24">
-                <span className="absolute -right-8 -top-10 select-none text-7xl font-black text-white/[0.045]">0{index + 1}</span>
-                <motion.div
-                  className="relative z-10 flex h-24 w-24 items-center justify-center rounded-full border border-orange/40 bg-[#151923] text-[#ff8a5b] shadow-[0_0_45px_rgba(235,94,40,0.16)]"
-                  whileHover={{ scale: 1.1, rotate: index === 1 ? 5 : -5 }}
-                  transition={{ type: 'spring', stiffness: 260, damping: 18 }}
-                >
-                  <span className="absolute inset-2 rounded-full border border-dashed border-white/15 transition-transform duration-700 group-hover:rotate-90" />
-                  <item.icon className="relative z-10" size={30} aria-hidden="true" />
-                </motion.div>
-              </div>
-              <p className="mt-7 font-mono text-xs font-bold tracking-[0.22em] text-[#ff8a5b]">STEP 0{index + 1}</p>
-              <h3 className="mt-3 text-2xl font-black text-white transition-colors group-hover:text-[#ff8a5b]">{item.title}</h3>
-              <p className="mx-auto mt-3 max-w-xs leading-relaxed text-gray-400">{item.desc}</p>
-            </motion.article>
-          ))}
-        </div>
-      </div>
-
-      <div className="relative mx-auto mt-14 max-w-xl lg:hidden">
-        <motion.div
-          className="absolute bottom-7 left-7 top-7 w-px origin-top bg-gradient-to-b from-orange via-[#ff8a5b] to-[#2AB59E]"
-          initial={{ scaleY: 0 }}
-          whileInView={{ scaleY: 1 }}
-          viewport={{ once: true, amount: 0.25 }}
-          transition={{ duration: 0.9, ease: 'easeInOut' }}
-          aria-hidden="true"
-        />
-        <div className="space-y-12">
-          {whyQlynk.map((item, index) => (
-            <motion.article
-              key={item.title}
-              className="group relative flex gap-5"
-              initial={{ opacity: 0, x: -24 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, amount: 0.55 }}
-              transition={{ duration: 0.48, delay: index * 0.12 }}
-            >
-              <div className="relative z-10 flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-orange/40 bg-[#151923] text-[#ff8a5b] shadow-[0_0_30px_rgba(235,94,40,0.16)]">
-                <item.icon size={22} aria-hidden="true" />
-              </div>
-              <div className="pt-1">
-                <p className="font-mono text-xs font-bold tracking-[0.2em] text-[#ff8a5b]">STEP 0{index + 1}</p>
-                <h3 className="mt-2 text-2xl font-black text-white">{item.title}</h3>
-                <p className="mt-2 leading-relaxed text-gray-400">{item.desc}</p>
-              </div>
-            </motion.article>
-          ))}
-        </div>
-      </div>
-    </div>
-  </section>
-);
-
-const ProductPreview = ({ type }) => {
-  if (type === 'upload') {
-    return (
-      <div className="space-y-3">
-        <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3">
-          <FileText size={20} className="text-orange" aria-hidden="true" />
-          <div className="min-w-0 flex-1"><p className="truncate text-sm font-bold text-white">company-faq.pdf</p><p className="text-xs text-green-400">Ready to use</p></div>
-        </div>
-        <div className="rounded-xl border border-dashed border-orange/35 bg-orange/5 p-4 text-center text-sm text-gray-300"><Upload size={19} className="mx-auto mb-2 text-orange" aria-hidden="true" />Add another document or link</div>
-      </div>
-    );
-  }
-
-  if (type === 'chat') {
-    return (
-      <div className="space-y-3 text-sm">
-        <div className="ml-10 rounded-2xl rounded-tr-sm bg-white/10 px-4 py-3 text-gray-200">What is included in your launch package?</div>
-        <div className="mr-5 rounded-2xl rounded-tl-sm border border-orange/20 bg-orange/10 px-4 py-3 text-gray-200">It includes strategy, messaging, and a launch plan. Would you like the timeline too?</div>
-      </div>
-    );
-  }
-
-  if (type === 'edit') {
-    return (
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-        <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-bold text-gray-500">QUESTION</p><p className="mt-1 font-bold text-white">Do you deliver internationally?</p></div><Pencil size={18} className="shrink-0 text-orange" aria-hidden="true" /></div>
-        <div className="mt-4 border-t border-white/10 pt-4"><p className="text-xs font-bold text-gray-500">APPROVED ANSWER</p><p className="mt-1 text-sm text-gray-300">Yes. Delivery times depend on the destination.</p></div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {[['Popular questions', 'w-4/5'], ['Answered conversations', 'w-3/5'], ['Knowledge gaps', 'w-2/5']].map(([label, width]) => (
-        <div key={label}><div className="mb-2 flex justify-between text-xs text-gray-400"><span>{label}</span></div><div className="h-2 rounded-full bg-white/10"><div className={`h-2 rounded-full bg-orange ${width}`} /></div></div>
-      ))}
-    </div>
-  );
-};
-
-const ProductShowcase = () => {
-  const previews = [
-    { type: 'upload', icon: Upload, title: 'Train With Existing Content', desc: 'Add the FAQs, documents, links, and facts you already use.' },
-    { type: 'chat', icon: MessageSquare, title: 'Answer Questions Automatically', desc: 'Give people a conversational first answer from your knowledge.' },
-    { type: 'edit', icon: Pencil, title: 'Keep Every Answer Current', desc: 'Update knowledge from the dashboard whenever something changes.' },
-    { type: 'analytics', icon: BarChart3, title: 'See What People Still Need', desc: 'Review common questions and knowledge gaps to improve the agent.' },
-  ];
-
-  return (
-    <section className="relative z-10 py-20 sm:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto mb-12 max-w-3xl text-center">
-          <p className="mb-3 text-sm font-bold text-[#ff8a5b]">SEE QLYNK IN ACTION</p>
-          <h2 className="text-4xl font-black text-white md:text-5xl">Everything you need to launch and improve your agent</h2>
-          <p className="mt-4 text-sm text-gray-500 md:hidden">Swipe to explore the product workflow →</p>
-        </div>
-        <div className="flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 md:grid md:grid-cols-2 md:overflow-visible md:pb-0">
-          {previews.map((preview, index) => (
-            <motion.article key={preview.title} className="grid min-w-[86%] snap-start gap-6 rounded-3xl border border-gray-700 bg-gray-800/45 p-7 sm:min-w-[68%] md:min-w-0 md:grid-cols-[0.85fr_1.15fr] md:items-center" initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.08 }}>
-              <div><preview.icon size={23} className="text-orange" aria-hidden="true" /><h3 className="mt-4 text-xl font-black text-white">{preview.title}</h3><p className="mt-2 text-sm leading-relaxed text-gray-400">{preview.desc}</p></div>
-              <div className="rounded-2xl border border-white/5 bg-[#0c0c12] p-4"><ProductPreview type={preview.type} /></div>
-            </motion.article>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-const HomepageFAQ = () => (
-  <section className="relative z-10 py-20 sm:py-24">
-    <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-      <div className="mb-10 text-center">
-        <CircleHelp size={30} className="mx-auto text-orange" aria-hidden="true" />
-        <h2 className="mt-4 text-4xl font-black text-white md:text-5xl">FAQs</h2>
-      </div>
-      <div className="space-y-4">
-        {homepageFaqs.map(([question, answer]) => (
-          <details key={question} className="group rounded-2xl border border-gray-700 bg-gray-800/45 open:border-orange/30">
-            <summary className="flex min-h-14 w-full cursor-pointer list-none items-center justify-between gap-5 px-6 py-5 font-bold text-white marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#ff8a5b]">{question}<span className="text-2xl font-light text-[#ff8a5b] transition-transform group-open:rotate-45" aria-hidden="true">+</span></summary>
-            <p className="px-6 pb-6 leading-relaxed text-gray-400">{answer}</p>
-          </details>
-        ))}
-      </div>
-      <p className="mt-7 text-center text-gray-400">More questions? <Link href="/faq" className="font-bold text-[#ff8a5b] hover:underline">Read the full FAQ</Link>.</p>
-    </div>
-  </section>
-);
 
 // ====== Scroll To Top Component ======
 const ScrollToTop = () => {
@@ -607,29 +329,12 @@ export default function App() {
           <HomepageHero isSignedIn={Boolean(user)} />
         </section>
 
-        <ProofStrip />
-        <WhyQlynk />
-        <ProductShowcase />
-        <HomepageFAQ />
-
-        <section className="relative z-10 pb-20 pt-4 sm:pb-24">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="rounded-3xl border border-orange/25 bg-orange/10 px-6 py-14 text-center backdrop-blur-sm sm:px-12 sm:py-16">
-              <motion.h2 className="mx-auto max-w-3xl text-4xl font-black text-white md:text-5xl" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-                Ready to stop answering the same questions?
-              </motion.h2>
-              <motion.p className="mx-auto mt-5 max-w-2xl text-xl text-gray-300" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.15 }}>
-                Build your AI agent free using the knowledge you already have.
-              </motion.p>
-              <motion.div className="mt-9" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }}>
-                <Link href="/auth/signup" className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange px-8 py-4 text-lg font-black text-white shadow-lg shadow-orange/20 transition-colors hover:bg-[#cc4b1c]">
-                  Start Free <ArrowRight size={23} aria-hidden="true" />
-                </Link>
-              </motion.div>
-              <p className="mt-7 text-sm leading-relaxed text-gray-400">Creator is free forever · 5,000 messages/month · No card required</p>
-            </div>
-          </div>
-        </section>
+        <QuestionsWall />
+        <ControlSection />
+        <WhereItLives />
+        <FreePlanSection />
+        <HomeFAQ faqs={homepageFaqs} />
+        <FinalCTA isSignedIn={Boolean(user)} />
       </main>
 
       {/* Footer */}

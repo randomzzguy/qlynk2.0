@@ -1724,3 +1724,22 @@ button.dashboard-save-bar {
     transform: translateY(-5px);
   }
 }
+
+/* Homepage question wall marquee */
+@keyframes qlynk-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.qlynk-marquee {
+  animation: qlynk-marquee 55s linear infinite;
+}
+.qlynk-marquee-reverse {
+  animation-direction: reverse;
+  animation-duration: 65s;
+}
+.qlynk-marquee:hover {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .qlynk-marquee { animation: none; }
+}

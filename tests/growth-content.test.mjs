@@ -14,7 +14,7 @@ test('homepage exposes factual recognition and a no-signup demo path', () => {
   assert.match(hero, /\/blog\/qlynk-project-of-the-day-smol-hunt/);
   assert.match(hero, /href="#live-demo"/);
   assert.match(hero, /id="live-demo"/);
-  assert.match(hero, /Create your free guide/);
+  assert.match(hero, /Create your free agent/);
 });
 
 test('press kit records the dated Smol Hunt result without unsupported customer claims', () => {

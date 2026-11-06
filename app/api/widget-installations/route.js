@@ -5,7 +5,7 @@ import { isSubscriptionLive, getEffectiveTier } from '@/lib/plans';
 import { rateLimitResponse } from '@/lib/rate-limit';
 import { sanitizeWidgetInput } from '@/lib/widget-installations';
 
-const WIDGET_SELECT = 'id, name, is_enabled, allowed_origins, position, launcher_color, pre_chat_enabled, pre_chat_email_enabled, pre_chat_email_required, pre_chat_intro, created_at, updated_at';
+const WIDGET_SELECT = 'id, name, is_enabled, allowed_origins, position, launcher_color, pre_chat_enabled, pre_chat_email_enabled, pre_chat_email_required, pre_chat_intro, pre_chat_style, created_at, updated_at';
 
 async function getAuthenticatedUser() {
   const cookieStore = await cookies();

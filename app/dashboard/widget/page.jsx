@@ -24,6 +24,9 @@ import {
 import { toast } from 'react-hot-toast';
 import { buildWidgetEmbedCode } from '@/lib/widget-installations';
 import { resolveWidgetTheme, WIDGET_SURFACE_SHADOW } from '@/lib/widget-theme';
+import { PRE_CHAT_COLOR_FIELDS, resolvePreChatStyle } from '@/lib/widget-pre-chat-style';
+import ColorField from '@/components/agent-editor/ColorField';
+import WidgetPreChatForm from '@/components/WidgetPreChatForm';
 import { hasAgencyFeatures } from '@/lib/plans';
 import UpgradePrompt from '@/components/UpgradePrompt';
 import { useDashboardPageReady } from '@/lib/dashboard-page-ready';
@@ -38,6 +41,7 @@ const DEFAULT_FORM = {
   pre_chat_email_enabled: true,
   pre_chat_email_required: false,
   pre_chat_intro: 'Tell us who you are so we can better assist you.',
+  pre_chat_style: {},
 };
 
 function formFromWidget(widget, agent) {
@@ -51,6 +55,7 @@ function formFromWidget(widget, agent) {
     pre_chat_email_enabled: widget.pre_chat_email_enabled !== false,
     pre_chat_email_required: widget.pre_chat_email_required === true,
     pre_chat_intro: widget.pre_chat_intro || DEFAULT_FORM.pre_chat_intro,
+    pre_chat_style: widget.pre_chat_style || {},
   };
 }
 
@@ -64,8 +69,10 @@ function WidgetPreview({ form, agent, mobile }) {
     agent,
   });
   const emailAccessRequired = agent?.access_level === 'email';
-  const showsEmail = emailAccessRequired || form.pre_chat_email_enabled;
-  const requiresEmail = emailAccessRequired || form.pre_chat_email_required;
+  const showsEmail = emailAccessRequired || (form.pre_chat_enabled && form.pre_chat_email_enabled);
+  const requiresEmail = emailAccessRequired || (form.pre_chat_enabled && form.pre_chat_email_enabled && form.pre_chat_email_required);
+  const preChatColors = resolvePreChatStyle(form.pre_chat_style, theme);
+  const needsVisitorForm = form.pre_chat_enabled || (agent?.access_level && agent.access_level !== 'public');
   return (
     <div className={`relative mx-auto overflow-hidden rounded-[28px] border border-white/10 bg-[#f7f7f8] shadow-2xl transition-all ${mobile ? 'h-[500px] w-[280px]' : 'h-[500px] w-full max-w-[680px]'}`}>
       <div className="h-12 border-b border-black/5 bg-white px-4 flex items-center gap-2">
@@ -99,15 +106,19 @@ function WidgetPreview({ form, agent, mobile }) {
             <p className="text-[11px] text-white/75">Online</p>
           </div>
         </div>
-        <div className="flex-1 overflow-hidden p-4" style={{ backgroundColor: theme.chatBgColor }}>
-          {form.pre_chat_enabled ? (
-            <div className="mx-auto max-w-[260px]">
-              <p className="text-xs font-bold" style={{ color: theme.headingTextColor }}>Before we start</p>
-              <p className="mt-1 line-clamp-2 text-[9px] leading-relaxed" style={{ color: theme.gatekeeperTextColor }}>{form.pre_chat_intro}</p>
-              <div className="mt-2 h-7 rounded-lg border border-white/15 bg-white/10 px-2 text-[9px] leading-7 text-gray-400">Your name</div>
-              {showsEmail && <div className="mt-1.5 h-7 rounded-lg border border-white/15 bg-white/10 px-2 text-[9px] leading-7 text-gray-400">Email{requiresEmail ? '' : ' (optional)'}</div>}
-              <div className="mt-2 h-7 rounded-lg text-center text-[9px] font-bold leading-7" style={{ backgroundColor: theme.ctaButtonColor, color: theme.ctaTextColor }}>Start chat</div>
-            </div>
+        <div className="min-h-0 flex-1 overflow-y-auto p-4" style={{ backgroundColor: needsVisitorForm ? preChatColors.backgroundColor : theme.chatBgColor }}>
+          {needsVisitorForm ? (
+            <WidgetPreChatForm
+              colors={preChatColors}
+              intro={form.pre_chat_intro}
+              showIntro={form.pre_chat_enabled}
+              showEmail={showsEmail}
+              requireEmail={requiresEmail}
+              requirePassword={agent?.access_level === 'password'}
+              showPrivacy={form.pre_chat_enabled}
+              submitLabel={form.pre_chat_enabled ? 'Start chat' : 'Continue'}
+              preview
+            />
           ) : (
             <div className="max-w-[82%] rounded-2xl rounded-tl-sm px-3 py-2 text-xs leading-relaxed text-white shadow-sm" style={{ backgroundColor: theme.aiBubbleColor }}>
               {agent?.welcome_message || 'Hi! How can I help you today?'}
@@ -149,6 +160,9 @@ export default function WebsiteWidgetPage() {
   );
   const agencyBranding = hasAgencyFeatures(subscription?.tier);
   const emailAccessRequired = agent?.access_level === 'email';
+  const preChatColors = resolvePreChatStyle(form.pre_chat_style, resolveWidgetTheme({
+    widget: { launcher_color: form.launcher_color }, agent,
+  }));
   const isDirty = useMemo(
     () => !widget || !savedForm || formSnapshot(form) !== formSnapshot(savedForm),
     [form, savedForm, widget]
@@ -425,6 +439,24 @@ export default function WebsiteWidgetPage() {
                         </label>
                       )}
                     </div>
+                    <details className="border-t border-white/10 pt-4">
+                      <summary className="cursor-pointer text-sm font-semibold text-gray-200">Pre-chat colors</summary>
+                      <p className="mt-2 text-xs leading-relaxed text-gray-400">Style the customer-details form independently of the chat. Changes appear in the preview.</p>
+                      <div className="mt-4 space-y-4">
+                        {PRE_CHAT_COLOR_FIELDS.map(({ key, label }) => (
+                          <ColorField
+                            key={key}
+                            label={label}
+                            value={form.pre_chat_style?.[key] ?? preChatColors[key]}
+                            placeholder="#rrggbb or #rrggbbaa"
+                            onChange={(value) => setForm((current) => ({
+                              ...current,
+                              pre_chat_style: { ...current.pre_chat_style, [key]: value },
+                            }))}
+                          />
+                        ))}
+                      </div>
+                    </details>
                   </div>
                 )}
               </div>

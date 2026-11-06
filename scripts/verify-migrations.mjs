@@ -122,6 +122,13 @@ for (const file of migrationFiles) {
     `);
   }
 
+  if (file === '20261106020000_add_widget_pre_chat_style.sql') {
+    await db.exec(`
+      INSERT INTO public.widget_installations (owner_id, agent_config_id)
+      SELECT user_id, id FROM public.agent_configs WHERE user_id = '${fixtureUserId}';
+    `);
+  }
+
   const sql = await readFile(join(migrationsDirectory, file), 'utf8');
   try {
     await db.exec(sql);
@@ -138,6 +145,24 @@ async function scalar(sql, column = 'value') {
 function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
+
+assert(
+  await scalar(`SELECT pre_chat_style = '{}'::jsonb AS value FROM public.widget_installations WHERE owner_id = '${fixtureUserId}'`) === true,
+  'Existing widget did not receive empty pre-chat style defaults.'
+);
+await db.exec(`UPDATE public.widget_installations SET pre_chat_style = '{"labelColor":"#ffffff","inputBackgroundColor":"#12345678"}'::jsonb WHERE owner_id = '${fixtureUserId}'`);
+assert(
+  await scalar(`SELECT pre_chat_style->>'inputBackgroundColor' = '#12345678' AS value FROM public.widget_installations WHERE owner_id = '${fixtureUserId}'`) === true,
+  'Pre-chat color overrides did not survive a database round trip.'
+);
+let invalidPreChatStyleRejected = false;
+try {
+  await db.exec(`UPDATE public.widget_installations SET pre_chat_style = '[]'::jsonb WHERE owner_id = '${fixtureUserId}'`);
+} catch (error) {
+  if (error.code !== '23514') throw error;
+  invalidPreChatStyleRejected = true;
+}
+assert(invalidPreChatStyleRejected, 'The database accepted a non-object pre-chat style.');
 
 const credentialIsValid = await scalar(`
   SELECT (

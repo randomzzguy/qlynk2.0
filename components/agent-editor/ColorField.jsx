@@ -1,17 +1,22 @@
+import { useId } from 'react';
+
 export default function ColorField({
   label,
   value,
   onChange,
-  hint
+  hint,
+  placeholder = '#rrggbb or rgba(...)',
 }) {
+  const id = useId();
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-400 mb-2">{label}</label>
+      <label htmlFor={id} className="block text-sm font-medium text-gray-400 mb-2">{label}</label>
       {hint && <p className="text-xs text-gray-500 mb-2">{hint}</p>}
       <div className="flex gap-3 items-center">
         <div className="relative">
           <input
             type="color"
+            aria-label={`${label} picker`}
             value={value?.length === 9 ? value.substring(0, 7) : (value || '#000000')}
             onChange={(e) => {
               // If the original value had alpha, try to preserve it
@@ -26,10 +31,11 @@ export default function ColorField({
         </div>
         <input
           type="text"
+          id={id}
           value={value || ''}
           onChange={(e) => onChange(e.target.value)}
-          className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all font-mono text-sm"
-          placeholder="#rrggbb or rgba(...)"
+          className="min-w-0 flex-1 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f46530]/50 focus:bg-gray-900 transition-all font-mono text-sm"
+          placeholder={placeholder}
         />
       </div>
     </div>

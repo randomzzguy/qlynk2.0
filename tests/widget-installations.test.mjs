@@ -42,6 +42,7 @@ test('widget configuration is bounded and safe', () => {
     pre_chat_email_enabled: true,
     pre_chat_email_required: false,
     pre_chat_intro: 'Tell us who you are.',
+    pre_chat_style: {},
   });
   assert.deepEqual(valid.value, {
     name: 'Client support',
@@ -53,6 +54,7 @@ test('widget configuration is bounded and safe', () => {
     pre_chat_email_enabled: true,
     pre_chat_email_required: false,
     pre_chat_intro: 'Tell us who you are.',
+    pre_chat_style: {},
   });
 
   assert.match(sanitizeWidgetInput({ name: '', allowed_origins: [] }).error, /name/i);

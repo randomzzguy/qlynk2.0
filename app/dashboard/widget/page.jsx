@@ -95,14 +95,14 @@ function WidgetPreview({ form, agent, mobile }) {
               : <Bot size={18} />}
           </div>
           <div>
-            <p className="text-sm font-bold">{agent?.agent_name || 'Qlynk Agent'}</p>
+            <p className="text-sm font-bold" style={{ color: theme.headingTextColor }}>{agent?.agent_name || 'Qlynk Agent'}</p>
             <p className="text-[11px] text-white/75">Online</p>
           </div>
         </div>
         <div className="flex-1 overflow-hidden p-4" style={{ backgroundColor: theme.chatBgColor }}>
           {form.pre_chat_enabled ? (
             <div className="mx-auto max-w-[260px]">
-              <p className="text-xs font-bold text-white">Before we start</p>
+              <p className="text-xs font-bold" style={{ color: theme.headingTextColor }}>Before we start</p>
               <p className="mt-1 line-clamp-2 text-[9px] leading-relaxed" style={{ color: theme.gatekeeperTextColor }}>{form.pre_chat_intro}</p>
               <div className="mt-2 h-7 rounded-lg border border-white/15 bg-white/10 px-2 text-[9px] leading-7 text-gray-400">Your name</div>
               {showsEmail && <div className="mt-1.5 h-7 rounded-lg border border-white/15 bg-white/10 px-2 text-[9px] leading-7 text-gray-400">Email{requiresEmail ? '' : ' (optional)'}</div>}

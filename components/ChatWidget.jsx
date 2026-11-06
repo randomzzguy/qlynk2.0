@@ -27,6 +27,7 @@ export default function ChatWidget({
   aiBubbleColor = '#3b82f620',
   ctaButtonColor,
   ctaTextColor = '#ffffff',
+  headingTextColor = '#ffffff',
   gatekeeperTextColor = '#9ca3af',
   fontFamily = 'Inter',
   preChatEnabled = false,
@@ -44,6 +45,7 @@ export default function ChatWidget({
       ai_bubble_color: aiBubbleColor,
       cta_button_color: ctaButtonColor,
       cta_text_color: ctaTextColor,
+      heading_text_color: headingTextColor,
       gatekeeper_text_color: gatekeeperTextColor,
       font_family: fontFamily,
     },
@@ -322,7 +324,7 @@ export default function ChatWidget({
                 </div>
               )}
               <div>
-                <h3 className="font-semibold text-sm">{agentName}</h3>
+                <h3 className="font-semibold text-sm" style={{ color: widgetTheme.headingTextColor }}>{agentName}</h3>
                 <p className="text-xs opacity-80 flex items-center gap-1.5" role="status" aria-live="polite">
                   {responsePhase !== 'idle' && (
                     <span className="relative flex h-2 w-2" aria-hidden="true">
@@ -353,7 +355,7 @@ export default function ChatWidget({
               <form onSubmit={handleGatekeeperSubmit} className="space-y-3">
                 {preChatEnabled && (
                   <div className="mb-4">
-                    <h4 className="text-base font-bold text-white">Before we start</h4>
+                    <h4 className="text-base font-bold" style={{ color: widgetTheme.headingTextColor }}>Before we start</h4>
                     <p className="mt-1 text-xs leading-relaxed" style={{ color: widgetTheme.gatekeeperTextColor }}>
                       {preChatIntro}
                     </p>

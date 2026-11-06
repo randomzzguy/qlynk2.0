@@ -17,7 +17,7 @@ export default function AgentVisualSection({
               </div>
               Visual Style
             </h2>
-            <p className="text-sm text-gray-400 mb-6">Customize every color and font on your public chat page.</p>
+            <p className="text-sm text-gray-400 mb-6">Customize the colors and font on your public chat page and website widget.</p>
 
             <div className="grid lg:grid-cols-2 gap-8">
               {/* Controls column */}
@@ -61,6 +61,12 @@ export default function AgentVisualSection({
                     hint="Text on the CTA button"
                   />
                   <ColorField
+                    label="Heading Text"
+                    value={config.heading_text_color || '#ffffff'}
+                    onChange={(v) => updateConfig('heading_text_color', v)}
+                    hint="Agent name and welcome headings"
+                  />
+                  <ColorField
                     label="Bio / Pre-Chat Text"
                     value={config.pre_chat_text_color}
                     onChange={(v) => updateConfig('pre_chat_text_color', v)}
@@ -96,7 +102,7 @@ export default function AgentVisualSection({
                 >
                   {/* Mini landing preview */}
                   <div className="p-6 border-b border-white/10">
-                    <p className="text-white font-black text-lg mb-1">{config.agent_name || 'Your AI'}</p>
+                    <p className="font-black text-lg mb-1" style={{ color: config.heading_text_color || '#ffffff' }}>{config.agent_name || 'Your AI'}</p>
                     <p className="text-xs mb-4" style={{ color: config.pre_chat_text_color || '#9ca3af' }}>
                       {config.bio || 'Ask me anything about my work or background.'}
                     </p>
@@ -128,7 +134,7 @@ export default function AgentVisualSection({
                   </div>
                   {/* Mini gatekeeper preview */}
                   <div className="p-4 border-t border-white/10">
-                    <p className="text-xs font-bold text-white mb-1">Welcome Page</p>
+                    <p className="text-xs font-bold mb-1" style={{ color: config.heading_text_color || '#ffffff' }}>Welcome Page</p>
                     <p className="text-xs" style={{ color: config.gatekeeper_text_color || '#9ca3af' }}>
                       Please introduce yourself before chatting with {config.agent_name || 'Your AI'}.
                     </p>

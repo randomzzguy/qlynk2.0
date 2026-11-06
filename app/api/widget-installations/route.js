@@ -18,7 +18,7 @@ async function loadOwnerContext(admin, userId) {
   const [{ data: agentConfig, error: configError }, { data: subscription, error: subscriptionError }] = await Promise.all([
     admin
       .from('agent_configs')
-      .select('id, agent_name, agent_avatar, welcome_message, primary_color, access_level, chat_bg_color, user_bubble_color, ai_bubble_color, cta_button_color, cta_text_color, gatekeeper_text_color, font_family')
+      .select('id, agent_name, agent_avatar, welcome_message, primary_color, access_level, chat_bg_color, user_bubble_color, ai_bubble_color, cta_button_color, cta_text_color, heading_text_color, gatekeeper_text_color, font_family')
       .eq('user_id', userId)
       .maybeSingle(),
     admin.from('subscriptions').select('tier, status, trial_ends_at').eq('user_id', userId).maybeSingle(),

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 import { DEFAULT_WIDGET_THEME, resolveWidgetTheme, WIDGET_SURFACE_SHADOW } from '../lib/widget-theme.js';
+import { AGENT_CONFIG_SNAPSHOT_SELECT, sanitizeEditableAgentConfig } from '../lib/agent-config.js';
 
 test('widget theme uses the installation accent and every live visual-style field', () => {
   assert.deepEqual(
@@ -15,6 +16,7 @@ test('widget theme uses the installation accent and every live visual-style fiel
         ai_bubble_color: '#334455',
         cta_button_color: '#445566',
         cta_text_color: '#fefefe',
+        heading_text_color: '#e45258',
         gatekeeper_text_color: '#aabbcc',
         font_family: 'Poppins',
       },
@@ -26,6 +28,7 @@ test('widget theme uses the installation accent and every live visual-style fiel
       aiBubbleColor: '#334455',
       ctaButtonColor: '#445566',
       ctaTextColor: '#fefefe',
+      headingTextColor: '#e45258',
       gatekeeperTextColor: '#aabbcc',
       fontFamily: 'Poppins',
     },
@@ -37,10 +40,22 @@ test('widget theme falls back consistently when optional colors are blank', () =
 
   const branded = resolveWidgetTheme({
     widget: { launcher_color: '' },
-    agent: { primary_color: '#abcdef', cta_button_color: '   ' },
+    agent: { primary_color: '#abcdef', cta_button_color: '   ', heading_text_color: '   ' },
   });
   assert.equal(branded.accentColor, '#abcdef');
   assert.equal(branded.ctaButtonColor, '#abcdef');
+  assert.equal(branded.headingTextColor, '#ffffff');
+});
+
+test('heading color survives draft and publish serialization without retaining private fields', () => {
+  const config = sanitizeEditableAgentConfig({
+    agent_type: 'business',
+    heading_text_color: '#e45258',
+    access_password_hash: 'private-fixture',
+  });
+  assert.deepEqual(config, { agent_type: 'business', heading_text_color: '#e45258' });
+  assert.ok(AGENT_CONFIG_SNAPSHOT_SELECT.split(', ').includes('heading_text_color'));
+  assert.equal(resolveWidgetTheme({ agent: JSON.parse(JSON.stringify(config)) }).headingTextColor, '#e45258');
 });
 
 test('widget surface blends into its host without a colored outline', () => {
@@ -68,6 +83,7 @@ test('dashboard preview and live widget share theme resolution and receive the s
     'ai_bubble_color',
     'cta_button_color',
     'cta_text_color',
+    'heading_text_color',
     'gatekeeper_text_color',
     'font_family',
   ]) {

@@ -217,7 +217,11 @@ assert(
 );
 
 await db.exec(`UPDATE public.profiles SET full_name = 'Projection Sync Test' WHERE id = '${fixtureUserId}'`);
-await db.exec(`UPDATE public.agent_configs SET agent_name = 'Projection Sync Agent' WHERE user_id = '${fixtureUserId}'`);
+assert(
+  await scalar(`SELECT heading_text_color = '#ffffff' AS value FROM public.agent_configs_public WHERE user_id = '${fixtureUserId}'`) === true,
+  'Existing agents did not retain white headings after the color migration.'
+);
+await db.exec(`UPDATE public.agent_configs SET agent_name = 'Projection Sync Agent', heading_text_color = '#e45258' WHERE user_id = '${fixtureUserId}'`);
 assert(
   await scalar(`SELECT full_name = 'Projection Sync Test' AS value FROM public.profiles_public WHERE id = '${fixtureUserId}'`) === true,
   'Profile public projection did not synchronize.'
@@ -225,6 +229,10 @@ assert(
 assert(
   await scalar(`SELECT agent_name = 'Projection Sync Agent' AS value FROM public.agent_configs_public WHERE user_id = '${fixtureUserId}'`) === true,
   'Agent public projection did not synchronize.'
+);
+assert(
+  await scalar(`SELECT heading_text_color = '#e45258' AS value FROM public.agent_configs_public WHERE user_id = '${fixtureUserId}'`) === true,
+  'Heading color updates did not synchronize to the public agent projection.'
 );
 
 await db.exec(`UPDATE public.profiles SET username = 'renamed_fixture' WHERE id = '${fixtureUserId}'`);
@@ -409,6 +417,10 @@ const enabledRlsCount = await scalar(`
 assert(enabledRlsCount === rlsTables.length, 'RLS is not enabled on every sensitive table.');
 
 await db.exec('SET ROLE anon;');
+assert(
+  await scalar(`SELECT heading_text_color = '#e45258' AS value FROM public.agent_configs_public WHERE user_id = '${fixtureUserId}'`) === true,
+  'The safe public view does not expose the configured heading color to visitors.'
+);
 for (const table of ['agent_configs', 'agent_knowledge', 'agent_knowledge_chunks', 'agent_knowledge_entities', 'agent_knowledge_entity_aliases', 'agent_knowledge_claims', 'agent_knowledge_claim_evidence', 'agent_knowledge_relationships', 'agent_knowledge_contradictions', 'agent_memory_observations', 'agent_memory_patterns', 'agent_memory_pattern_support', 'agent_memory_preferences', 'agent_documents', 'profiles', 'subscriptions', 'stripe_webhook_events', 'api_rate_limits', 'agent_rule_configs', 'agent_rule_config_versions', 'agent_security_events', 'agent_knowledge_gaps', 'agent_message_feedback', 'agent_config_drafts', 'agent_publish_versions', 'widget_installations']) {
   let count = 0;
   try {

@@ -60,6 +60,7 @@ export default function FullPageChat({
   const aiBubbleBg = agentConfig.ai_bubble_color || 'rgba(59,130,246,0.12)';
   const ctaBtnColor = agentConfig.cta_button_color || agentConfig.primary_color || '#f46530';
   const ctaTextColor = agentConfig.cta_text_color || '#ffffff';
+  const headingTextColor = agentConfig.heading_text_color || '#ffffff';
   const preChatTextColor = agentConfig.pre_chat_text_color || '#9ca3af';
   const gatekeeperTextColor = agentConfig.gatekeeper_text_color || '#9ca3af';
   const agentType = getAgentTypeDefinition(agentConfig.agent_type);
@@ -351,7 +352,7 @@ export default function FullPageChat({
                   <div className="absolute -bottom-2 -right-2 bg-green-500 w-6 h-6 rounded-full border-4 border-[#0a0a0f] shadow-lg" />
                 </div>
 
-                <h1 className="text-4xl font-black text-white tracking-tight mb-2">
+                <h1 className="text-4xl font-black tracking-tight mb-2" style={{ color: headingTextColor }}>
                   {agentConfig.agent_name || username}
                 </h1>
                 <p className="font-bold uppercase tracking-widest text-xs mb-6 px-4 py-1.5 rounded-full border"
@@ -464,7 +465,7 @@ export default function FullPageChat({
                   <User className="w-10 h-10" style={{ color: ctaBtnColor }} />
                 </div>
                 
-                <h2 className="text-3xl font-black text-white tracking-tight mb-2">Welcome</h2>
+                <h2 className="text-3xl font-black tracking-tight mb-2" style={{ color: headingTextColor }}>Welcome</h2>
                 <p className="mb-8 max-w-md" style={{ color: gatekeeperTextColor }}>
                   Please introduce yourself before chatting with {agentConfig.agent_name}.
                 </p>
@@ -563,7 +564,7 @@ export default function FullPageChat({
                   <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-[#0a0a0f]" />
                 </div>
                 <div>
-                  <h1 className="font-bold text-lg leading-tight">{agentConfig.agent_name}</h1>
+                  <h1 className="font-bold text-lg leading-tight" style={{ color: headingTextColor }}>{agentConfig.agent_name}</h1>
                   <p
                     className="text-[10px] text-gray-400 flex items-center gap-1.5 uppercase tracking-widest font-black"
                     role="status"

@@ -47,6 +47,7 @@ export function createInitialAgentConfig() {
     ai_bubble_color: '#3b82f620',
     cta_button_color: '#f46530',
     cta_text_color: '#ffffff',
+    heading_text_color: '#ffffff',
     pre_chat_text_color: '#9ca3af',
     gatekeeper_text_color: '#9ca3af',
     font_family: 'Inter',

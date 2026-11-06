@@ -30,7 +30,7 @@ export default async function EmbedPage({ params }) {
     const [{ data: privateConfig }, { data: ownerProfile }, { data: ownerSubscription }] = await Promise.all([
       adminSupabase
         .from('agent_configs')
-        .select('id, user_id, agent_name, agent_avatar, welcome_message, primary_color, access_level, agent_type, chat_bg_color, user_bubble_color, ai_bubble_color, cta_button_color, cta_text_color, gatekeeper_text_color, font_family, is_enabled')
+        .select('id, user_id, agent_name, agent_avatar, welcome_message, primary_color, access_level, agent_type, chat_bg_color, user_bubble_color, ai_bubble_color, cta_button_color, cta_text_color, heading_text_color, gatekeeper_text_color, font_family, is_enabled')
         .eq('id', installation.agent_config_id)
         .eq('user_id', installation.owner_id)
         .maybeSingle(),
@@ -105,6 +105,7 @@ export default async function EmbedPage({ params }) {
           aiBubbleColor={agentConfig.ai_bubble_color}
           ctaButtonColor={agentConfig.cta_button_color}
           ctaTextColor={agentConfig.cta_text_color}
+          headingTextColor={agentConfig.heading_text_color}
           gatekeeperTextColor={agentConfig.gatekeeper_text_color}
           fontFamily={agentConfig.font_family}
           tier={getEffectiveTier(subscription)}

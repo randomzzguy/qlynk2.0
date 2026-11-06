@@ -117,7 +117,7 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
       )}
 
       {section === 'visual' && (
-        <AgentVisualSection config={config} updateConfig={updateConfig} isPersonalAgent={isPersonalAgent} />
+        <AgentVisualSection config={config} updateConfig={updateConfig} avatarUploading={avatarUploading} handleAvatarUpload={handleAvatarUpload} />
       )}
 
       {section === 'profile' && (

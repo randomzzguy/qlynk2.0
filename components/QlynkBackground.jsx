@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-export default function QlynkBackground() {
+export default function QlynkBackground({ contained = false, background }) {
   const particleFieldRef = useRef(null);
   const neuralNetworkRef = useRef(null);
   const particleIntervalRef = useRef(null);
@@ -45,7 +45,7 @@ export default function QlynkBackground() {
   }, []);
 
   return (
-    <div className="qlynk-bg-container">
+    <div className="qlynk-bg-container" style={{ ...(contained ? { position: 'absolute', width: '100%', height: '100%' } : {}), ...(background ? { background } : {}) }}>
       <div className="qlynk-holographic-overlay" />
       <div className="qlynk-particle-field" ref={particleFieldRef} />
       <div className="qlynk-neural-network" ref={neuralNetworkRef} />

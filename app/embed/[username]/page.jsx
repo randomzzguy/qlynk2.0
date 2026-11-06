@@ -96,7 +96,8 @@ export default async function EmbedPage({ params }) {
           agentName={agentConfig.agent_name}
           agentAvatar={agentConfig.agent_avatar}
           welcomeMessage={agentConfig.welcome_message}
-          primaryColor={widget?.launcher_color || agentConfig.primary_color}
+          primaryColor={agentConfig.primary_color}
+          launcherColor={widget?.launcher_color}
           position={widget?.position || agentConfig.position}
           accessLevel={agentConfig.access_level}
           agentType={agentConfig.agent_type}

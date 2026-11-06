@@ -11,6 +11,8 @@ import { isOriginAllowed } from '@/lib/widget-installations';
 import { resolveWidgetTheme, WIDGET_SURFACE_SHADOW } from '@/lib/widget-theme';
 import { resolvePreChatStyle } from '@/lib/widget-pre-chat-style';
 import WidgetPreChatForm from '@/components/WidgetPreChatForm';
+import ChatFont from '@/components/ChatFont';
+import { chatFontFamily, normalizeWelcomeMessage } from '@/lib/chat-typography';
 
 export default function ChatWidget({ 
   username, 
@@ -18,6 +20,7 @@ export default function ChatWidget({
   agentAvatar,
   welcomeMessage = 'Hi! How can I help you today?',
   primaryColor = '#f46530',
+  launcherColor,
   position = 'bottom-right',
   accessLevel = 'public',
   agentType = 'personal',
@@ -37,10 +40,12 @@ export default function ChatWidget({
   preChatEmailRequired = false,
   preChatIntro = 'Tell us who you are so we can better assist you.',
   preChatStyle = {},
+  preview = false,
+  previewScreen = 'chat',
 }) {
   const agentTypeDefinition = getAgentTypeDefinition(agentType);
   const widgetTheme = resolveWidgetTheme({
-    widget: { launcher_color: primaryColor },
+    widget: { launcher_color: launcherColor },
     agent: {
       primary_color: primaryColor,
       chat_bg_color: chatBgColor,
@@ -57,13 +62,14 @@ export default function ChatWidget({
   const preChatColors = resolvePreChatStyle(preChatStyle, widgetTheme);
   const showsEmailField = accessLevel === 'email' || (preChatEnabled && preChatEmailEnabled);
   const requiresEmail = accessLevel === 'email' || (preChatEnabled && preChatEmailEnabled && preChatEmailRequired);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(preview);
   const [input, setInput] = useState('');
   const [gatekeeperForm, setGatekeeperForm] = useState({ name: '', email: '', password: '' });
   const [gatekeeperError, setGatekeeperError] = useState('');
-  const [isAuthorized, setIsAuthorized] = useState(!needsVisitorForm);
+  const [isAuthorized, setIsAuthorized] = useState(preview ? previewScreen !== 'pre-chat' : !needsVisitorForm);
   const [accessPassword, setAccessPassword] = useState('');
   const [visitorId] = useState(() => {
+    if (preview) return null;
     const storedId = typeof window !== 'undefined'
       ? localStorage.getItem('qlynk_visitor_id')
       : null;
@@ -82,14 +88,16 @@ export default function ChatWidget({
 
   // Store visitor ID in localStorage
   useEffect(() => {
+    if (preview) return;
     if (typeof window !== 'undefined') {
       localStorage.setItem('qlynk_visitor_id', visitorId);
     }
-  }, [visitorId]);
+  }, [preview, visitorId]);
 
   // Handshake with the loader. event.origin is the actual parent website and
   // cannot be supplied through a query parameter.
   useEffect(() => {
+    if (preview) return;
     const handleInit = (event) => {
       if (event.source !== window.parent || event.data?.type !== 'qlynk_widget_init') return;
       if (widgetId && !isOriginAllowed(event.origin, allowedOrigins)) {
@@ -108,18 +116,18 @@ export default function ChatWidget({
     // so announce readiness only after it is safe to receive initialization.
     window.parent.postMessage({ type: 'qlynk_widget_ready' }, '*');
     return () => window.removeEventListener('message', handleInit);
-  }, [allowedOrigins, position, widgetId]);
+  }, [allowedOrigins, position, preview, widgetId]);
 
   useEffect(() => {
-    if (!embedReady || !sourceOrigin) return;
+    if (preview || !embedReady || !sourceOrigin) return;
     window.parent.postMessage(
       { type: isOpen ? 'qlynk_chat_open' : 'qlynk_chat_closed' },
       sourceOrigin
     );
-  }, [embedReady, isOpen, sourceOrigin]);
+  }, [embedReady, isOpen, preview, sourceOrigin]);
 
   useEffect(() => {
-    if (!embedReady || !widgetId || !sourceOrigin) return;
+    if (preview || !embedReady || !widgetId || !sourceOrigin) return;
     const sessionKey = `qlynk_widget_viewed_${widgetId}`;
     if (sessionStorage.getItem(sessionKey)) return;
     sessionStorage.setItem(sessionKey, '1');
@@ -134,22 +142,23 @@ export default function ChatWidget({
         source_origin: sourceOrigin,
       }),
     }).catch(() => {});
-  }, [embedReady, sourceOrigin, username, visitorId, widgetId]);
+  }, [embedReady, preview, sourceOrigin, username, visitorId, widgetId]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, responsePhase]);
+    if (!preview) messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, preview, responsePhase]);
 
   // Focus input when chat opens
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !preview) {
       inputRef.current?.focus();
     }
-  }, [isOpen]);
+  }, [isOpen, preview]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (preview) return;
     if (!input.trim() || isLoading) return;
     if (!isAuthorized) {
       setGatekeeperError('Please complete access first.');
@@ -298,22 +307,29 @@ export default function ChatWidget({
     return message.content || '';
   };
 
-  if (embedBlocked || !embedReady) return null;
+  if (!preview && (embedBlocked || !embedReady)) return null;
+
+  const showVisitorForm = preview ? previewScreen === 'pre-chat' : !isAuthorized && needsVisitorForm;
+  const visibleMessages = preview && !showVisitorForm ? [
+    { id: 'preview-user', role: 'user', content: 'What can you help me with?' },
+    { id: 'preview-agent', role: 'assistant', content: 'Ask me about our services, projects, or how to get started.' },
+  ] : messages;
 
   return (
-    <div className={`fixed ${positionClasses[position] || positionClasses['bottom-right']} z-50`} style={{ fontFamily: widgetTheme.fontFamily }}>
+    <div className={preview ? 'relative flex h-full min-h-0 w-full flex-col items-end' : `fixed ${positionClasses[position] || positionClasses['bottom-right']} z-50`} style={{ fontFamily: chatFontFamily(widgetTheme.fontFamily), letterSpacing: 'normal', wordSpacing: 'normal' }}>
+      <ChatFont family={widgetTheme.fontFamily} />
       {/* Chat Window */}
       {isOpen && (
         <div 
-          className="mb-4 h-[min(520px,calc(100dvh-100px))] w-[min(360px,calc(100vw-32px))] rounded-2xl flex flex-col overflow-hidden"
+          className={preview ? 'mb-4 min-h-0 w-full flex-1 rounded-2xl flex flex-col overflow-hidden' : 'mb-4 h-[min(520px,calc(100dvh-100px))] w-[min(360px,calc(100vw-32px))] rounded-2xl flex flex-col overflow-hidden'}
           style={{ backgroundColor: widgetTheme.chatBgColor, boxShadow: WIDGET_SURFACE_SHADOW }}
         >
           {/* Header */}
           <div 
-            className="px-4 py-3 flex items-center justify-between text-white"
+            className="shrink-0 px-4 py-3 flex items-center justify-between text-white"
             style={{ backgroundColor: widgetTheme.accentColor }}
           >
-            <div className="flex items-center gap-3">
+            <div className="flex min-w-0 items-center gap-3">
               {agentAvatar ? (
                 <Image 
                   src={agentAvatar} 
@@ -327,8 +343,8 @@ export default function ChatWidget({
                   <Bot size={20} />
                 </div>
               )}
-              <div>
-                <h3 className="font-semibold text-sm" style={{ color: widgetTheme.headingTextColor }}>{agentName}</h3>
+              <div className="min-w-0">
+                <h3 className="truncate font-semibold text-sm" style={{ color: widgetTheme.headingTextColor }}>{agentName}</h3>
                 <p className="text-xs opacity-80 flex items-center gap-1.5" role="status" aria-live="polite">
                   {responsePhase !== 'idle' && (
                     <span className="relative flex h-2 w-2" aria-hidden="true">
@@ -354,8 +370,8 @@ export default function ChatWidget({
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ backgroundColor: !isAuthorized && needsVisitorForm ? preChatColors.backgroundColor : widgetTheme.chatBgColor }} aria-live="polite" aria-busy={isLoading}>
-            {!isAuthorized && needsVisitorForm ? (
+          <div className="min-h-0 flex-1 overflow-y-auto p-4 space-y-4" style={{ backgroundColor: showVisitorForm ? preChatColors.backgroundColor : widgetTheme.chatBgColor }} aria-live="polite" aria-busy={isLoading}>
+            {showVisitorForm ? (
               <WidgetPreChatForm
                 colors={preChatColors}
                 values={gatekeeperForm}
@@ -369,11 +385,12 @@ export default function ChatWidget({
                 showPrivacy={preChatEnabled}
                 submitLabel={preChatEnabled ? 'Start chat' : 'Continue'}
                 error={gatekeeperError}
+                preview={preview}
               />
             ) : (
               <>
             {/* Welcome Message */}
-            {messages.length === 0 && (
+            {(preview || messages.length === 0) && (
               <div className="flex gap-3">
                 <div 
                   className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
@@ -382,16 +399,16 @@ export default function ChatWidget({
                   <Bot size={16} style={{ color: widgetTheme.accentColor }} />
                 </div>
                 <div 
-                  className="rounded-2xl rounded-tl-sm px-4 py-3 max-w-[80%] shadow-sm text-white"
+                  className="min-w-0 rounded-2xl rounded-tl-sm px-4 py-3 max-w-[80%] shadow-sm text-white"
                   style={{ backgroundColor: widgetTheme.aiBubbleColor }}
                 >
-                  <p className="text-sm">{welcomeMessage}</p>
+                  <p className="whitespace-pre-wrap break-words text-left text-sm leading-relaxed">{normalizeWelcomeMessage(welcomeMessage)}</p>
                 </div>
               </div>
             )}
 
             {/* Chat Messages */}
-            {messages.map((message) => {
+            {visibleMessages.map((message) => {
               const isUser = message.role === 'user';
               const text = getMessageText(message);
               if (!isUser && !text && isLoading) return null;
@@ -414,7 +431,7 @@ export default function ChatWidget({
                     )}
                   </div>
                   <div 
-                    className={`rounded-2xl px-4 py-3 max-w-[80%] shadow-sm ${
+                    className={`min-w-0 rounded-2xl px-4 py-3 max-w-[80%] shadow-sm ${
                       isUser 
                         ? 'rounded-tr-sm text-white' 
                         : 'rounded-tl-sm text-white'
@@ -447,7 +464,7 @@ export default function ChatWidget({
           </div>
 
           {/* Input Area */}
-          <form onSubmit={handleSubmit} className="p-4 border-t border-white/10" style={{ backgroundColor: widgetTheme.chatBgColor }}>
+          <form onSubmit={handleSubmit} className="shrink-0 p-4 border-t border-white/10" style={{ backgroundColor: widgetTheme.chatBgColor }}>
             <div className="flex gap-2">
               <input
                 ref={inputRef}
@@ -456,12 +473,14 @@ export default function ChatWidget({
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={isLoading ? 'The agent is responding...' : 'Type a message...'}
                 disabled={isLoading || !isAuthorized}
-                className="flex-1 px-4 py-2.5 bg-white/10 text-white placeholder:text-gray-500 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 disabled:opacity-50"
+                readOnly={preview}
+                aria-label="Message"
+                className="min-w-0 flex-1 px-4 py-2.5 bg-white/10 text-white placeholder:text-gray-500 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 disabled:opacity-50"
                 style={{ '--tw-ring-color': widgetTheme.accentColor }}
               />
               <button
                 type="submit"
-                disabled={!input.trim() || isLoading || !isAuthorized}
+                disabled={preview || !input.trim() || isLoading || !isAuthorized}
                 className="p-2.5 rounded-full text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
                 style={{ backgroundColor: widgetTheme.ctaButtonColor, color: widgetTheme.ctaTextColor }}
                 aria-label="Send message"
@@ -486,10 +505,10 @@ export default function ChatWidget({
       {/* Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 rounded-full text-white shadow-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+        className="w-14 h-14 shrink-0 rounded-full text-white shadow-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95"
         style={{ 
-          backgroundColor: widgetTheme.accentColor,
-          boxShadow: `0 10px 40px ${widgetTheme.accentColor}50`
+          backgroundColor: widgetTheme.launcherColor,
+          boxShadow: `0 10px 40px ${widgetTheme.launcherColor}50`
         }}
         aria-label={isOpen ? 'Close chat' : 'Open chat'}
       >

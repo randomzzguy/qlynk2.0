@@ -4,6 +4,7 @@ import { createAdminClient, createClient } from '@/utils/supabase/server';
 import { isSubscriptionLive, getEffectiveTier } from '@/lib/plans';
 import { rateLimitResponse } from '@/lib/rate-limit';
 import { sanitizeWidgetInput } from '@/lib/widget-installations';
+import { sanitizePreChatStyle } from '@/lib/widget-pre-chat-style';
 
 const WIDGET_SELECT = 'id, name, is_enabled, allowed_origins, position, launcher_color, pre_chat_enabled, pre_chat_email_enabled, pre_chat_email_required, pre_chat_intro, pre_chat_style, created_at, updated_at';
 
@@ -18,7 +19,7 @@ async function loadOwnerContext(admin, userId) {
   const [{ data: agentConfig, error: configError }, { data: subscription, error: subscriptionError }] = await Promise.all([
     admin
       .from('agent_configs')
-      .select('id, agent_name, agent_avatar, welcome_message, primary_color, access_level, chat_bg_color, user_bubble_color, ai_bubble_color, cta_button_color, cta_text_color, heading_text_color, gatekeeper_text_color, font_family')
+      .select('id, agent_name, agent_avatar, welcome_message, primary_color, access_level, agent_type, chat_bg_color, user_bubble_color, ai_bubble_color, cta_button_color, cta_text_color, heading_text_color, gatekeeper_text_color, font_family')
       .eq('user_id', userId)
       .maybeSingle(),
     admin.from('subscriptions').select('tier, status, trial_ends_at').eq('user_id', userId).maybeSingle(),
@@ -105,7 +106,8 @@ export async function PUT(request) {
   const user = await getAuthenticatedUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const input = sanitizeWidgetInput(await request.json().catch(() => null));
+  const body = await request.json().catch(() => null);
+  const input = sanitizeWidgetInput(body);
   if (input.error) return NextResponse.json({ error: input.error }, { status: 400 });
 
   const admin = createAdminClient();
@@ -117,15 +119,41 @@ export async function PUT(request) {
     return NextResponse.json({ error: 'Activate a live plan before publishing widget changes.' }, { status: 403 });
   }
 
+  const updates = { ...input.value };
+  if (!Object.hasOwn(body, 'pre_chat_style')) delete updates.pre_chat_style;
   const updatedAt = new Date().toISOString();
   const { data: widget, error } = await admin
     .from('widget_installations')
-    .update({ ...input.value, updated_at: updatedAt })
+    .update({ ...updates, updated_at: updatedAt })
     .eq('owner_id', user.id)
     .select(WIDGET_SELECT)
     .maybeSingle();
   if (error || !widget) {
     return NextResponse.json({ error: 'Unable to update the website widget.' }, { status: error ? 500 : 404 });
   }
+  return NextResponse.json({ widget });
+}
+
+// Appearance editing must never overwrite installation/access settings from
+// another tab. This endpoint updates only the existing form color overrides.
+export async function PATCH(request) {
+  const limited = await rateLimitResponse(request, 'widget-installation-update', 30, 60 * 1000);
+  if (limited) return limited;
+  const user = await getAuthenticatedUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const body = await request.json().catch(() => null);
+  if (!body || !Object.hasOwn(body, 'pre_chat_style')) {
+    return NextResponse.json({ error: 'Provide pre-chat form colors.' }, { status: 400 });
+  }
+  const style = sanitizePreChatStyle(body.pre_chat_style);
+  if (style.error) return NextResponse.json({ error: style.error }, { status: 400 });
+  const admin = createAdminClient();
+  const context = await loadOwnerContext(admin, user.id);
+  if (context.error) return NextResponse.json({ error: context.error }, { status: context.status || 500 });
+  if (!context.isLive) return NextResponse.json({ error: 'Activate a live plan before publishing widget changes.' }, { status: 403 });
+  const { data: widget, error } = await admin.from('widget_installations')
+    .update({ pre_chat_style: style.value, updated_at: new Date().toISOString() })
+    .eq('owner_id', user.id).select(WIDGET_SELECT).maybeSingle();
+  if (error || !widget) return NextResponse.json({ error: 'Unable to update the website widget.' }, { status: error ? 500 : 404 });
   return NextResponse.json({ widget });
 }

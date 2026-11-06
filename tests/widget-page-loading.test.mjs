@@ -27,6 +27,7 @@ test('Widget page renders its loading state before agent or subscription data is
     '@/lib/plans': plans,
     '@/lib/dashboard-page-ready': { useDashboardPageReady() {} },
     '@/components/agent-editor/ColorField': { default: () => null },
+    '@/components/WidgetPreview': { default: () => null },
     '@/components/WidgetPreChatForm': { default: () => null },
     '@/components/UpgradePrompt': { default: () => null },
   };

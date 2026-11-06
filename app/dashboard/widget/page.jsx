@@ -2,16 +2,13 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import {
-  Bot,
   Check,
   Clipboard,
   Code2,
   ExternalLink,
   Globe2,
   Loader2,
-  MessageCircle,
   Monitor,
   Palette,
   Save,
@@ -23,10 +20,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { buildWidgetEmbedCode } from '@/lib/widget-installations';
-import { resolveWidgetTheme, WIDGET_SURFACE_SHADOW } from '@/lib/widget-theme';
-import { PRE_CHAT_COLOR_FIELDS, resolvePreChatStyle } from '@/lib/widget-pre-chat-style';
-import ColorField from '@/components/agent-editor/ColorField';
-import WidgetPreChatForm from '@/components/WidgetPreChatForm';
+import WidgetPreview from '@/components/WidgetPreview';
 import { hasAgencyFeatures } from '@/lib/plans';
 import UpgradePrompt from '@/components/UpgradePrompt';
 import { useDashboardPageReady } from '@/lib/dashboard-page-ready';
@@ -63,84 +57,6 @@ function formSnapshot(form) {
   return JSON.stringify({ ...form, allowed_origins: form.allowed_origins.trim() });
 }
 
-function WidgetPreview({ form, agent, mobile }) {
-  const theme = resolveWidgetTheme({
-    widget: { launcher_color: form.launcher_color },
-    agent,
-  });
-  const emailAccessRequired = agent?.access_level === 'email';
-  const showsEmail = emailAccessRequired || (form.pre_chat_enabled && form.pre_chat_email_enabled);
-  const requiresEmail = emailAccessRequired || (form.pre_chat_enabled && form.pre_chat_email_enabled && form.pre_chat_email_required);
-  const preChatColors = resolvePreChatStyle(form.pre_chat_style, theme);
-  const needsVisitorForm = form.pre_chat_enabled || (agent?.access_level && agent.access_level !== 'public');
-  return (
-    <div className={`relative mx-auto overflow-hidden rounded-[28px] border border-white/10 bg-[#f7f7f8] shadow-2xl transition-all ${mobile ? 'h-[500px] w-[280px]' : 'h-[500px] w-full max-w-[680px]'}`}>
-      <div className="h-12 border-b border-black/5 bg-white px-4 flex items-center gap-2">
-        <span className="h-2.5 w-2.5 rounded-full bg-red-300" />
-        <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
-        <span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
-        <div className="ml-3 h-6 flex-1 rounded-lg bg-gray-100" />
-      </div>
-      <div className="p-6">
-        <div className="h-5 w-32 rounded bg-gray-200" />
-        <div className="mt-4 h-3 w-full rounded bg-gray-200/70" />
-        <div className="mt-2 h-3 w-4/5 rounded bg-gray-200/70" />
-        <div className="mt-8 grid grid-cols-2 gap-3">
-          <div className="h-24 rounded-xl bg-white shadow-sm" />
-          <div className="h-24 rounded-xl bg-white shadow-sm" />
-        </div>
-      </div>
-
-      <div
-        className={`absolute bottom-20 flex h-[min(360px,calc(100%-92px))] w-[min(340px,calc(100%-24px))] flex-col overflow-hidden rounded-2xl ${form.position === 'bottom-left' ? 'left-3' : 'right-3'}`}
-        style={{ backgroundColor: theme.chatBgColor, boxShadow: WIDGET_SURFACE_SHADOW, fontFamily: theme.fontFamily }}
-      >
-        <div className="flex items-center gap-3 px-4 py-3 text-white" style={{ backgroundColor: theme.accentColor }}>
-          <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-white/20">
-            {agent?.agent_avatar
-              ? <Image src={agent.agent_avatar} alt="" width={36} height={36} className="h-full w-full object-cover" />
-              : <Bot size={18} />}
-          </div>
-          <div>
-            <p className="text-sm font-bold" style={{ color: theme.headingTextColor }}>{agent?.agent_name || 'Qlynk Agent'}</p>
-            <p className="text-[11px] text-white/75">Online</p>
-          </div>
-        </div>
-        <div className="min-h-0 flex-1 overflow-y-auto p-4" style={{ backgroundColor: needsVisitorForm ? preChatColors.backgroundColor : theme.chatBgColor }}>
-          {needsVisitorForm ? (
-            <WidgetPreChatForm
-              colors={preChatColors}
-              intro={form.pre_chat_intro}
-              showIntro={form.pre_chat_enabled}
-              showEmail={showsEmail}
-              requireEmail={requiresEmail}
-              requirePassword={agent?.access_level === 'password'}
-              showPrivacy={form.pre_chat_enabled}
-              submitLabel={form.pre_chat_enabled ? 'Start chat' : 'Continue'}
-              preview
-            />
-          ) : (
-            <div className="max-w-[82%] rounded-2xl rounded-tl-sm px-3 py-2 text-xs leading-relaxed text-white shadow-sm" style={{ backgroundColor: theme.aiBubbleColor }}>
-              {agent?.welcome_message || 'Hi! How can I help you today?'}
-            </div>
-          )}
-        </div>
-        <div className="border-t border-white/10 p-3" style={{ backgroundColor: theme.chatBgColor }}>
-          <div className="flex h-9 items-center justify-end rounded-full bg-white/10 px-1.5">
-            <span className="flex h-7 w-7 items-center justify-center rounded-full" style={{ backgroundColor: theme.ctaButtonColor, color: theme.ctaTextColor }}>
-              <MessageCircle size={13} />
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div className={`absolute bottom-4 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-xl ${form.position === 'bottom-left' ? 'left-4' : 'right-4'}`} style={{ backgroundColor: theme.accentColor }}>
-        <MessageCircle size={24} />
-      </div>
-    </div>
-  );
-}
-
 export default function WebsiteWidgetPage() {
   const [loading, setLoading] = useState(true);
   useDashboardPageReady(loading);
@@ -160,9 +76,6 @@ export default function WebsiteWidgetPage() {
   );
   const agencyBranding = hasAgencyFeatures(subscription?.tier);
   const emailAccessRequired = agent?.access_level === 'email';
-  const preChatColors = resolvePreChatStyle(form.pre_chat_style, resolveWidgetTheme({
-    widget: { launcher_color: form.launcher_color }, agent,
-  }));
   const isDirty = useMemo(
     () => !widget || !savedForm || formSnapshot(form) !== formSnapshot(savedForm),
     [form, savedForm, widget]
@@ -211,6 +124,8 @@ export default function WebsiteWidgetPage() {
 
   const payload = () => ({
     ...form,
+    // Form appearance is edited independently in Visual Style.
+    pre_chat_style: undefined,
     allowed_origins: form.allowed_origins
       .split(/\r?\n|,/)
       .map((value) => value.trim())
@@ -283,8 +198,8 @@ export default function WebsiteWidgetPage() {
         )}
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[420px_1fr]">
-        <div className="space-y-6">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
+        <div className="min-w-0 space-y-6">
           <section className="rounded-3xl border border-white/10 bg-white/[0.045] p-6 backdrop-blur-xl">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
@@ -301,6 +216,10 @@ export default function WebsiteWidgetPage() {
               </button>
             </div>
 
+            <Link href="/dashboard/agent?section=visual" className="mb-5 block rounded-xl border border-[#f46530]/20 bg-[#f46530]/5 p-3 text-sm text-gray-300 hover:text-white">
+              Customize chat appearance <span aria-hidden="true">→</span>
+              <span className="mt-1 block text-xs text-gray-500">Fonts, chat colors, avatar, and pre-chat form colors are in Visual Style.</span>
+            </Link>
             <div className="space-y-5">
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-gray-300">Internal name</span>
@@ -313,19 +232,22 @@ export default function WebsiteWidgetPage() {
               </label>
 
               <div>
-                <span className="mb-2 block text-sm font-semibold text-gray-300">Launcher color</span>
+                <label htmlFor="launcher-color" className="mb-2 block text-sm font-semibold text-gray-300">Launcher color</label>
+                <p className="mb-3 text-xs text-gray-500">The floating chat icon on your website.</p>
                 <div className="flex gap-3">
                   <input
                     type="color"
+                    aria-label="Launcher color picker"
                     value={form.launcher_color}
                     onChange={(event) => setForm((current) => ({ ...current, launcher_color: event.target.value }))}
                     className="h-11 w-12 cursor-pointer overflow-hidden rounded-xl border border-white/10 bg-black/20"
                   />
                   <input
+                    id="launcher-color"
                     value={form.launcher_color}
                     onChange={(event) => setForm((current) => ({ ...current, launcher_color: event.target.value }))}
                     maxLength={7}
-                    className="flex-1 rounded-xl border border-white/10 bg-black/25 px-4 py-3 font-mono text-sm text-white outline-none focus:border-[#f46530]/60"
+                    className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/25 px-4 py-3 font-mono text-sm text-white outline-none focus:border-[#f46530]/60"
                   />
                 </div>
               </div>
@@ -439,24 +361,7 @@ export default function WebsiteWidgetPage() {
                         </label>
                       )}
                     </div>
-                    <details className="border-t border-white/10 pt-4">
-                      <summary className="cursor-pointer text-sm font-semibold text-gray-200">Pre-chat colors</summary>
-                      <p className="mt-2 text-xs leading-relaxed text-gray-400">Style the customer-details form independently of the chat. Changes appear in the preview.</p>
-                      <div className="mt-4 space-y-4">
-                        {PRE_CHAT_COLOR_FIELDS.map(({ key, label }) => (
-                          <ColorField
-                            key={key}
-                            label={label}
-                            value={form.pre_chat_style?.[key] ?? preChatColors[key]}
-                            placeholder="#rrggbb or #rrggbbaa"
-                            onChange={(value) => setForm((current) => ({
-                              ...current,
-                              pre_chat_style: { ...current.pre_chat_style, [key]: value },
-                            }))}
-                          />
-                        ))}
-                      </div>
-                    </details>
+
                   </div>
                 )}
               </div>
@@ -486,7 +391,7 @@ export default function WebsiteWidgetPage() {
           </section>
         </div>
 
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           <section className="rounded-3xl border border-white/10 bg-white/[0.035] p-5 sm:p-6">
             <div className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
               <div>
@@ -498,7 +403,7 @@ export default function WebsiteWidgetPage() {
                 <button type="button" onClick={() => setPreviewMode('mobile')} className={`rounded-lg p-2 ${previewMode === 'mobile' ? 'bg-white text-black' : 'text-gray-500'}`} aria-label="Mobile preview"><Smartphone size={17} /></button>
               </div>
             </div>
-            <WidgetPreview form={form} agent={agent} mobile={previewMode === 'mobile'} />
+            <WidgetPreview form={form} agent={agent} mobile={previewMode === 'mobile'} tier={subscription?.tier} />
           </section>
 
           <section className="rounded-3xl border border-[#f46530]/20 bg-gradient-to-br from-[#f46530]/10 to-white/[0.025] p-6">

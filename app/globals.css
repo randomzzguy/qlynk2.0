@@ -683,7 +683,7 @@ html {
    Keep every dashboard tab inside the viewport, including long user content. */
 [data-dashboard-root],
 [data-dashboard-root] > div,
-[data-dashboard-root] [class*="max-w-"] {
+:where([data-dashboard-root] [class*="max-w-"]) {
   min-width: 0;
   max-width: 100%;
 }

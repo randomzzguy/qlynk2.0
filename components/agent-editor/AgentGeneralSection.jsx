@@ -2,7 +2,7 @@ import { Bot, Sparkles, Eye, EyeOff } from 'lucide-react';
 import AgentRulesEditor from '@/components/AgentRulesEditor';
 import { DEFAULT_AGENT_TYPE } from '@/lib/agent-type-catalog';
 import AgentAccessSection from './AgentAccessSection';
-import AgentBrandingSection from './AgentBrandingSection';
+import Link from 'next/link';
 
 export default function AgentGeneralSection({
   config,
@@ -20,8 +20,6 @@ export default function AgentGeneralSection({
   accessPassword,
   setAccessPassword,
   passwordIsSet,
-  avatarUploading,
-  handleAvatarUpload
 }) {
   return (
     <>
@@ -88,7 +86,7 @@ export default function AgentGeneralSection({
             {[
               { id: 'role', label: 'Role & Rules', detail: 'Purpose, scope, and behavior' },
               { id: 'access', label: 'Access & Safety', detail: 'Visitor access and protection' },
-              { id: 'branding', label: 'Identity & Welcome', detail: 'Name, avatar, tone, and sharing' },
+              { id: 'branding', label: 'Tone & Sharing', detail: 'Voice, appearance, and sharing' },
             ].map((panel) => (
               <button
                 key={panel.id}
@@ -121,7 +119,20 @@ export default function AgentGeneralSection({
 
           {setupPanel === 'access' && <AgentAccessSection config={config} updateConfig={updateConfig} accessPassword={accessPassword} setAccessPassword={setAccessPassword} passwordIsSet={passwordIsSet} />}
 
-          {setupPanel === 'branding' && <AgentBrandingSection config={config} updateConfig={updateConfig} avatarUploading={avatarUploading} handleAvatarUpload={handleAvatarUpload} />}
+          {setupPanel === 'branding' && (
+            <section className="mb-8 space-y-5 rounded-3xl border border-white/10 bg-white/5 p-6">
+              <label className="block text-sm text-gray-300">
+                AI tone & personality
+                <select value={config.tone || 'professional'} onChange={(event) => updateConfig('tone', event.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-gray-900 px-4 py-3 text-white">
+                  <option value="professional">Professional</option>
+                  <option value="friendly">Friendly</option>
+                  <option value="funny">Funny</option>
+                  <option value="creative">Creative</option>
+                </select>
+              </label>
+              <Link href="/dashboard/agent?section=visual" className="block rounded-xl border border-white/10 p-4 text-sm text-[#ff8a5f] hover:text-white">Edit name, avatar, welcome message, and colors in Visual Style →</Link>
+            </section>
+          )}
 
 
     </>

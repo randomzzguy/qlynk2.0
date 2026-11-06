@@ -8,20 +8,24 @@ export default function ColorField({
   placeholder = '#rrggbb or rgba(...)',
 }) {
   const id = useId();
+  const rgba = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?\s*\)$/i.exec(value || '');
+  const rgbHex = rgba ? '#' + rgba.slice(1, 4).map((channel) => Math.min(255, Number(channel)).toString(16).padStart(2, '0')).join('') + (rgba[4] == null ? '' : Math.round(Math.min(1, Number(rgba[4])) * 255).toString(16).padStart(2, '0')) : null;
+  const hex = /^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i.test(value || '') ? value : rgbHex || '#000000';
+  const opacity = hex.length === 9 ? parseInt(hex.slice(7), 16) : 255;
   return (
-    <div>
+    <div className="min-w-0">
       <label htmlFor={id} className="block text-sm font-medium text-gray-400 mb-2">{label}</label>
       {hint && <p className="text-xs text-gray-500 mb-2">{hint}</p>}
       <div className="flex gap-3 items-center">
-        <div className="relative">
+        <div className="relative shrink-0">
           <input
             type="color"
             aria-label={`${label} picker`}
-            value={value?.length === 9 ? value.substring(0, 7) : (value || '#000000')}
+            value={hex.substring(0, 7)}
             onChange={(e) => {
               // If the original value had alpha, try to preserve it
-              if (value?.length === 9) {
-                onChange(e.target.value + value.substring(7));
+              if (hex.length === 9) {
+                onChange(e.target.value + hex.substring(7));
               } else {
                 onChange(e.target.value);
               }
@@ -38,6 +42,16 @@ export default function ColorField({
           placeholder={placeholder}
         />
       </div>
+      <label className="mt-2 flex items-center gap-3 text-xs text-gray-500">
+        Opacity
+        <input
+          type="range" min="0" max="255" value={opacity}
+          aria-label={`${label} opacity`}
+          onChange={(event) => onChange(hex.slice(0, 7) + Number(event.target.value).toString(16).padStart(2, '0'))}
+          className="min-w-0 flex-1 accent-[#f46530]"
+        />
+        <span className="w-9 text-right">{Math.round(opacity / 255 * 100)}%</span>
+      </label>
     </div>
   );
 }

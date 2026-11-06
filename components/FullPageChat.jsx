@@ -23,6 +23,8 @@ import {
 import QlynkBackground from '@/components/QlynkBackground';
 import AgentResponseIndicator from '@/components/AgentResponseIndicator';
 import ChatMarkdown from '@/components/ChatMarkdown';
+import ChatFont from '@/components/ChatFont';
+import { chatFontFamily, chatTint, normalizeWelcomeMessage } from '@/lib/chat-typography';
 import { getAgentTypeDefinition } from '@/lib/agent-type-catalog';
 import { hasAgencyFeatures } from '@/lib/plans';
 
@@ -30,10 +32,12 @@ export default function FullPageChat({
   username, 
   agentConfig,
   profile,
-  tier
+  tier,
+  preview = false,
+  previewScreen = 'landing',
 }) {
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [showGatekeeper, setShowGatekeeper] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(preview && previewScreen === 'chat');
+  const [showGatekeeper, setShowGatekeeper] = useState(preview && previewScreen === 'welcome');
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [gatekeeperForm, setGatekeeperForm] = useState({ name: '', email: '', password: '' });
   const [gatekeeperError, setGatekeeperError] = useState('');
@@ -43,7 +47,8 @@ export default function FullPageChat({
       id: 'welcome',
       role: 'assistant',
       content: agentConfig.welcome_message || `Hi! I'm ${agentConfig.agent_name || 'Your AI'}. How can I help you today?`
-    }
+    },
+    ...(preview ? [{ id: 'preview-user', role: 'user', content: 'What can you help me with?' }] : []),
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -55,6 +60,7 @@ export default function FullPageChat({
 
   // ─── Visual customization helpers ──────────────────────────────────────────
   const fontFamily = agentConfig.font_family || 'Inter';
+  const brandColor = agentConfig.primary_color || '#f46530';
   const chatBg = agentConfig.chat_bg_color || '#0a0a0f';
   const userBubbleBg = agentConfig.user_bubble_color || 'rgba(255,255,255,0.1)';
   const aiBubbleBg = agentConfig.ai_bubble_color || 'rgba(59,130,246,0.12)';
@@ -69,24 +75,10 @@ export default function FullPageChat({
     ? agentType.label
     : (agentConfig.profession || agentType.label);
 
-  // Load Google Font dynamically
-  useEffect(() => {
-    if (!fontFamily || fontFamily === 'Inter') return;
-    const fontSlug = fontFamily.replace(/ /g, '+');
-    const linkId = `gfont-${fontSlug}`;
-    if (!document.getElementById(linkId)) {
-      const link = document.createElement('link');
-      link.id = linkId;
-      link.rel = 'stylesheet';
-      link.href = `https://fonts.googleapis.com/css2?family=${fontSlug}:wght@400;500;600;700;800;900&display=swap`;
-      document.head.appendChild(link);
-    }
-  }, [fontFamily]);
-  // ───────────────────────────────────────────────────────────────────────────
-
   // Visitor ID Tracking + Page View
   const [visitorId, setVisitorId] = useState(null);
   useEffect(() => {
+    if (preview) return;
     let vid = localStorage.getItem('qlynk_visitor_id');
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(vid || '');
     if (!isUuid) {
@@ -121,7 +113,7 @@ export default function FullPageChat({
         setGatekeeperForm(prev => ({ ...prev, name: savedName }));
       }
     }
-  }, [agentConfig?.id, agentConfig?.access_level, username]);
+  }, [agentConfig?.id, agentConfig?.access_level, preview, username]);
 
   const authorizeVisitor = () => {
     setAccessPassword(gatekeeperForm.password);
@@ -142,6 +134,7 @@ export default function FullPageChat({
 
   const handleGatekeeperSubmit = (e) => {
     e.preventDefault();
+    if (preview) return;
     setGatekeeperError('');
 
     if (!gatekeeperForm.name.trim()) {
@@ -178,6 +171,7 @@ export default function FullPageChat({
 
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
+    if (preview) return;
     if (!input.trim() || isLoading) return;
 
     const userMessage = {
@@ -310,9 +304,10 @@ export default function FullPageChat({
   };
 
   return (
-    <div className="min-h-screen text-white flex flex-col relative overflow-hidden" style={{ background: chatBg, fontFamily: `'${fontFamily}', sans-serif` }}>
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <QlynkBackground />
+    <div className={`${preview ? 'h-full min-h-0 isolate' : 'min-h-screen'} text-white flex flex-col relative overflow-hidden`} style={{ background: chatBg, fontFamily: chatFontFamily(fontFamily) }}>
+      <ChatFont family={fontFamily} />
+      <div className={`${preview ? 'absolute' : 'fixed'} inset-0 z-0 pointer-events-none`}>
+        <QlynkBackground contained={preview} background={chatBg} />
         <div className="grid-overlay" />
       </div>
 
@@ -324,10 +319,10 @@ export default function FullPageChat({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.05 }}
-            className="relative z-10 w-full max-w-2xl mx-auto px-6 py-20 flex flex-col items-center"
+            className={`relative z-10 w-full max-w-2xl mx-auto px-6 ${preview ? 'py-8 overflow-y-auto' : 'py-20'} flex flex-col items-center`}
           >
             {/* Profile Card */}
-            <div className="w-full bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden group">
+            <div className="shrink-0 w-full bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] -mr-32 -mt-32 transition-all group-hover:bg-blue-500/20" />
               
               <div className="relative z-10 flex flex-col items-center text-center">
@@ -345,7 +340,7 @@ export default function FullPageChat({
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500/20 to-[#f46530]/20">
-                        <Bot className="w-16 h-16 text-blue-300" aria-hidden="true" />
+                        <Bot className="w-16 h-16" style={{ color: brandColor }} aria-hidden="true" />
                       </div>
                     )}
                   </div>
@@ -356,7 +351,7 @@ export default function FullPageChat({
                   {agentConfig.agent_name || username}
                 </h1>
                 <p className="font-bold uppercase tracking-widest text-xs mb-6 px-4 py-1.5 rounded-full border"
-                   style={{ color: ctaBtnColor, background: `${ctaBtnColor}1a`, borderColor: `${ctaBtnColor}33` }}>
+                   style={{ color: ctaBtnColor, background: chatTint(ctaBtnColor, 10), borderColor: chatTint(ctaBtnColor, 20) }}>
                   {displayRole}
                 </p>
                 
@@ -379,7 +374,9 @@ export default function FullPageChat({
                       {getSocialIcon(link.platform)}
                     </a>
                   ))}
-                  <button 
+                  <button
+                    disabled={preview}
+                    aria-label="Share agent"
                     onClick={() => {
                       if (navigator.share) {
                         navigator.share({
@@ -406,7 +403,7 @@ export default function FullPageChat({
                     }
                   }}
                   className="w-full py-5 rounded-[1.5rem] font-black text-xl flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all group/btn overflow-hidden relative"
-                  style={{ background: ctaBtnColor, color: ctaTextColor, boxShadow: `0 25px 50px -12px ${ctaBtnColor}33` }}
+                  style={{ background: ctaBtnColor, color: ctaTextColor, boxShadow: `0 25px 50px -12px ${chatTint(ctaBtnColor, 20)}` }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
                   <MessageSquare className="w-6 h-6" />
@@ -455,10 +452,10 @@ export default function FullPageChat({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.05 }}
-            className="relative z-10 w-full max-w-2xl mx-auto px-6 py-20 flex flex-col items-center"
+            className={`relative z-10 w-full max-w-2xl mx-auto px-6 ${preview ? 'py-8 overflow-y-auto' : 'py-20'} flex flex-col items-center`}
           >
-            <div className="w-full bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-[80px] -mr-32 -mt-32" style={{ background: `${ctaBtnColor}1a` }} />
+            <div className="shrink-0 w-full bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-[80px] -mr-32 -mt-32" style={{ background: chatTint(ctaBtnColor, 10) }} />
               
               <div className="relative z-10 flex flex-col items-center text-center">
                 <div className="w-20 h-20 bg-gray-800/50 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-gray-700/50 shadow-xl">
@@ -475,11 +472,12 @@ export default function FullPageChat({
                     <label className="block text-sm font-medium text-gray-400 mb-2">Your Name</label>
                     <input
                       type="text"
-                      value={gatekeeperForm.name}
+                      readOnly={preview}
+                    value={gatekeeperForm.name}
                       onChange={(e) => setGatekeeperForm(prev => ({ ...prev, name: e.target.value }))}
                       placeholder="What should I call you?"
                        className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:bg-gray-900 transition-all"
-                      style={{ borderColor: `${ctaBtnColor}4d` }}
+                      style={{ borderColor: chatTint(ctaBtnColor, 30) }}
                     />
                   </div>
 
@@ -488,11 +486,12 @@ export default function FullPageChat({
                       <label className="block text-sm font-medium text-gray-400 mb-2">Your Email</label>
                       <input
                         type="email"
-                        value={gatekeeperForm.email}
+                        readOnly={preview}
+                    value={gatekeeperForm.email}
                         onChange={(e) => setGatekeeperForm(prev => ({ ...prev, email: e.target.value }))}
                         placeholder="hello@example.com"
                          className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:bg-gray-900 transition-all"
-                        style={{ borderColor: `${ctaBtnColor}4d` }}
+                        style={{ borderColor: chatTint(ctaBtnColor, 30) }}
                       />
                     </div>
                   )}
@@ -502,11 +501,12 @@ export default function FullPageChat({
                       <label className="block text-sm font-medium text-gray-400 mb-2">Access Password</label>
                       <input
                         type="password"
-                        value={gatekeeperForm.password}
+                        readOnly={preview}
+                    value={gatekeeperForm.password}
                         onChange={(e) => setGatekeeperForm(prev => ({ ...prev, password: e.target.value }))}
                         placeholder="Enter the secret password"
                          className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:bg-gray-900 transition-all"
-                        style={{ borderColor: `${ctaBtnColor}4d` }}
+                        style={{ borderColor: chatTint(ctaBtnColor, 30) }}
                       />
                     </div>
                   )}
@@ -519,6 +519,7 @@ export default function FullPageChat({
 
                   <button 
                     type="submit"
+                    disabled={preview}
                     className="w-full py-4 rounded-xl font-bold mt-4 transition-all shadow-lg flex justify-center items-center gap-2"
                     style={{ background: ctaBtnColor, color: ctaTextColor }}
                   >
@@ -545,10 +546,10 @@ export default function FullPageChat({
             key="chat"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex-1 relative z-10 overflow-hidden flex flex-col animate-in fade-in duration-500"
+            className="min-h-0 flex-1 relative z-10 overflow-hidden flex flex-col animate-in fade-in duration-500"
           >
             {/* Chat Header */}
-            <header className="px-6 py-4 border-b border-white/10 backdrop-blur-md bg-[#0a0a0f]/50 flex items-center justify-between">
+            <header className="shrink-0 px-6 py-4 border-b border-white/10 backdrop-blur-md bg-black/20 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <button onClick={() => setIsChatOpen(false)} className="mr-2 p-2 hover:bg-white/5 rounded-full transition-colors">
                   <ChevronRight className="w-6 h-6 rotate-180" />
@@ -558,7 +559,7 @@ export default function FullPageChat({
                     {agentConfig.agent_avatar ? (
                       <Image src={agentConfig.agent_avatar} alt={agentConfig.agent_name || 'Agent'} width={40} height={40} className="w-full h-full object-cover" />
                     ) : (
-                      <Bot className="w-5 h-5 text-blue-400" aria-hidden="true" />
+                      <Bot className="w-5 h-5" style={{ color: brandColor }} aria-hidden="true" />
                     )}
                   </div>
                   <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-[#0a0a0f]" />
@@ -597,7 +598,7 @@ export default function FullPageChat({
               aria-live="polite"
               aria-busy={isLoading}
             >
-              <div className="max-w-3xl mx-auto space-y-8 pb-32">
+              <div className={`max-w-3xl mx-auto space-y-8 ${preview ? 'pb-4' : 'pb-32'}`}>
                 {messages.map((m) => (m.role === 'assistant' && !m.content && isLoading ? null : (
                   <motion.div
                     key={m.id}
@@ -605,7 +606,7 @@ export default function FullPageChat({
                     animate={{ opacity: 1, y: 0 }}
                     className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className={`flex gap-4 max-w-[85%] ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                    <div className={`min-w-0 flex gap-4 max-w-[85%] ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
                       <div className={`w-10 h-10 rounded-2xl flex-shrink-0 flex items-center justify-center border shadow-lg ${
                         m.role === 'user' 
                           ? 'bg-white/5 border-white/10' 
@@ -614,10 +615,10 @@ export default function FullPageChat({
                         {m.role === 'user' ? (
                           <User className="w-5 h-5 text-gray-400" />
                         ) : (
-                          <Bot className="w-5 h-5 text-blue-400" />
+                          <Bot className="w-5 h-5" style={{ color: brandColor }} />
                         )}
                       </div>
-                      <div className={`space-y-2 ${m.role === 'user' ? 'text-right' : 'text-left'}`}>
+                      <div className={`min-w-0 space-y-2 ${m.role === 'user' ? 'text-right' : 'text-left'}`}>
                         <div
                           className={`inline-block px-5 py-3 rounded-2xl text-sm md:text-base leading-relaxed backdrop-blur-xl text-white ${m.role === 'assistant' ? 'w-full' : ''}`}
                           style={m.role === 'user'
@@ -627,7 +628,7 @@ export default function FullPageChat({
                           {m.role === 'user' ? (
                             m.content
                           ) : (
-                            <ChatMarkdown content={m.content || (isLoading && m.id === messages[messages.length-1].id ? '...' : '')} />
+                            <ChatMarkdown content={m.id === 'welcome' ? normalizeWelcomeMessage(agentConfig.welcome_message || m.content) : m.content || (isLoading && m.id === messages[messages.length-1].id ? '...' : '')} />
                           )}
                         </div>
                         {m.role === 'assistant' && m.id !== 'welcome' && conversationId && m.content && (
@@ -678,13 +679,15 @@ export default function FullPageChat({
             </div>
 
             {/* Input Container */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 md:p-8 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/90 to-transparent z-50">
+            <div className={`${preview ? 'relative shrink-0' : 'fixed bottom-0 left-0 right-0'} p-4 md:p-8 z-20`} style={{ background: chatBg }}>
               <div className="max-w-3xl mx-auto relative group">
                 <form 
                   onSubmit={handleSubmit}
                   className="relative flex items-center z-50"
                 >
                   <input
+                    readOnly={preview}
+                    aria-label="Message"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder={isLoading ? 'The agent is responding...' : 'Ask anything...'}
@@ -692,13 +695,14 @@ export default function FullPageChat({
                   />
                   <button
                     type="submit"
-                    disabled={isLoading || !input.trim()}
+                    disabled={preview || isLoading || !input.trim()}
                     className="absolute right-3 p-3 rounded-xl transition-all disabled:opacity-50 disabled:grayscale hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center z-20 cursor-pointer"
-                    style={{ backgroundColor: ctaBtnColor }}
+                    style={{ backgroundColor: ctaBtnColor, color: ctaTextColor }}
+                    aria-label="Send message"
                   >
                     {isLoading
-                      ? <Loader2 size={24} className="animate-spin text-white" />
-                      : <Send size={24} className="text-white" />}
+                      ? <Loader2 size={24} className="animate-spin" />
+                      : <Send size={24} />}
                   </button>
                 </form>
                 <p className="mt-2 text-center text-[11px] text-gray-500">

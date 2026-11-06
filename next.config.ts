@@ -31,9 +31,9 @@ const nextConfig: NextConfig = {
       // unsafe-inline preserves static rendering; removing it would require
       // converting every route to dynamic nonce-based rendering.
       `script-src 'self' 'unsafe-inline'${isProd ? "" : " 'unsafe-eval'"} https://js.stripe.com https://hcaptcha.com https://*.hcaptcha.com`,
-      "style-src 'self' 'unsafe-inline'",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: blob: https://*.supabase.co https://api.dicebear.com https://www.qlynk.site https://findtoolfor.com",
-      "font-src 'self'",
+      "font-src 'self' https://fonts.gstatic.com",
       "connect-src 'self' https://api.groq.com https://*.supabase.co https://api.stripe.com https://*.hcaptcha.com",
       "frame-src 'self' https://js.stripe.com https://hcaptcha.com https://*.hcaptcha.com",
       "object-src 'none'",

@@ -22,7 +22,8 @@ test('widget theme uses the installation accent and every live visual-style fiel
       },
     }),
     {
-      accentColor: '#123456',
+      launcherColor: '#123456',
+      accentColor: '#654321',
       chatBgColor: '#101820',
       userBubbleColor: '#223344',
       aiBubbleColor: '#334455',
@@ -51,8 +52,9 @@ test('widget theme tolerates explicit null data during the dashboard initial loa
   assert.deepEqual(resolveWidgetTheme(null), DEFAULT_WIDGET_THEME);
   assert.deepEqual(resolveWidgetTheme({ widget: null, agent: null }), DEFAULT_WIDGET_THEME);
   const loading = resolveWidgetTheme({ widget: { launcher_color: '#e45258' }, agent: null });
-  assert.equal(loading.accentColor, '#e45258');
-  assert.equal(loading.ctaButtonColor, '#e45258');
+  assert.equal(loading.launcherColor, '#e45258');
+  assert.equal(loading.accentColor, DEFAULT_WIDGET_THEME.accentColor);
+  assert.equal(loading.ctaButtonColor, DEFAULT_WIDGET_THEME.ctaButtonColor);
   assert.equal(loading.chatBgColor, DEFAULT_WIDGET_THEME.chatBgColor);
 });
 
@@ -77,14 +79,14 @@ test('widget surface blends into its host without a colored outline', () => {
 
 test('dashboard preview and live widget share theme resolution and receive the same fields', async () => {
   const [previewSource, widgetSource, apiSource] = await Promise.all([
-    readFile(new URL('../app/dashboard/widget/page.jsx', import.meta.url), 'utf8'),
+    readFile(new URL('../components/WidgetPreview.jsx', import.meta.url), 'utf8'),
     readFile(new URL('../components/ChatWidget.jsx', import.meta.url), 'utf8'),
     readFile(new URL('../app/api/widget-installations/route.js', import.meta.url), 'utf8'),
   ]);
 
-  assert.match(previewSource, /resolveWidgetTheme/);
+  assert.match(previewSource, /<ChatWidget/);
+  assert.match(previewSource, /previewScreen=/);
   assert.match(widgetSource, /resolveWidgetTheme/);
-  assert.match(previewSource, /boxShadow: WIDGET_SURFACE_SHADOW/);
   assert.match(widgetSource, /boxShadow: WIDGET_SURFACE_SHADOW/);
   for (const field of [
     'chat_bg_color',
@@ -98,4 +100,14 @@ test('dashboard preview and live widget share theme resolution and receive the s
   ]) {
     assert.match(apiSource, new RegExp(field));
   }
+});
+
+
+test('launcher overrides never recolor the open header, form focus, or fallback send button', () => {
+  const a = resolveWidgetTheme({ widget: { launcher_color: '#112233' }, agent: { primary_color: '#abcdef' } });
+  const b = resolveWidgetTheme({ widget: { launcher_color: '#445566' }, agent: { primary_color: '#abcdef' } });
+  assert.notEqual(a.launcherColor, b.launcherColor);
+  const { launcherColor: _a, ...openA } = a;
+  const { launcherColor: _b, ...openB } = b;
+  assert.deepEqual(openA, openB);
 });

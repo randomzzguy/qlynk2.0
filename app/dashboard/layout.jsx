@@ -88,8 +88,12 @@ function DashboardLayoutContent({ children }) {
   }, []);
 
   useEffect(() => {
+    const dirtySources = new Set();
     const syncUnsavedChanges = (event) => {
-      unsavedChangesRef.current = Boolean(event.detail?.dirty);
+      const source = event.detail?.source || 'page';
+      if (event.detail?.dirty) dirtySources.add(source);
+      else dirtySources.delete(source);
+      unsavedChangesRef.current = dirtySources.size > 0;
     };
     const guardDashboardLinks = (event) => {
       if (!unsavedChangesRef.current || event.defaultPrevented || event.button !== 0) return;

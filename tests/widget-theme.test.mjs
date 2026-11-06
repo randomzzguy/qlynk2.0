@@ -47,6 +47,15 @@ test('widget theme falls back consistently when optional colors are blank', () =
   assert.equal(branded.headingTextColor, '#ffffff');
 });
 
+test('widget theme tolerates explicit null data during the dashboard initial load', () => {
+  assert.deepEqual(resolveWidgetTheme(null), DEFAULT_WIDGET_THEME);
+  assert.deepEqual(resolveWidgetTheme({ widget: null, agent: null }), DEFAULT_WIDGET_THEME);
+  const loading = resolveWidgetTheme({ widget: { launcher_color: '#e45258' }, agent: null });
+  assert.equal(loading.accentColor, '#e45258');
+  assert.equal(loading.ctaButtonColor, '#e45258');
+  assert.equal(loading.chatBgColor, DEFAULT_WIDGET_THEME.chatBgColor);
+});
+
 test('heading color survives draft and publish serialization without retaining private fields', () => {
   const config = sanitizeEditableAgentConfig({
     agent_type: 'business',

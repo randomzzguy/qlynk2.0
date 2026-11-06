@@ -88,10 +88,11 @@ const ScrollToTop = () => {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.5, y: 20 }}
           onClick={scrollToTop}
-          className="fixed bottom-8 right-8 z-[60] w-14 h-14 rounded-full bg-orange text-white shadow-2xl shadow-orange/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all group"
+          // Sits directly above the Qlynk chat launcher (56px button, 16px from the bottom-right corner).
+          className="fixed bottom-[84px] right-[22px] z-[60] flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-[#151923]/90 text-white shadow-xl shadow-black/40 backdrop-blur-md transition-all hover:scale-110 hover:border-orange/50 hover:text-orange active:scale-95 group"
           aria-label="Scroll to top"
         >
-          <ChevronUp size={28} className="group-hover:-translate-y-1 transition-transform" />
+          <ChevronUp size={22} className="group-hover:-translate-y-0.5 transition-transform" />
         </motion.button>
       )}
     </AnimatePresence>

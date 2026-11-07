@@ -7,6 +7,7 @@ import { getCurrentUser } from '@/lib/supabase';
 import { CreditCard, Zap, Check, ArrowRight, Loader2, FileText, Download, Receipt, AlertTriangle } from 'lucide-react';
 import { getEffectiveTier, getMessageLimit, getCurrentMessagesUsed, isComplimentaryAgency } from '@/lib/plans';
 import { useDashboardPageReady } from '@/lib/dashboard-page-ready';
+import { DashboardPage, PageHeader } from '@/components/dashboard/PageShell';
 
 export default function BillingPage() {
   const [subscription, setSubscription] = useState(null);
@@ -92,7 +93,13 @@ export default function BillingPage() {
   const usagePercent = Math.min(100, (messagesUsed / messagesLimit) * 100);
 
   return (
-    <div className="w-full max-w-[1200px] px-5 sm:px-7 lg:px-9 py-8 sm:py-10">
+    <DashboardPage>
+      <PageHeader
+        icon={CreditCard}
+        title="Billing & Subscription"
+        description="Manage your plan, message usage and invoices."
+      />
+
       {isPastDue && (
         <div className="mb-8 rounded-3xl border border-amber-500/30 bg-amber-500/10 p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
@@ -112,11 +119,6 @@ export default function BillingPage() {
           </button>
         </div>
       )}
-
-      <div className="mb-8">
-        <h1 className="text-3xl font-black text-white mb-2">Billing & Subscription</h1>
-        <p className="text-gray-400">Manage your plan and usage</p>
-      </div>
 
       <div className="grid md:grid-cols-3 gap-6 mb-8">
         {/* Current Plan Card */}
@@ -303,6 +305,6 @@ export default function BillingPage() {
           </Link>
         </div>
       </div>
-    </div>
+    </DashboardPage>
   );
 }

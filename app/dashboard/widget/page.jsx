@@ -7,7 +7,6 @@ import {
   Clipboard,
   Code2,
   ExternalLink,
-  Globe2,
   Loader2,
   Monitor,
   Palette,
@@ -23,6 +22,7 @@ import { buildWidgetEmbedCode } from '@/lib/widget-installations';
 import WidgetPreview from '@/components/WidgetPreview';
 import { hasAgencyFeatures } from '@/lib/plans';
 import UpgradePrompt from '@/components/UpgradePrompt';
+import { DashboardPage, PageHeader, DASHBOARD_BUTTON_PRIMARY } from '@/components/dashboard/PageShell';
 import { useDashboardPageReady } from '@/lib/dashboard-page-ready';
 
 const DEFAULT_FORM = {
@@ -170,33 +170,25 @@ export default function WebsiteWidgetPage() {
   }
 
   return (
-    <div className="w-full max-w-[1440px] px-5 py-8 sm:px-7 sm:py-10 lg:px-9">
-      <UpgradePrompt />
-
-      <div className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
-        <div>
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#f46530]/25 bg-[#f46530]/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-[#ff8a5f]">
-            <Globe2 size={13} /> Website channel
-          </div>
-          <h1 className="flex items-center gap-3 text-3xl font-black text-white">
-            Website Widget <Sparkles size={20} className="text-[#f46530]" />
-          </h1>
-          <p className="mt-2 max-w-2xl text-gray-400">
-            Put this Qlynk Agent on a client website while keeping its approved knowledge, rules, conversations, and usage in one place.
-          </p>
-        </div>
-        {(!widget || isDirty || saving) && (
+    <DashboardPage>
+      <PageHeader
+        icon={Code2}
+        title="Website Widget"
+        description="Put this Qlynk Agent on a client website while keeping its approved knowledge, rules, conversations, and usage in one place."
+        actions={(!widget || isDirty || saving) ? (
         <button
           type="button"
           onClick={save}
           disabled={saving || !subscription?.is_live || (Boolean(widget) && !isDirty)}
-          className="dashboard-save-bar inline-flex items-center justify-center gap-2 rounded-xl bg-[#f46530] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#f46530]/20 transition hover:bg-[#df5929] disabled:cursor-not-allowed disabled:opacity-50"
+          className={`dashboard-save-bar ${DASHBOARD_BUTTON_PRIMARY}`}
         >
           {saving ? <Loader2 size={17} className="animate-spin" /> : widget && !isDirty ? <Check size={17} /> : widget ? <Save size={17} /> : <Sparkles size={17} />}
           {widget ? (isDirty ? 'Publish changes' : 'Saved') : 'Create widget'}
         </button>
-        )}
-      </div>
+        ) : null}
+      />
+
+      <UpgradePrompt />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
         <div className="min-w-0 space-y-6">
@@ -434,6 +426,6 @@ export default function WebsiteWidgetPage() {
           </section>
         </div>
       </div>
-    </div>
+    </DashboardPage>
   );
 }

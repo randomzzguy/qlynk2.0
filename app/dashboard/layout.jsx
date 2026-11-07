@@ -273,9 +273,10 @@ function DashboardLayoutContent({ children }) {
         
         <button 
           onClick={() => setIsSidebarOpen(true)}
+          aria-label="Open menu"
           className="p-2 text-gray-400 hover:text-white"
         >
-          <Menu size={24} />
+          <Menu size={24} aria-hidden="true" />
         </button>
       </header>
       

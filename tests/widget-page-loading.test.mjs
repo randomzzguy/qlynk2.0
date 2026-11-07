@@ -30,6 +30,11 @@ test('Widget page renders its loading state before agent or subscription data is
     '@/components/WidgetPreview': { default: () => null },
     '@/components/WidgetPreChatForm': { default: () => null },
     '@/components/UpgradePrompt': { default: () => null },
+    '@/components/dashboard/PageShell': {
+      DashboardPage: ({ children }) => React.createElement('div', null, children),
+      PageHeader: () => null,
+      DASHBOARD_BUTTON_PRIMARY: '',
+    },
   };
   const compiled = { exports: {} };
   new Function('require', 'module', 'exports', code)(

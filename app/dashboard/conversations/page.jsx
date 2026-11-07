@@ -19,6 +19,7 @@ import {
   Reply
 } from 'lucide-react';
 import ChatMarkdown from '@/components/ChatMarkdown';
+import { DashboardPage, PageHeader, DASHBOARD_BUTTON_SECONDARY } from '@/components/dashboard/PageShell';
 import { toast } from 'react-hot-toast';
 import { useDashboardPageReady } from '@/lib/dashboard-page-ready';
 
@@ -257,19 +258,16 @@ export default function ConversationsPage() {
   }
 
   return (
-    <div className="w-full max-w-[1400px] px-5 sm:px-7 lg:px-9 py-8 sm:py-10">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-black text-white mb-2">Conversations</h1>
-          <p className="text-gray-400">View chat history between visitors and your Qlynk Agent</p>
-        </div>
-        
-        {/* Actions Container */}
-        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+    <DashboardPage>
+      <PageHeader
+        icon={MessageSquare}
+        title="Conversations"
+        description="Read every chat between visitors and your agent, and reply when it needs a human."
+        actions={(
+        <>
           <button
             onClick={exportToCSV}
-            className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl text-white font-bold text-sm transition-all"
+            className={DASHBOARD_BUTTON_SECONDARY}
             title="Export logs to CSV"
           >
             <Download size={16} className="text-[#f46530]" />
@@ -281,7 +279,8 @@ export default function ConversationsPage() {
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#f46530] transition-colors text-sm"
+              aria-label="Filter conversations by date"
+              className="h-10 px-3 bg-white/[0.04] border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#f46530] transition-colors text-sm"
             >
               <option value="all">All Time</option>
               <option value="today">Today</option>
@@ -298,11 +297,13 @@ export default function ConversationsPage() {
               placeholder="Search visitors..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#f46530] transition-colors text-sm w-full md:w-48"
+              aria-label="Search visitors"
+              className="h-10 pl-10 pr-4 bg-white/[0.04] border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#f46530] transition-colors text-sm w-full sm:w-52"
             />
           </div>
-        </div>
-      </div>
+        </>
+        )}
+      />
 
       {/* Stats Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
@@ -509,6 +510,6 @@ export default function ConversationsPage() {
           </p>
         </div>
       )}
-    </div>
+    </DashboardPage>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
-  Brain, 
+  Database,
   Plus, 
   Trash2, 
   FileText, 
@@ -27,6 +27,7 @@ import { createClientBrowser, getCurrentUser } from '@/lib/supabase';
 import { AgentConfigPage } from '@/app/dashboard/agent/page';
 import { useDashboardPageReady } from '@/lib/dashboard-page-ready';
 import QlynkProductFactsUpdate from '@/components/QlynkProductFactsUpdate';
+import { DashboardPage, PageHeader } from '@/components/dashboard/PageShell';
 
 export default function KnowledgeDashboard() {
   const searchParams = useSearchParams();
@@ -528,53 +529,48 @@ export default function KnowledgeDashboard() {
   };
 
   return (
-    <div className="w-full max-w-[1440px] px-5 sm:px-7 lg:px-9 py-8 sm:py-10 space-y-7">
-      {/* Header */}
-      <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 border-b border-white/10 pb-6">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-blue-500/10 border border-blue-500/20 rounded-2xl flex items-center justify-center">
-            <Brain className="text-blue-300 w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-black text-white tracking-tight">Knowledge Base</h1>
-            <p className="text-gray-400 mt-1 text-sm md:text-base">Organize the approved context and sources your agent can use.</p>
-          </div>
-        </div>
+    <DashboardPage className="space-y-7">
+      <PageHeader
+        icon={Database}
+        title="Knowledge Base"
+        description="Organize the approved context and sources your agent can use."
+      />
 
-        <div className="flex flex-wrap p-1.5 bg-black/30 rounded-2xl border border-white/10">
+      <div className="-mx-5 overflow-x-auto px-5 pb-1 sm:mx-0 sm:px-0 custom-scrollbar">
+        <div className="inline-flex min-w-max gap-1 p-1.5 bg-black/30 rounded-2xl border border-white/10">
           <button
             onClick={() => setActiveTab('profile')}
-            className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all ${activeTab === 'profile' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+            className={`px-4 py-2 whitespace-nowrap rounded-xl text-sm font-bold transition-all ${activeTab === 'profile' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
           >
             Profile Context
           </button>
           <button 
             onClick={() => setActiveTab('facts')}
-            className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all ${activeTab === 'facts' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+            className={`px-4 py-2 whitespace-nowrap rounded-xl text-sm font-bold transition-all ${activeTab === 'facts' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
           >
             Facts
           </button>
           <button 
             onClick={() => setActiveTab('faq')}
-            className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all ${activeTab === 'faq' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+            className={`px-4 py-2 whitespace-nowrap rounded-xl text-sm font-bold transition-all ${activeTab === 'faq' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
           >
             FAQ
           </button>
           <button 
             onClick={() => setActiveTab('documents')}
-            className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all ${activeTab === 'documents' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+            className={`px-4 py-2 whitespace-nowrap rounded-xl text-sm font-bold transition-all ${activeTab === 'documents' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
           >
             Documents
           </button>
           <button 
             onClick={() => setActiveTab('links')}
-            className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all ${activeTab === 'links' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+            className={`px-4 py-2 whitespace-nowrap rounded-xl text-sm font-bold transition-all ${activeTab === 'links' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
           >
             Links
           </button>
           <button
             onClick={() => setActiveTab('connections')}
-            className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all flex items-center gap-2 ${activeTab === 'connections' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+            className={`px-4 py-2 whitespace-nowrap rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'connections' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
           >
             Connections
             {connectedClaims.filter((claim) => ['draft', 'unresolved'].includes(claim.evidence_status)).length > 0 && (
@@ -585,13 +581,13 @@ export default function KnowledgeDashboard() {
           </button>
           <button
             onClick={() => setActiveTab('memory')}
-            className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all flex items-center gap-2 ${activeTab === 'memory' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+            className={`px-4 py-2 whitespace-nowrap rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'memory' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
           >
             Memory
           </button>
           <button
             onClick={() => setActiveTab('gaps')}
-            className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all flex items-center gap-2 ${activeTab === 'gaps' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+            className={`px-4 py-2 whitespace-nowrap rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'gaps' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
           >
             Knowledge Gaps
             {knowledgeGaps.filter((gap) => gap.status === 'open').length > 0 && (
@@ -1311,6 +1307,6 @@ export default function KnowledgeDashboard() {
           </div>
         )}
       </div>
-    </div>
+    </DashboardPage>
   );
 }

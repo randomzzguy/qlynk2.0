@@ -4,19 +4,23 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getCurrentProfile, getCurrentUser } from '@/lib/supabase';
 import { createClient } from '@/utils/supabase/client';
-import { 
-  Bot, 
-  MessageSquare, 
-  Users, 
-  TrendingUp, 
-  Settings,
-  ExternalLink,
+import {
+  ArrowRight,
+  Bot,
+  Check,
   Clock,
-  Zap,
-  FileText,
+  CreditCard,
+  ExternalLink,
+  LayoutDashboard,
+  Lightbulb,
+  MessageSquare,
+  Settings,
   Sparkles,
-  CreditCard
+  TrendingUp,
+  Users,
+  Zap,
 } from 'lucide-react';
+import { DashboardPage as PageFrame, PageHeader, DASHBOARD_CARD, DASHBOARD_BUTTON_PRIMARY, DASHBOARD_BUTTON_SECONDARY } from '@/components/dashboard/PageShell';
 import { getEffectiveTier, getMessageLimit, getCurrentMessagesUsed } from '@/lib/plans';
 import UpgradePrompt from '@/components/UpgradePrompt';
 import TrialChoiceManager from '@/components/TrialChoiceManager';
@@ -252,9 +256,11 @@ export default function DashboardPage() {
   ];
   const readinessComplete = readinessItems.filter((item) => item.complete).length;
   const readinessScore = Math.round((readinessComplete / readinessItems.length) * 100);
+  const isFullyReady = readinessComplete === readinessItems.length;
+  const nextReadinessItem = readinessItems.find((item) => !item.complete);
 
   return (
-    <div className="w-full max-w-[1500px] px-5 sm:px-7 lg:px-9 py-8 sm:py-10">
+    <PageFrame>
       {verifyingPayment && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex flex-col items-center justify-center text-center px-4">
           <div className="w-20 h-20 bg-[#f46530]/10 rounded-3xl flex items-center justify-center mb-6 border border-[#f46530]/20 animate-pulse">
@@ -294,54 +300,29 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
-        <div>
-          <h1 className="text-4xl font-black text-white tracking-tight mb-1">
-            Overview
-          </h1>
-          <p className="text-gray-400 font-medium">Welcome back, {profile?.username || 'there'}</p>
-        </div>
-        
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          {isAccountDeletionScheduled && (
-            <div className="hidden sm:flex items-center gap-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-amber-100">
-              <Clock size={16} />
-              <div className="text-left">
-                <div className="text-xs font-bold uppercase tracking-wider">Deletion pending</div>
-                <div className="text-[11px] text-amber-100/80">
-                  {new Date(profile.account_deletion_scheduled_for).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-          <Link 
-            href={`/${profile?.username}`}
-            target="_blank"
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl text-gray-300 hover:text-white hover:bg-white/10 transition-all text-sm font-semibold"
-          >
-            <ExternalLink size={16} />
-            <span>Live Page</span>
-          </Link>
-          <Link 
-            href="/dashboard/agent"
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#f46530] to-[#f68356] text-white rounded-2xl font-bold hover:shadow-[0_0_20px_rgba(244,101,48,0.4)] transition-all text-sm"
-          >
-            <Settings size={16} />
-            Configure
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        icon={LayoutDashboard}
+        title="Overview"
+        description={`Welcome back, ${profile?.username || 'there'}. Here's how your agent is doing.`}
+        actions={(
+          <>
+            <Link href={`/${profile?.username}`} target="_blank" className={`flex-1 sm:flex-none ${DASHBOARD_BUTTON_SECONDARY}`}>
+              <ExternalLink size={16} />
+              Live page
+            </Link>
+            <Link href="/dashboard/agent?section=general" className={`flex-1 sm:flex-none ${DASHBOARD_BUTTON_PRIMARY}`}>
+              <Settings size={16} />
+              Configure
+            </Link>
+          </>
+        )}
+      />
 
       <UpgradePrompt />
       <TrialChoiceManager subscription={subscription} userId={profile?.id} />
 
       {isAccountDeletionScheduled && (
-        <div className="mb-8 rounded-3xl border border-amber-500/30 bg-amber-500/10 p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="mb-6 rounded-3xl border border-amber-500/30 bg-amber-500/10 p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <p className="text-sm font-bold uppercase tracking-widest text-amber-300 mb-1">Account pending deletion</p>
             <h2 className="text-xl font-black text-white">Your account will be deleted soon</h2>
@@ -355,19 +336,17 @@ export default function DashboardPage() {
               })}. The final removal runs automatically and may finish later that day. You can cancel it from Settings if you changed your mind.
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Link
-              href="/dashboard/settings"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-black transition hover:bg-gray-100"
-            >
-              Manage deletion
-            </Link>
-          </div>
+          <Link
+            href="/dashboard/settings"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-black transition hover:bg-gray-100"
+          >
+            Manage deletion
+          </Link>
         </div>
       )}
 
       {isPaymentPastDue && (
-        <div className="mb-8 rounded-3xl border border-amber-500/30 bg-amber-500/10 p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="mb-6 rounded-3xl border border-amber-500/30 bg-amber-500/10 p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <p className="text-sm font-bold uppercase tracking-widest text-amber-300 mb-1">Payment issue</p>
             <h2 className="text-xl font-black text-white">Your Agency payment is past due</h2>
@@ -375,262 +354,253 @@ export default function DashboardPage() {
               Update billing to restore Agency benefits. Your agent can continue within the free Creator allowance.
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex shrink-0 flex-col sm:flex-row gap-3">
             <Link
               href="/dashboard/billing"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-black transition hover:bg-gray-100"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-black transition hover:bg-gray-100"
             >
               Fix billing
             </Link>
-            <Link
-              href="/pricing"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-            >
+            <Link href="/pricing" className={DASHBOARD_BUTTON_SECONDARY}>
               View plans
             </Link>
           </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        
-        {/* Main Content Area */}
-        <div className="xl:col-span-2 space-y-6">
-          
-          {/* Agent Status Banner */}
-          <div className="relative overflow-hidden bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-            
-            <div className="flex items-center gap-5 w-full sm:w-auto">
-              <div className={`relative w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 ${
-                agentConfig?.is_enabled 
-                  ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/10 border border-green-500/30' 
-                  : 'bg-white/5 border border-white/10'
-              }`}>
-                {agentConfig?.is_enabled && (
-                  <div className="absolute inset-0 bg-green-500/20 blur-xl rounded-full"></div>
-                )}
-                <Bot className={agentConfig?.is_enabled ? 'text-green-400 relative z-10' : 'text-gray-500'} size={32} />
+      {/* Setup checklist leads the page until the agent is fully ready */}
+      {!isFullyReady && (
+        <section className={`${DASHBOARD_CARD} relative mb-6 overflow-hidden p-6 sm:p-7`} aria-labelledby="setup-heading">
+          <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-[#f46530]/15 blur-3xl" aria-hidden="true" />
+          <div className="relative grid gap-6 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)] lg:gap-10">
+            <div className="flex flex-col">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#ff8a5f]">Finish setting up</p>
+              <h2 id="setup-heading" className="mt-1.5 text-2xl font-black tracking-tight text-white">{readinessScore}% ready</h2>
+              <p className="mt-1 text-sm text-gray-400">{readinessComplete} of {readinessItems.length} steps done. Complete the rest so visitors get great answers.</p>
+              <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/[0.06]">
+                <div className="h-full rounded-full bg-gradient-to-r from-[#f46530] to-amber-400 transition-all" style={{ width: `${readinessScore}%` }} />
               </div>
-              
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <h2 className="text-2xl font-bold text-white tracking-tight">
+              {nextReadinessItem && (
+                <Link href={nextReadinessItem.href} className={`mt-5 self-start ${DASHBOARD_BUTTON_PRIMARY}`}>
+                  Next: {nextReadinessItem.label}
+                  <ArrowRight size={16} />
+                </Link>
+              )}
+            </div>
+            <ReadinessList items={readinessItems} className="sm:grid-cols-2" />
+          </div>
+        </section>
+      )}
+
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        {/* Main column */}
+        <div className="min-w-0 space-y-6 xl:col-span-2">
+          {/* Agent status */}
+          <section className={`${DASHBOARD_CARD} flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between`}>
+            <div className="flex min-w-0 items-center gap-4">
+              <div className={`relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border ${
+                agentConfig?.is_enabled ? 'border-green-500/30 bg-green-500/10' : 'border-white/10 bg-white/5'
+              }`}>
+                <Bot className={agentConfig?.is_enabled ? 'text-green-400' : 'text-gray-500'} size={28} />
+              </div>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="truncate text-xl font-bold tracking-tight text-white">
                     {agentConfig?.agent_name || 'Your AI'}
                   </h2>
-                  {agentConfig?.is_enabled && (
-                    <span className="px-2.5 py-0.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                      Online
-                    </span>
-                  )}
+                  <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ${
+                    agentConfig?.is_enabled ? 'border-green-500/20 bg-green-500/10 text-green-400' : 'border-white/10 bg-white/5 text-gray-400'
+                  }`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${agentConfig?.is_enabled ? 'animate-pulse bg-green-500' : 'bg-gray-500'}`} />
+                    {agentConfig?.is_enabled ? 'Online' : 'Offline'}
+                  </span>
                 </div>
-                <p className="text-gray-400 text-sm font-medium">
-                  {agentConfig?.is_enabled 
-                    ? 'Your Qlynk Agent is active and receiving visitors.'
-                    : 'Your Qlynk Agent is currently disabled.'}
+                <p className="mt-0.5 text-sm text-gray-400">
+                  {agentConfig?.is_enabled
+                    ? 'Your agent is live and answering visitors.'
+                    : 'Your agent is turned off. Visitors can’t chat with it.'}
                 </p>
               </div>
             </div>
-            
+
             <button
+              type="button"
+              role="switch"
+              aria-checked={Boolean(agentConfig?.is_enabled)}
+              aria-label={agentConfig?.is_enabled ? 'Turn agent off' : 'Turn agent on'}
               onClick={toggleAgentStatus}
-              className={`relative w-16 h-8 rounded-full transition-all duration-300 shrink-0 ${
-                agentConfig?.is_enabled 
-                  ? 'bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.4)]' 
+              className={`relative h-8 w-14 shrink-0 self-end rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f46530] sm:self-auto ${
+                agentConfig?.is_enabled
+                  ? 'bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.35)]'
                   : 'bg-white/10 hover:bg-white/20'
               }`}
             >
-              <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-transform duration-300 shadow-sm ${
-                agentConfig?.is_enabled ? 'translate-x-9' : 'translate-x-1'
+              <span className={`absolute left-1 top-1 h-6 w-6 rounded-full bg-white shadow-sm transition-transform duration-300 ${
+                agentConfig?.is_enabled ? 'translate-x-6' : 'translate-x-0'
               }`} />
             </button>
-          </div>
+          </section>
 
-          {/* Core Stats Bento */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {/* Core stats */}
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {[
-              { label: 'Total Convos', value: stats.totalConversations, icon: Users, color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
-              { label: 'Total Messages', value: stats.totalMessages, icon: MessageSquare, color: 'text-[#f46530]', bg: 'bg-[#f46530]/10' },
-              { label: '7-Day Activity', value: stats.messagesThisWeek, icon: TrendingUp, color: 'text-green-400', bg: 'bg-green-500/10' },
-              { label: 'Avg Length', value: stats.avgMessagesPerConvo, icon: Zap, color: 'text-purple-400', bg: 'bg-purple-500/10' }
-            ].map((stat, i) => (
-              <div key={i} className="bg-white/5 backdrop-blur-md rounded-3xl border border-white/5 p-5 flex flex-col justify-between hover:bg-white/10 transition-colors">
-                <div className={`w-10 h-10 rounded-2xl ${stat.bg} flex items-center justify-center mb-4`}>
-                  <stat.icon className={stat.color} size={20} />
+              { label: 'Conversations', value: stats.totalConversations, icon: Users, color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
+              { label: 'Messages', value: stats.totalMessages, icon: MessageSquare, color: 'text-[#f46530]', bg: 'bg-[#f46530]/10' },
+              { label: 'Last 7 days', value: stats.messagesThisWeek, icon: TrendingUp, color: 'text-green-400', bg: 'bg-green-500/10' },
+              { label: 'Avg. length', value: stats.avgMessagesPerConvo, icon: Zap, color: 'text-purple-400', bg: 'bg-purple-500/10' }
+            ].map((stat) => (
+              <div key={stat.label} className={`${DASHBOARD_CARD} flex h-full flex-col p-5`}>
+                <div className={`mb-4 flex h-10 w-10 items-center justify-center rounded-xl ${stat.bg}`}>
+                  <stat.icon className={stat.color} size={19} />
                 </div>
-                <div>
-                  <div className="text-2xl font-black text-white tracking-tight">{stat.value}</div>
-                  <div className="text-xs text-gray-400 font-semibold uppercase tracking-wider">{stat.label}</div>
+                <div className="mt-auto">
+                  <div className="text-2xl font-black tracking-tight text-white tabular-nums">{stat.value}</div>
+                  <div className="mt-0.5 text-xs font-semibold text-gray-400">{stat.label}</div>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Recent Activity */}
-          <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 overflow-hidden flex flex-col h-[400px]">
-            <div className="p-6 border-b border-white/5 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-white">Recent Activity</h3>
-              <Link href="/dashboard/conversations" className="text-sm text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
-                View all <ExternalLink size={14} />
+          {/* Recent activity */}
+          <section className={`${DASHBOARD_CARD} overflow-hidden`}>
+            <div className="flex items-center justify-between border-b border-white/[0.06] px-6 py-4">
+              <h3 className="text-base font-bold text-white">Recent activity</h3>
+              <Link href="/dashboard/conversations" className="flex items-center gap-1 text-sm font-medium text-gray-400 transition-colors hover:text-white">
+                View all <ArrowRight size={14} />
               </Link>
             </div>
-            
-            <div className="p-6 flex-1 overflow-y-auto custom-scrollbar">
-              {recentConversations.length > 0 ? (
-                <div className="space-y-4">
-                  {recentConversations.map((convo) => (
+
+            {recentConversations.length > 0 ? (
+              <ul className="divide-y divide-white/[0.05]">
+                {recentConversations.map((convo) => (
+                  <li key={convo.id}>
                     <Link
-                      key={convo.id}
                       href={{ pathname: '/dashboard/conversations', query: { conversation: convo.id } }}
                       aria-label={`Open conversation with ${convo.visitor_name || 'Anonymous Visitor'}`}
-                      className="group flex items-center justify-between p-4 bg-white/5 rounded-2xl hover:bg-white/10 border border-transparent hover:border-white/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f46530]"
+                      className="group flex items-center justify-between gap-4 px-6 py-3.5 transition-colors hover:bg-white/[0.04] focus-visible:bg-white/[0.04] focus-visible:outline-none"
                     >
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-gray-400 group-hover:text-white transition-colors">
-                          <Users size={20} />
+                      <div className="flex min-w-0 items-center gap-3.5">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/5 text-gray-400 transition-colors group-hover:text-white">
+                          <Users size={18} />
                         </div>
-                        <div>
-                          <p className="text-white font-semibold mb-0.5">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-white">
                             {convo.visitor_name || 'Anonymous Visitor'}
                           </p>
-                          <div className="flex items-center gap-3 text-xs text-gray-400 font-medium">
-                            <span className="flex items-center gap-1"><MessageSquare size={12}/> {convo.message_count || 0} msgs</span>
-                            <span className="w-1 h-1 bg-gray-600 rounded-full"></span>
-                            <span className="flex items-center gap-1"><Clock size={12}/> {new Date(convo.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span>
+                          <div className="mt-0.5 flex items-center gap-2.5 text-xs font-medium text-gray-500">
+                            <span className="flex items-center gap-1"><MessageSquare size={12} /> {convo.message_count || 0} msgs</span>
+                            <span className="h-1 w-1 rounded-full bg-gray-600" />
+                            <span className="flex items-center gap-1"><Clock size={12} /> {new Date(convo.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span>
                           </div>
                         </div>
                       </div>
-                      <div className="text-gray-500 group-hover:text-white transition-colors">
-                        <ExternalLink size={18} />
-                      </div>
+                      <ArrowRight size={16} className="shrink-0 text-gray-600 transition-all group-hover:translate-x-0.5 group-hover:text-white" />
                     </Link>
-                  ))}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="flex flex-col items-center justify-center px-6 py-14 text-center">
+                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 text-gray-500">
+                  <MessageSquare size={22} />
                 </div>
-              ) : (
-                <div className="h-full flex flex-col items-center justify-center text-center">
-                  <div className="w-16 h-16 bg-white/5 rounded-3xl flex items-center justify-center mb-4 text-gray-500">
-                    <MessageSquare size={24} />
-                  </div>
-                  <h4 className="text-white font-bold mb-1">No conversations yet</h4>
-                  <p className="text-sm text-gray-400 max-w-xs mx-auto">Share your agent link to start answering questions for visitors.</p>
-                </div>
-              )}
-            </div>
-          </div>
+                <h4 className="mb-1 font-bold text-white">No conversations yet</h4>
+                <p className="mx-auto max-w-xs text-sm text-gray-400">Share your agent link to start answering questions for visitors.</p>
+              </div>
+            )}
+          </section>
         </div>
 
-        {/* Sidebar / Secondary Content Area */}
-        <div className="space-y-6">
+        {/* Side column */}
+        <div className="min-w-0 space-y-6">
+          {/* Plan & usage */}
+          <section className={`${DASHBOARD_CARD} relative overflow-hidden p-6`}>
+            <div className="pointer-events-none absolute -right-20 -top-20 h-40 w-40 rounded-full bg-[#f46530]/15 blur-3xl" aria-hidden="true" />
 
-          {/* Agent Readiness */}
-          <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6">
-            <div className="flex items-start justify-between gap-4 mb-5">
+            <div className="relative mb-6 flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Agent Readiness</p>
-                <h3 className="text-2xl font-black text-white">{readinessScore}% ready</h3>
-              </div>
-              <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-black ${readinessScore === 100 ? 'bg-green-500/15 text-green-300' : 'bg-[#f46530]/15 text-[#f46530]'}`}>
-                {readinessComplete}/{readinessItems.length}
-              </div>
-            </div>
-            <div className="h-2 rounded-full bg-white/5 overflow-hidden mb-5">
-              <div className="h-full rounded-full bg-gradient-to-r from-[#f46530] to-amber-400 transition-all" style={{ width: `${readinessScore}%` }} />
-            </div>
-            <div className="space-y-2">
-              {readinessItems.map((item) => (
-                <Link key={item.label} href={item.href} className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-white/5 transition-colors">
-                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${item.complete ? 'bg-green-500/15 text-green-300' : 'bg-white/5 text-gray-500 border border-white/10'}`}>{item.complete ? '✓' : '•'}</span>
-                  <span className={`text-sm ${item.complete ? 'text-gray-300' : 'text-white font-semibold'}`}>{item.label}</span>
-                </Link>
-              ))}
-            </div>
-            {readinessData.openGaps > 0 && (
-              <Link href="/dashboard/knowledge" className="mt-4 flex items-center justify-between rounded-xl border border-amber-500/20 bg-amber-500/[0.07] px-4 py-3 text-sm text-amber-200">
-                <span>{readinessData.openGaps} knowledge gap{readinessData.openGaps === 1 ? '' : 's'} need attention</span>
-                <span>Review →</span>
-              </Link>
-            )}
-          </div>
-          
-          {/* Usage & Plan */}
-          <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 relative overflow-hidden">
-            {/* Subtle glow */}
-            <div className="absolute -top-20 -right-20 w-40 h-40 bg-[#f46530]/20 blur-3xl rounded-full pointer-events-none"></div>
-
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Current Plan</p>
+                <p className="mb-1 text-xs font-bold uppercase tracking-[0.14em] text-gray-500">Current plan</p>
                 <div className="flex items-baseline gap-2">
-                  <h3 className="text-2xl font-black text-white capitalize">{stats.tier}</h3>
-                  {stats.tier === 'creator' && <span className="text-emerald-400 text-sm font-bold">Free forever</span>}
+                  <h3 className="text-2xl font-black capitalize text-white">{stats.tier}</h3>
+                  {stats.tier === 'creator' && <span className="text-sm font-bold text-emerald-400">Free forever</span>}
                 </div>
               </div>
-              <Link href="/dashboard/billing" className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors">
+              <Link href="/dashboard/billing" aria-label="Open billing" className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-gray-400 transition-colors hover:bg-white/10 hover:text-white">
                 <CreditCard size={18} />
               </Link>
             </div>
-            
-            <div className="mb-6">
-              <div className="flex justify-between items-end mb-2">
-                <p className="text-sm text-gray-400 font-medium">Message Quota</p>
-                <p className="text-sm font-bold text-white">
+
+            <div className="relative mb-6">
+              <div className="mb-2 flex items-end justify-between">
+                <p className="text-sm font-medium text-gray-400">Message quota</p>
+                <p className="text-sm font-bold text-white tabular-nums">
                   {stats.messagesUsed} <span className="text-gray-500">/ {stats.messagesLimit}</span>
                 </p>
               </div>
-              <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-[#f46530] to-[#f68356] rounded-full"
-                  style={{ width: `${Math.min(100, (stats.messagesUsed / stats.messagesLimit) * 100)}%` }}
+              <div className="h-2 w-full overflow-hidden rounded-full bg-white/[0.06]">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-[#f46530] to-[#f68356]"
+                  style={{ width: `${stats.messagesLimit ? Math.min(100, (stats.messagesUsed / stats.messagesLimit) * 100) : 0}%` }}
                 />
               </div>
             </div>
 
-            <Link 
-              href="/pricing"
-              className="w-full py-3 px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors"
-            >
+            <Link href="/pricing" className={`relative w-full ${DASHBOARD_BUTTON_SECONDARY}`}>
               <Sparkles size={16} className="text-[#f46530]" />
-              Upgrade Plan
+              Upgrade plan
             </Link>
-          </div>
+          </section>
 
-          {/* Quick Actions List */}
-          <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6">
-            <h3 className="text-lg font-bold text-white mb-4">Quick Links</h3>
-            <div className="space-y-2">
-              <Link href="/dashboard/knowledge" className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/5 transition-colors group">
-                <div className="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <FileText size={18} />
-                </div>
-                <div>
-                  <div className="text-white font-semibold text-sm">Knowledge Base</div>
-                  <div className="text-gray-400 text-xs font-medium">Manage AI training data</div>
-                </div>
+          {/* Readiness (compact once everything is done) */}
+          {isFullyReady && (
+            <section className={`${DASHBOARD_CARD} flex items-center gap-4 p-5`}>
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-green-500/15 text-green-300">
+                <Check size={18} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="font-bold text-white">Agent is fully set up</h3>
+                <p className="text-sm text-gray-400">All {readinessItems.length} setup steps are done.</p>
+              </div>
+              <Link href="/dashboard/agent?section=general" className="shrink-0 text-sm font-semibold text-gray-400 transition-colors hover:text-white">
+                Edit
               </Link>
-              <Link href="/dashboard/analytics" className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/5 transition-colors group">
-                <div className="w-10 h-10 rounded-xl bg-green-500/10 text-green-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <TrendingUp size={18} />
-                </div>
-                <div>
-                  <div className="text-white font-semibold text-sm">Analytics</div>
-                  <div className="text-gray-400 text-xs font-medium">View engagement metrics</div>
-                </div>
-              </Link>
-              <Link href="/dashboard/agent" className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/5 transition-colors group">
-                <div className="w-10 h-10 rounded-xl bg-[#f46530]/10 text-[#f46530] flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Bot size={18} />
-                </div>
-                <div>
-                  <div className="text-white font-semibold text-sm">Agent Settings</div>
-                  <div className="text-gray-400 text-xs font-medium">Tweak persona & rules</div>
-                </div>
-              </Link>
-            </div>
-          </div>
-          
+            </section>
+          )}
+
+          {readinessData.openGaps > 0 && (
+            <Link href="/dashboard/knowledge" className="flex items-center justify-between gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/[0.07] px-5 py-4 text-sm text-amber-200 transition-colors hover:bg-amber-500/[0.12]">
+              <span className="flex items-center gap-2.5">
+                <Lightbulb size={16} className="shrink-0" />
+                {readinessData.openGaps} knowledge gap{readinessData.openGaps === 1 ? '' : 's'} need{readinessData.openGaps === 1 ? 's' : ''} attention
+              </span>
+              <span className="flex shrink-0 items-center gap-1 font-semibold">Review <ArrowRight size={14} /></span>
+            </Link>
+          )}
         </div>
       </div>
-    </div>
+    </PageFrame>
+  );
+}
+
+function ReadinessList({ items, className = '' }) {
+  return (
+    <ul className={`grid gap-1.5 ${className}`}>
+      {items.map((item) => (
+        <li key={item.label}>
+          <Link
+            href={item.href}
+            className="group flex items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 transition-colors hover:border-white/[0.06] hover:bg-white/[0.04]"
+          >
+            <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
+              item.complete ? 'bg-green-500/15 text-green-300' : 'border border-white/15 text-transparent'
+            }`}>
+              <Check size={12} strokeWidth={3} />
+            </span>
+            <span className={`flex-1 text-sm ${item.complete ? 'text-gray-500 line-through decoration-gray-600' : 'font-semibold text-white'}`}>{item.label}</span>
+            {!item.complete && <ArrowRight size={14} className="shrink-0 text-gray-600 transition-colors group-hover:text-white" />}
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 }

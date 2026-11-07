@@ -7,10 +7,10 @@ import { createClient } from '@/utils/supabase/client';
 import { getCurrentUser, getCurrentProfile } from '@/lib/supabase';
 import { 
   Save, 
+  Settings as SettingsIcon,
   User, 
   Mail, 
   Shield, 
-  Sparkles, 
   Loader2, 
   Eye,
   EyeOff,
@@ -27,6 +27,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import UpgradePrompt from '@/components/UpgradePrompt';
+import { DashboardPage, PageHeader } from '@/components/dashboard/PageShell';
 import { toast, Toaster } from 'react-hot-toast';
 import { getUsernameChangeAvailability, validateUsername } from '@/lib/usernames';
 import { useDashboardPageReady } from '@/lib/dashboard-page-ready';
@@ -373,14 +374,15 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="w-full max-w-[1440px] px-5 sm:px-7 lg:px-9 py-8 sm:py-10">
+    <DashboardPage>
       <Toaster position="top-right" />
-      <UpgradePrompt />
+      <PageHeader
+        icon={SettingsIcon}
+        title="Settings"
+        description="Manage your profile, account security, notifications and data."
+      />
 
-      <h1 className="text-3xl font-black text-white mb-10 flex items-center gap-3">
-        Settings
-        <Sparkles size={20} className="text-[#f46530]" />
-      </h1>
+      <UpgradePrompt />
 
         <div className="space-y-6">
         {/* Profile Settings */}
@@ -851,6 +853,6 @@ export default function SettingsPage() {
           </div>
         </div>
       )}
-    </div>
+    </DashboardPage>
   );
 }

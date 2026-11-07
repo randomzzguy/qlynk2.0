@@ -355,11 +355,11 @@ export default function HomepageHero({ isSignedIn = false }) {
           <span className="h-1.5 w-1.5 rounded-full bg-orange" aria-hidden="true" />
           Free AI agent builder · No code
         </p>
-        <h1 id="qlynk-hero-title" className="text-[clamp(2.3rem,5.4vw,4.4rem)] font-black leading-[1.04] tracking-[-0.045em] text-white">
+        <h1 id="qlynk-hero-title" className="text-[clamp(1.9rem,9.2vw,2.6rem)] font-black leading-[1.06] tracking-[-0.045em] text-white sm:text-[clamp(2.6rem,5.4vw,4.4rem)] sm:leading-[1.04]">
           Feed it your knowledge.
+          <span className="block">It becomes your</span>
           <span className="block">
-            It becomes your{' '}
-            <span className="relative inline-block min-w-[4ch] text-left align-bottom">
+            <span className="relative block h-[1.1em] whitespace-nowrap">
               <AnimatePresence mode="wait">
                 <motion.span
                   key={persona.id}
@@ -379,10 +379,10 @@ export default function HomepageHero({ isSignedIn = false }) {
         <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-gray-300 sm:text-lg">
           Qlynk turns your documents, FAQs and links into an AI agent that answers questions for you, 24/7. Share it as a link or put it on your website.
         </p>
-        <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <div className="mt-7 flex flex-col items-center justify-center gap-1 sm:flex-row sm:gap-3">
           <Link
             href={signupHref}
-            className="inline-flex min-h-[52px] items-center justify-center gap-2.5 rounded-xl bg-orange px-6 py-3.5 text-base font-black text-white shadow-[0_8px_28px_rgba(235,94,40,0.25)] transition-colors hover:bg-[#cc4b1c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffad89] focus-visible:ring-offset-4 focus-visible:ring-offset-[#0c1019]"
+            className="inline-flex min-h-[52px] w-full max-w-xs items-center justify-center gap-2.5 rounded-xl bg-orange px-6 sm:w-auto sm:max-w-none py-3.5 text-base font-black text-white shadow-[0_8px_28px_rgba(235,94,40,0.25)] transition-colors hover:bg-[#cc4b1c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffad89] focus-visible:ring-offset-4 focus-visible:ring-offset-[#0c1019]"
           >
             {isSignedIn ? 'Open your dashboard' : 'Create your free agent'}
             <ArrowRight size={18} aria-hidden="true" />
@@ -391,18 +391,22 @@ export default function HomepageHero({ isSignedIn = false }) {
             See it in action <span aria-hidden="true">↓</span>
           </a>
         </div>
-        <p className="mt-3 text-sm text-gray-500">
-          Free forever <span className="px-1 text-gray-600" aria-hidden="true">·</span> No card required <span className="px-1 text-gray-600" aria-hidden="true">·</span> 5,000 messages/month
+        <p className="mt-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-gray-500">
+          <span className="whitespace-nowrap">Free forever</span>
+          <span className="text-gray-600" aria-hidden="true">·</span>
+          <span className="whitespace-nowrap">No card required</span>
+          <span className="text-gray-600" aria-hidden="true">·</span>
+          <span className="whitespace-nowrap">5,000 messages/month</span>
         </p>
       </div>
 
       {/* Interactive demo */}
-      <div id="live-demo" role="region" aria-labelledby="live-demo-title" className="relative mx-auto mt-12 max-w-6xl scroll-mt-24">
+      <div id="live-demo" role="region" aria-labelledby="live-demo-title" className="relative mx-auto mt-10 max-w-6xl scroll-mt-20 sm:mt-12 sm:scroll-mt-24">
         <div className="mb-4 flex flex-col items-center gap-3">
           <h2 id="live-demo-title" className="text-sm font-bold text-white">
             Pick what your agent should be <span className="text-gray-500">↓</span>
           </h2>
-          <div className="-mx-4 flex w-[calc(100%+2rem)] gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:w-auto sm:flex-wrap sm:justify-center sm:overflow-visible sm:px-0" role="group" aria-label="Example use cases">
+          <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2" role="group" aria-label="Example use cases">
             {PERSONAS.map((item, index) => {
               const ItemIcon = item.icon;
               const isActive = index === active;
@@ -412,7 +416,7 @@ export default function HomepageHero({ isSignedIn = false }) {
                   type="button"
                   onClick={() => (isActive ? stopAutoplay() : goTo(index, true))}
                   aria-pressed={isActive}
-                  className={`relative inline-flex shrink-0 items-center gap-2 overflow-hidden rounded-full border px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffad89] ${isActive ? 'text-white' : 'border-white/10 bg-white/[0.03] text-gray-400 hover:border-white/25 hover:text-white'}`}
+                  className={`relative inline-flex shrink-0 items-center gap-1.5 overflow-hidden rounded-full border px-3 py-1.5 text-xs font-semibold sm:gap-2 sm:px-4 sm:py-2 sm:text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffad89] ${isActive ? 'text-white' : 'border-white/10 bg-white/[0.03] text-gray-400 hover:border-white/25 hover:text-white'}`}
                   style={isActive ? { borderColor: `${item.accent}99`, background: `${item.accent}22` } : undefined}
                 >
                   <ItemIcon size={15} style={isActive ? { color: item.accent } : undefined} aria-hidden="true" />
@@ -421,12 +425,12 @@ export default function HomepageHero({ isSignedIn = false }) {
               );
             })}
           </div>
-          <p className="h-4 text-[11px] text-gray-500" aria-live="polite">
+          <p className="min-h-4 px-2 text-center text-[11px] text-gray-500" aria-live="polite">
             {autoplay ? 'Playing examples. Click a use case or a question to take over.' : 'Your turn: ask a question or try another use case.'}
           </p>
         </div>
 
-        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#0b0e16]/80 p-4 shadow-[0_30px_80px_rgba(0,0,0,0.35)] backdrop-blur-md sm:p-6">
+        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#0b0e16]/80 p-3 shadow-[0_30px_80px_rgba(0,0,0,0.35)] backdrop-blur-md sm:p-6">
           <motion.div
             className="pointer-events-none absolute -right-32 -top-32 h-80 w-80 rounded-full blur-[110px]"
             animate={{ background: persona.accent, opacity: 0.16 }}
@@ -434,13 +438,13 @@ export default function HomepageHero({ isSignedIn = false }) {
             aria-hidden="true"
           />
 
-          <div className="relative grid gap-5 lg:grid-cols-[minmax(0,0.92fr)_200px_minmax(0,1.25fr)] lg:items-center lg:gap-0">
+          <div className="relative grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,0.92fr)_200px_minmax(0,1.25fr)] lg:items-center lg:gap-0">
             {/* 1. Knowledge */}
             <div className="min-w-0">
               <p className="mb-3 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-gray-500">
                 <span style={{ color: persona.accent }}>01</span> · You add knowledge
               </p>
-              <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0">
+              <div className="grid grid-cols-3 gap-2 lg:flex lg:flex-col">
                 {persona.files.map((file, index) => {
                   const learned = fed > index;
                   const feeding = fed === index && !ready;
@@ -448,7 +452,7 @@ export default function HomepageHero({ isSignedIn = false }) {
                   return (
                     <motion.div
                       key={`${persona.id}-${file.name}`}
-                      className="flex min-w-[200px] items-center gap-3 rounded-xl border bg-white/[0.035] px-3 py-2.5 lg:min-w-0"
+                      className="relative flex min-w-0 flex-col items-center gap-1.5 rounded-xl border bg-white/[0.035] px-2 py-2.5 text-center lg:flex-row lg:gap-3 lg:px-3 lg:text-left"
                       initial={{ opacity: 0, x: reduceMotion ? 0 : -16 }}
                       animate={{
                         opacity: 1,
@@ -460,17 +464,17 @@ export default function HomepageHero({ isSignedIn = false }) {
                       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/5" style={{ color: learned ? persona.accent : '#9ca3af' }}>
                         <FileIcon size={17} aria-hidden="true" />
                       </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-semibold text-white">{file.name}</span>
-                        <span className="block text-[11px] text-gray-500">{file.meta}</span>
+                      <span className="w-full min-w-0 lg:w-auto lg:flex-1">
+                        <span className="block truncate text-xs font-semibold text-white lg:text-sm">{file.name}</span>
+                        <span className="hidden text-[11px] text-gray-500 lg:block">{file.meta}</span>
                       </span>
-                      <span className="shrink-0 text-[11px] font-semibold">
+                      <span className="absolute right-1.5 top-1.5 shrink-0 text-[11px] font-semibold lg:static">
                         {learned ? (
                           <span className="inline-flex items-center gap-1" style={{ color: persona.accent }}><Check size={13} aria-hidden="true" /> <span className="hidden sm:inline">Learned</span></span>
                         ) : feeding ? (
                           <Loader2 size={14} className="animate-spin text-gray-400" aria-label="Reading" />
                         ) : (
-                          <span className="text-gray-600">Queued</span>
+                          <><span className="hidden text-gray-600 lg:inline">Queued</span><span className="block h-1.5 w-1.5 rounded-full bg-gray-600 lg:hidden" aria-label="Queued" /></>
                         )}
                       </span>
                     </motion.div>
@@ -478,7 +482,7 @@ export default function HomepageHero({ isSignedIn = false }) {
                 })}
                 <Link
                   href={signupHref}
-                  className="flex min-w-[200px] items-center gap-3 rounded-xl border border-dashed border-white/15 px-3 py-2.5 text-sm text-gray-400 transition-colors hover:border-white/30 hover:text-white lg:min-w-0"
+                  className="hidden items-center gap-3 rounded-xl border border-dashed border-white/15 px-3 py-2.5 text-sm text-gray-400 transition-colors hover:border-white/30 hover:text-white lg:flex"
                 >
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/5"><Plus size={17} aria-hidden="true" /></span>
                   Add your own PDFs, FAQs, links…
@@ -548,7 +552,7 @@ export default function HomepageHero({ isSignedIn = false }) {
                   </div>
                 </div>
 
-                <div ref={scrollRef} className="custom-scrollbar h-[300px] space-y-3 overflow-y-auto px-4 py-4 sm:h-[320px]" role="log" aria-label="Example conversation" aria-live="polite">
+                <div ref={scrollRef} className="custom-scrollbar h-[250px] space-y-3 overflow-y-auto overscroll-contain px-3.5 py-3.5 sm:h-[320px] sm:px-4 sm:py-4" role="log" aria-label="Example conversation" aria-live="polite">
                   {!ready && messages.length === 0 && (
                     <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-sm text-gray-500">
                       <Loader2 size={18} className="animate-spin" aria-hidden="true" />

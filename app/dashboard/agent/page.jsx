@@ -2,6 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import UpgradePrompt from '@/components/UpgradePrompt';
+import { DashboardPage } from '@/components/dashboard/PageShell';
 import AgentLaunchTools from '@/components/AgentLaunchTools';
 import AgentVisualSection from '@/components/agent-editor/AgentVisualSection';
 import AgentProfileSection from '@/components/agent-editor/AgentProfileSection';
@@ -71,10 +72,9 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
     );
   }
 
+  const Frame = embedded ? EmbeddedFrame : DashboardPage;
   return (
-    <div className={embedded ? 'w-full' : 'w-full max-w-[1440px] px-5 sm:px-7 lg:px-9 py-8 sm:py-10'}>
-      {!embedded && <UpgradePrompt />}
-
+    <Frame>
       <AgentEditorHeader
         embedded={embedded}
         section={section}
@@ -93,6 +93,7 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
         accessPassword={accessPassword}
         handleDiscardDraft={handleDiscardDraft}
       />
+      {!embedded && <UpgradePrompt />}
 
       {section === 'general' && (
         <AgentGeneralSection
@@ -144,8 +145,12 @@ export function AgentConfigPage({ sectionOverride = null, embedded = false }) {
       {section === 'general' && setupPanel === 'branding' && (
         <AgentLaunchTools username={username} agentType={config.agent_type} agentName={config.agent_name} />
       )}
-    </div>
+    </Frame>
   );
 }
 
 export default AgentConfigPage;
+
+function EmbeddedFrame({ children }) {
+  return <div className="w-full">{children}</div>;
+}

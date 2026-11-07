@@ -153,7 +153,7 @@ export default function App() {
   return (
     <div
       ref={containerRef}
-      className="relative min-h-screen overflow-x-hidden"
+      className="relative min-h-screen overflow-x-hidden supports-[overflow:clip]:overflow-x-clip"
     >
       <JsonLd
         data={{

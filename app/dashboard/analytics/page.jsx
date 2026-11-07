@@ -13,7 +13,6 @@ import {
   Clock,
   User,
   Loader2,
-  Sparkles,
   ChevronRight,
   Calendar,
   Zap,
@@ -26,6 +25,7 @@ import {
 } from 'lucide-react';
 import ChatMarkdown from '@/components/ChatMarkdown';
 import UpgradePrompt from '@/components/UpgradePrompt';
+import { DashboardPage, PageHeader } from '@/components/dashboard/PageShell';
 import { useDashboardPageReady } from '@/lib/dashboard-page-ready';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -249,13 +249,14 @@ export default function AnalyticsPage() {
   ];
 
   return (
-    <div className="w-full max-w-[1440px] px-5 sm:px-7 lg:px-9 py-8 sm:py-10">
-      <UpgradePrompt />
+    <DashboardPage>
+      <PageHeader
+        icon={BarChart3}
+        title="Analytics"
+        description="See how many people visit your agent, what they ask and how helpful the answers are."
+      />
 
-      <h1 className="text-3xl font-black text-white mb-10 flex items-center gap-3">
-        Analytics
-        <Sparkles size={20} className="text-[#f46530]" />
-      </h1>
+      <UpgradePrompt />
 
       {/* ── Stats Grid ───────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
@@ -589,6 +590,6 @@ export default function AnalyticsPage() {
           </div>
         )}
       </div>
-    </div>
+    </DashboardPage>
   );
 }

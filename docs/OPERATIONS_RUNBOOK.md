@@ -54,6 +54,18 @@ Detailed `/api/status` and `/api/errors` requests require `Authorization: Bearer
 9. Do not roll back a database migration by restoring an old database without evaluating data loss and application compatibility.
 10. Document impact, remediation, and any notification decision.
 
+## Message quota repair
+
+Run `npm run verify:message-quota` against the configured database before releasing quota changes. It calls the reservation RPC with a random nonexistent owner, without changing customer records. The July RPC returns an obsolete lifetime count and fails this check; the monthly RPC passes.
+
+On 2026-11-08 the connected database still had the July implementation: reservations incremented `messages_used` without advancing `last_reset_at`. The dashboard and billing page deliberately show zero for a previous UTC month, hiding those reservations. An affected account had seven stored visitor prompts this month and zero displayed usage.
+
+Apply `supabase/migrations/20261108010000_repair_monthly_message_quota.sql` through the normal migration process or the project's Supabase SQL Editor. This focused repair can be applied independently of the broader free-plan rollout. It installs atomic UTC month rollover and restores stale counters from this month's stored user messages. Assistant replies are excluded, current-period reservations are preserved, and billing/plan fields are unchanged. Deleted history and unsaved requests cannot be reconstructed for stale periods.
+
+After applying, run `npm run verify:message-quota` again and reload the dashboard/billing page. Both pages fetch subscription state on mount; an already-open page needs a reload to display the updated count. Record a manually applied migration in the migration ledger before later CLI releases.
+
+Local validation: 156 tests passed, including reproducing the old database/display mismatch, repairing counts, rollover, plan caps, paused accounts, repeat application and RPC permissions. All 56 migrations and security invariants passed. The live repair was not applied in this session: linked database authentication failed and browser input was interrupted by active user input.
+
 ## Stripe webhook recovery
 
 - A failed event must have a `failed` ledger row and an HTTP 5xx delivery in Stripe.

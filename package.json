@@ -20,6 +20,7 @@
     "verify:http": "node scripts/verify-http-smoke.mjs",
     "verify:integrations": "node --env-file=.env.local scripts/verify-production-integrations.mjs",
     "verify:migrations": "node scripts/verify-migrations.mjs",
+    "verify:message-quota": "node --env-file=.env.local scripts/verify-message-quota.mjs",
     "verify:backups": "node scripts/verify-backup-readiness.mjs",
     "verify:open-source": "node scripts/verify-open-source.mjs",
     "verify:free-creator": "node --env-file=.env.local scripts/verify-free-creator-readiness.mjs"

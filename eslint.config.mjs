@@ -13,6 +13,9 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "scripts/**",
+    // Generated launch-video exports contain bundled third-party JavaScript.
+    "brag-output/**",
+    "brag-output-*/**",
   ]),
   {
     rules: {

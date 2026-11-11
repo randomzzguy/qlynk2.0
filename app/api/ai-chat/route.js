@@ -1,5 +1,10 @@
+import { after } from 'next/server';
+import { analyzeConversationSentiment } from '@/lib/chat-sentiment';
 import { createAdminClient } from '@/utils/supabase/server';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
+import { createSettledChatStream } from '@/lib/chat-stream';
+import { chatProviderErrorResponse, normalizeChatProviderError } from '@/lib/chat-provider';
+import { fetchGroqWithQuota } from '@/lib/groq-provider';
 import { buildAgentSystemPrompt, getAgentKnowledge } from '@/lib/agent';
 import { getMessageLimit, isSubscriptionLive, getEffectiveTier } from '@/lib/plans';
 import { checkRateLimitKey, rateLimitResponse, rateLimitResponseForKey } from '@/lib/rate-limit';
@@ -45,7 +50,7 @@ function hashSecurityIdentifier(value) {
   return createHash('sha256').update(value).digest('hex');
 }
 
-async function classifyRequestScope({ config, rules, latestMessage, trustedHistory }) {
+async function classifyRequestScope({ config, rules, latestMessage, trustedHistory, signal, deadline }) {
   const model = getGroqFastModel();
   const classifierPrompt = buildScopeClassifierPrompt({
     config,
@@ -58,39 +63,28 @@ async function classifyRequestScope({ config, rules, latestMessage, trustedHisto
   });
 
   try {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    const response = await fetchGroqWithQuota({
         model,
         messages: [{ role: 'system', content: classifierPrompt }],
         temperature: 0,
         max_completion_tokens: 32,
         ...getGroqGenerationOptions(model),
-      }),
+      }, {
+        apiKey: process.env.GROQ_API_KEY,
+        signal, workload: 'scope',
+        deadline: Math.min(deadline, Date.now() + 6_000),
     });
 
-    if (!response.ok) throw new Error(`Scope classifier returned ${response.status}`);
     const data = await response.json();
     return parseScopeDecision(data.choices?.[0]?.message?.content, rules.scope_mode);
   } catch (error) {
     console.error('[AI Chat] Scope classifier unavailable:', error.message);
-    return rules.scope_mode === 'strict' ? 'BLOCK_SCOPE' : 'ALLOW';
+    throw normalizeChatProviderError(error);
   }
 }
 
-async function createStaticAssistantResponse({ content, conversationId, adminSupabase }) {
-  const { error } = await adminSupabase.from('agent_messages').insert({
-    conversation_id: conversationId,
-    role: 'assistant',
-    content,
-  });
-
-  if (error) console.error('[AI Chat] Failed to save scoped refusal:', error.message);
-
+async function createStaticAssistantResponse({ content, conversationId, complete }) {
+  if (complete) await complete(content);
   const encoder = new TextEncoder();
   const body = new ReadableStream({
     start(controller) {
@@ -125,6 +119,7 @@ async function parseChatRequest(req) {
 
   const {
     messages,
+    requestId,
     username,
     visitorId,
     conversationId,
@@ -134,6 +129,10 @@ async function parseChatRequest(req) {
     widgetId,
     sourceOrigin,
   } = body || {};
+
+  if (requestId != null && (typeof requestId !== 'string' || !UUID_PATTERN.test(requestId))) {
+    return { error: 'Invalid request identifier', status: 400 };
+  }
 
   if (typeof username !== 'string' || !USERNAME_PATTERN.test(username)) {
     return { error: 'Invalid username', status: 400 };
@@ -193,6 +192,9 @@ async function parseChatRequest(req) {
 
   return {
     value: {
+      // Older open clients remain supported, but only clients sending a stable
+      // request ID can replay a request without consuming another credit.
+      requestId: requestId || randomUUID(),
       username,
       visitorId,
       conversationId: conversationId || null,
@@ -210,133 +212,48 @@ function isValidEmail(email) {
   return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-async function analyzeAndSaveSentiment(conversationId, supabase) {
-  try {
-    const model = getGroqFastModel();
-    // 1. Fetch user's message logs for this conversation
-    const { data: messages, error: fetchErr } = await supabase
-      .from('agent_messages')
-      .select('role, content')
-      .eq('conversation_id', conversationId)
-      .order('created_at', { ascending: true })
-      .limit(12);
-
-    if (fetchErr || !messages || messages.length === 0) return;
-
-    // Filter user messages to gauge accurate guest sentiment
-    const userMessages = messages.filter(m => m.role === 'user').map(m => m.content);
-    if (userMessages.length === 0) return;
-
-    // 2. Query Groq's fast model for instant classification
-    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          {
-            role: 'system',
-            content: "You are a sentiment classifier. Analyze the user's sentiment based on their messages in the chat history. Choose exactly one of these labels: 'positive', 'neutral', or 'negative'. Reply with ONLY the raw lowercase label. No explanation, no intro, no punctuation."
-          },
-          {
-            role: 'user',
-            content: `Messages to analyze:\n${userMessages.map(msg => `- "${msg}"`).join('\n')}`
-          }
-        ],
-        temperature: 0.1,
-        max_completion_tokens: 32,
-        ...getGroqGenerationOptions(model),
-      })
-    });
-
-    if (!groqResponse.ok) return;
-
-    const resData = await groqResponse.json();
-    const sentiment = resData.choices?.[0]?.message?.content?.trim()?.toLowerCase();
-
-    if (['positive', 'neutral', 'negative'].includes(sentiment)) {
-      // 3. Update conversation sentiment
-      await supabase
-        .from('agent_conversations')
-        .update({ sentiment })
-        .eq('id', conversationId);
-    }
-  } catch (err) {
-    console.error('[Sentiment Analysis Background Task Error]:', err);
-  }
-}
-
-function createAssistantPersistenceStream({ conversationId, adminSupabase, ownerId, question, uncertaintyMessage }) {
-  const decoder = new TextDecoder();
-  let buffer = '';
-  let assistantContent = '';
-
-  const readStreamLine = (line) => {
-    const trimmedLine = line.trim();
-    if (!trimmedLine || trimmedLine === 'data: [DONE]' || !trimmedLine.startsWith('data: ')) {
-      return;
-    }
-
-    try {
-      const data = JSON.parse(trimmedLine.substring(6));
-      assistantContent += data.choices?.[0]?.delta?.content || '';
-    } catch {
-      // Ignore incomplete or non-JSON stream frames.
-    }
-  };
-
-  return new TransformStream({
-    transform(chunk, controller) {
-      controller.enqueue(chunk);
-
-      buffer += decoder.decode(chunk, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-      lines.forEach(readStreamLine);
-    },
-    async flush() {
-      buffer += decoder.decode();
-      if (buffer) readStreamLine(buffer);
-
-      if (!conversationId || !assistantContent.trim()) return;
-
-      const { error } = await adminSupabase.from('agent_messages').insert({
-        conversation_id: conversationId,
-        role: 'assistant',
-        content: assistantContent,
+async function recordCompletedReply({ answer, conversationId, adminSupabase, ownerId, question, uncertaintyMessage, deadline }) {
+  if (deadline - Date.now() < 1500) return;
+  if (ownerId && shouldRecordKnowledgeGap(answer, uncertaintyMessage)) {
+    const normalizedQuestion = normalizeKnowledgeGapQuestion(question);
+    if (normalizedQuestion) {
+      const query = adminSupabase.rpc('record_agent_knowledge_gap', {
+        p_owner_id: ownerId,
+        p_question: String(question || '').slice(0, 1000),
+        p_normalized_question: normalizedQuestion,
+        p_conversation_id: conversationId,
       });
-
-      if (error) {
-        console.error('[AI Chat] Failed to save assistant message:', error);
-      } else {
-        if (ownerId && shouldRecordKnowledgeGap(assistantContent, uncertaintyMessage)) {
-          const normalizedQuestion = normalizeKnowledgeGapQuestion(question);
-          if (normalizedQuestion) {
-            const { error: gapError } = await adminSupabase.rpc('record_agent_knowledge_gap', {
-              p_owner_id: ownerId,
-              p_question: String(question || '').slice(0, 1000),
-              p_normalized_question: normalizedQuestion,
-              p_conversation_id: conversationId,
-            });
-            if (gapError) {
-              console.error('[AI Chat] Failed to record knowledge gap:', gapError.message);
-            }
-          }
-        }
-
-        // Perform sentiment analysis in the background
-        analyzeAndSaveSentiment(conversationId, adminSupabase).catch(err => {
-          console.error('[Background Sentiment Async Catch]:', err);
-        });
-      }
-    },
-  });
+      const { error } = await (typeof query.abortSignal === 'function'
+        ? query.abortSignal(AbortSignal.timeout(1500)) : query);
+      if (error) console.error('[AI Chat] Failed to record knowledge gap:', error.message);
+    }
+  }
+  await analyzeConversationSentiment({ conversationId, client: adminSupabase, fetchProvider: fetchGroqWithQuota, deadline });
 }
 
 export async function POST(req) {
+  let reservation = null;
+  let activeConversationId = null;
+  let streamOwnsReservation = false;
+  const release = async () => {
+    if (!reservation) return;
+    try {
+      const { error } = await reservation.client.rpc('finish_agent_chat_request', {
+        ...reservation.params, p_answer: null,
+      });
+      if (error) console.error('[AI Chat] Credit release deferred to lease recovery:', error.message);
+    } catch (error) {
+      console.error('[AI Chat] Credit release deferred to lease recovery:', error.message);
+    }
+  };
+  const complete = async (answer) => {
+    const { data, error } = await reservation.client.rpc('finish_agent_chat_request', {
+      ...reservation.params, p_answer: answer,
+    });
+    if (error || data !== true) throw new Error('Unable to save the completed reply');
+  };
+  // Leave time for persistence and a useful response before the platform's 30s limit.
+  const providerDeadline = Date.now() + 25_000;
   // Rate limit: 20 requests per minute per IP
   const rateLimit = await rateLimitResponse(req, 'ai-chat', 20, 60 * 1000);
   if (rateLimit) return rateLimit;
@@ -348,6 +265,7 @@ export async function POST(req) {
     }
 
     const {
+      requestId,
       username,
       visitorId,
       conversationId,
@@ -502,7 +420,7 @@ export async function POST(req) {
     }
 
     // 1. CONVERSATION TRACKING
-    let activeConversationId = conversationId;
+    activeConversationId = conversationId;
     let trustedHistory = [];
 
     if (activeConversationId) {
@@ -526,61 +444,70 @@ export async function POST(req) {
         return jsonError('Conversation does not belong to this chat channel', 403);
       }
 
-      const { data: storedMessages, error: historyError } = await adminSupabase
-        .from('agent_messages')
-        .select('role, content')
-        .eq('conversation_id', activeConversationId)
-        .in('role', ['user', 'assistant'])
-        .order('created_at', { ascending: false })
-        .limit(MAX_HISTORY_MESSAGES - 1);
-
-      if (historyError) {
-        console.error('[AI Chat] Failed to load conversation history:', historyError.message);
-        return jsonError('Unable to load conversation history', 500);
-      }
-
-      trustedHistory = (storedMessages || [])
-        .reverse()
-        .map((message) => ({
-          role: message.role,
-          content: String(message.content || '').slice(0, MAX_MESSAGE_CHARS),
-        }));
     }
 
-    const { data: creditRows, error: creditError } = await adminSupabase.rpc('consume_agent_message_credit', {
+    const attemptId = randomUUID();
+    reservation = { client: adminSupabase, params: {
+      p_owner_id: profile.id, p_request_id: requestId, p_attempt_id: attemptId,
+    } };
+    const { data: credit, error: creditError } = await adminSupabase.rpc('reserve_agent_chat_request', {
       p_owner_id: profile.id,
+      p_request_id: requestId,
+      p_attempt_id: attemptId,
+      p_visitor_id: visitorId,
+      p_fingerprint: hashSecurityIdentifier(JSON.stringify([latestMessage.content, visitorId, widgetId, sourceOrigin, visitorName, visitorEmail])),
+      p_question: latestMessage.content,
       p_message_limit: messageLimit,
+      p_conversation_id: activeConversationId,
+      p_context: {
+        visitor_name: visitorName || null, visitor_email: visitorEmail || null,
+        channel: widgetContext ? 'widget' : 'hosted',
+        widget_installation_id: widgetContext?.id || null,
+        source_origin: widgetContext ? sourceOrigin : null,
+      },
     });
-    const credit = creditRows?.[0];
     if (creditError || !credit) {
       console.error('[AI Chat] Unable to reserve message credit:', creditError?.message || 'No result');
       return jsonError('Unable to verify agent usage right now', 503);
     }
-    if (!credit.allowed) {
+    if (credit.status === 'limit') {
       return jsonError('This agent has reached its monthly message limit', 429);
     }
+    if (credit.status === 'conflict') return jsonError('This request identifier belongs to a different message', 409);
+    if (credit.conversation_id) activeConversationId = credit.conversation_id;
+    if (credit.status === 'pending') {
+      return Response.json({ error: 'This message is still being processed. Please wait before retrying.' }, {
+        status: 409, headers: { 'Retry-After': '5', 'x-conversation-id': activeConversationId },
+      });
+    }
+    if (credit.status === 'completed') {
+      if (!credit.answer) return jsonError('This reply is no longer available', 409);
+      return createStaticAssistantResponse({ content: credit.answer, conversationId: activeConversationId });
+    }
+    if (credit.status !== 'reserved') return jsonError('Unable to verify agent usage right now', 503);
 
-    if (!activeConversationId) {
-      const { data: newConv, error: newConversationError } = await adminSupabase
-        .from('agent_conversations')
-        .insert({
-          agent_owner_id: profile.id,
-          visitor_id: visitorId,
-          visitor_name: visitorName || null,
-          visitor_email: visitorEmail || null,
-          channel: widgetContext ? 'widget' : 'hosted',
-          widget_installation_id: widgetContext?.id || null,
-          source_origin: widgetContext ? sourceOrigin : null,
-        })
-        .select('id')
-        .single();
+    const { data: storedMessages, error: historyError } = await adminSupabase
+      .from('agent_messages')
+      .select('role, content')
+      .eq('conversation_id', activeConversationId)
+      .in('role', ['user', 'assistant'])
+      .order('created_at', { ascending: false })
+      .limit(MAX_HISTORY_MESSAGES - 1);
 
-      if (newConversationError || !newConv) {
-        console.error('[AI Chat] Failed to create conversation:', newConversationError?.message);
-        return jsonError('Unable to start a conversation', 500);
-      }
+    if (historyError) {
+      console.error('[AI Chat] Failed to load conversation history:', historyError.message);
+      return jsonError('Unable to load conversation history', 500);
+    }
 
-      activeConversationId = newConv?.id;
+    trustedHistory = (storedMessages || [])
+      .reverse()
+      .map((message) => ({
+        role: message.role,
+        content: String(message.content || '').slice(0, MAX_MESSAGE_CHARS),
+      }));
+
+    if (credit.new_conversation) {
+      const newConv = { id: activeConversationId };
 
       // Notify the agent owner of the new conversation (fire-and-forget)
       if (newConv?.id) {
@@ -618,26 +545,14 @@ export async function POST(req) {
       }
     }
 
-    // 2. SAVE USER MESSAGE
-    if (activeConversationId) {
-      const { error: userMessageError } = await adminSupabase.from('agent_messages').insert({
-        conversation_id: activeConversationId,
-        role: 'user',
-        content: latestMessage.content
-      });
-
-      if (userMessageError) {
-        console.error('[AI Chat] Failed to save user message:', userMessageError.message);
-        return jsonError('Unable to save the message', 500);
-      }
-    }
-
     const scopeDecision = detectDirectPolicyAttack(latestMessage.content)
       || await classifyRequestScope({
         config,
         rules: effectiveRules,
         latestMessage,
         trustedHistory,
+        signal: req.signal,
+        deadline: providerDeadline,
       });
 
     if (scopeDecision !== 'ALLOW') {
@@ -665,12 +580,12 @@ export async function POST(req) {
         console.error('[AI Chat] Failed to record security event:', error.message);
       });
 
-      return createStaticAssistantResponse({
+      return await createStaticAssistantResponse({
         content: blockLimit.allowed
           ? getScopeRefusalMessage(effectiveRules, scopeDecision)
           : 'This visitor has made too many blocked requests. Please wait before trying again or contact the agent owner.',
         conversationId: activeConversationId,
-        adminSupabase,
+        complete,
       });
     }
 
@@ -683,13 +598,7 @@ export async function POST(req) {
     const model = getGroqChatModel();
 
     // TALK DIRECTLY TO GROQ
-    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    const groqResponse = await fetchGroqWithQuota({
         model,
         messages: [
           { role: 'system', content: systemPrompt },
@@ -700,23 +609,32 @@ export async function POST(req) {
         max_completion_tokens: MAX_OUTPUT_TOKENS,
         ...getGroqGenerationOptions(model),
         stream: true,
-      }),
+      }, {
+        apiKey: process.env.GROQ_API_KEY,
+        signal: req.signal, workload: 'chat',
+        deadline: providerDeadline,
     });
 
-    if (!groqResponse.ok) {
-      const error = await groqResponse.json();
-      throw new Error(error.error?.message || 'Groq connection failed');
-    }
-
-    const responseBody = activeConversationId
-      ? groqResponse.body.pipeThrough(createAssistantPersistenceStream({
-          conversationId: activeConversationId,
-          adminSupabase,
-          ownerId: profile.id,
-          question: latestMessage.content,
+    let completedAnswer = null;
+    const responseBody = createSettledChatStream(groqResponse.body, {
+      complete: async (answer) => {
+        await complete(answer);
+        completedAnswer = answer;
+      },
+      release,
+    });
+    after(async () => {
+      if (!completedAnswer) return;
+      try {
+        await recordCompletedReply({
+          answer: completedAnswer, conversationId: activeConversationId, adminSupabase,
+          ownerId: profile.id, question: latestMessage.content,
           uncertaintyMessage: effectiveRules.uncertainty_message,
-        }))
-      : groqResponse.body;
+          deadline: providerDeadline + 4000,
+        });
+      } catch { console.error('[AI Chat] Background analysis unavailable'); }
+    });
+    streamOwnsReservation = true;
 
     // Pass the stream back to the browser with the conversation ID in headers
     return new Response(responseBody, {
@@ -728,7 +646,17 @@ export async function POST(req) {
       },
     });
   } catch (error) {
+    const providerError = chatProviderErrorResponse(error);
+    if (providerError) {
+      console.error('[AI Chat] Provider unavailable:', error.code, 'retry after', error.retryAfter);
+      if (activeConversationId) providerError.headers.set('x-conversation-id', activeConversationId);
+      return providerError;
+    }
     console.error('[Library-Free-Chat] Error:', error);
-    return jsonError('Unable to process the chat request', 500);
+    const response = jsonError('Unable to process the chat request', 500);
+    if (activeConversationId) response.headers.set('x-conversation-id', activeConversationId);
+    return response;
+  } finally {
+    if (!streamOwnsReservation) await release();
   }
 }

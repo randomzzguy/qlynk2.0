@@ -1,3 +1,4 @@
+import { fetchGroqWithQuota } from '@/lib/groq-provider';
 import { detectDirectPolicyAttack } from '@/lib/agent-prompt';
 import {
   buildNorthstarDemoMessages,
@@ -82,29 +83,20 @@ export async function POST(request) {
   const model = getGroqDemoModel();
 
   try {
-    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${groqApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    const groqResponse = await fetchGroqWithQuota({
         model,
         messages: buildNorthstarDemoMessages(questions),
         temperature: 0.35,
         max_completion_tokens: DEMO_CHAT_LIMITS.maxOutputTokens,
         ...getGroqGenerationOptions(model),
         stream: true,
-      }),
-      signal: AbortSignal.any([request.signal, AbortSignal.timeout(PROVIDER_TIMEOUT_MS)]),
+    }, {
+      apiKey: groqApiKey, workload: 'demo',
+      // A separate key does not imply a separate organization/quota.
+      scope: process.env.GROQ_DEMO_QUOTA_SCOPE || process.env.GROQ_QUOTA_SCOPE || 'qlynk-groq',
+      signal: request.signal,
+      deadline: Date.now() + PROVIDER_TIMEOUT_MS,
     });
-
-    if (!groqResponse.ok || !groqResponse.body) {
-      console.error('[Demo Chat] Provider returned:', groqResponse.status);
-      return createStaticDemoStream(
-        'The live demo is taking a short break. Northstar Studio offers a Launch Package, Strategy Sprint, and Brand Refresh. You can still create your own Qlynk agent and try it with your information.',
-      );
-    }
 
     return new Response(groqResponse.body, {
       headers: {

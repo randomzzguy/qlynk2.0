@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { MessageCircle, X, Send, Bot, User, Loader2 } from 'lucide-react';
 import AgentResponseIndicator from '@/components/AgentResponseIndicator';
 import ChatMarkdown from '@/components/ChatMarkdown';
+import { readChatEvents } from '@/lib/chat-stream';
 import { getAgentTypeDefinition } from '@/lib/agent-type-catalog';
 import { hasAgencyFeatures } from '@/lib/plans';
 import { isOriginAllowed } from '@/lib/widget-installations';
@@ -77,6 +78,7 @@ export default function ChatWidget({
     return isUuid ? storedId : crypto.randomUUID();
   });
   const [conversationId, setConversationId] = useState(null);
+  const pendingRequest = useRef(null);
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [responsePhase, setResponsePhase] = useState('idle');
@@ -165,12 +167,18 @@ export default function ChatWidget({
       return;
     }
 
+    const content = input.trim();
+    if (!pendingRequest.current || pendingRequest.current.content !== content) {
+      pendingRequest.current = { id: crypto.randomUUID(), content };
+    }
+    const requestId = pendingRequest.current.id;
+    const assistantId = `${requestId}:assistant`;
     const userMessage = {
-      id: Date.now().toString(),
+      id: requestId,
       role: 'user',
       content: input.trim(),
     };
-    const updatedMessages = [...messages, userMessage];
+    const updatedMessages = [...messages.filter(message => ![requestId, assistantId, `${requestId}:error`].includes(message.id)), userMessage];
 
     setMessages(updatedMessages);
     setInput('');
@@ -185,6 +193,7 @@ export default function ChatWidget({
           // The server reloads trusted conversation history by conversation ID.
           // Send only the new turn so long visible chats stay within request bounds.
           messages: [userMessage],
+          requestId,
           username,
           conversationId,
           visitorId,
@@ -208,53 +217,31 @@ export default function ChatWidget({
         throw requestError;
       }
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
       let assistantContent = '';
-      const assistantId = (Date.now() + 1).toString();
-
       setMessages(prev => [...prev, { id: assistantId, role: 'assistant', content: '' }]);
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
-
-        for (const line of lines) {
-          const trimmedLine = line.trim();
-          if (!trimmedLine || trimmedLine === 'data: [DONE]') continue;
-
-          if (trimmedLine.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(trimmedLine.substring(6));
-              const content = data.choices[0]?.delta?.content || '';
-              if (content) {
-                if (!assistantContent) setResponsePhase('typing');
-                assistantContent += content;
-                setMessages(prev => prev.map(message =>
-                  message.id === assistantId
-                    ? { ...message, content: assistantContent }
-                    : message
-                ));
-              }
-            } catch {
-              // Ignore partial stream frames and keep reading.
-            }
-          }
+      for await (const event of readChatEvents(response.body)) {
+        if (event.done) break;
+        const content = event.choices?.[0]?.delta?.content || '';
+        if (content) {
+          if (!assistantContent) setResponsePhase('typing');
+          assistantContent += content;
+          setMessages(prev => prev.map(message =>
+            message.id === assistantId ? { ...message, content: assistantContent } : message
+          ));
         }
       }
+      pendingRequest.current = null;
     } catch (error) {
       console.error('[ChatWidget] Error:', error);
       if (error.status === 403 && accessLevel !== 'public') {
         setIsAuthorized(false);
         setGatekeeperError(error.message);
       }
+      setInput(userMessage.content);
       setMessages(prev => [
-        ...prev,
+        ...prev.filter(message => message.id !== assistantId),
         {
-          id: (Date.now() + 2).toString(),
+          id: `${requestId}:error`,
           role: 'assistant',
           content: error.message || "Sorry, I couldn't connect right now. Please try again in a moment.",
         },

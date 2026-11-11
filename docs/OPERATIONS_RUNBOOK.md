@@ -36,7 +36,7 @@ Detailed `/api/status` and `/api/errors` requests require `Authorization: Bearer
 1. Review Vercel function failures and latency.
 2. Review Stripe webhook delivery failures and retry queue.
 3. Check `stripe_webhook_events` for failed or stale processing rows.
-4. Confirm both scheduled cron routes ran successfully.
+4. Confirm all configured scheduled cron routes ran successfully.
 5. Review Groq and Resend usage/failures.
 6. Review Supabase database and storage capacity.
 7. Confirm signup, checkout, and chat conversions have no sudden drop.
@@ -85,11 +85,29 @@ Local validation: 156 tests passed, including reproducing the old database/displ
 
 ## Backups and restoration
 
-Run `npm run verify:backups` before a production release. This check fails closed when the linked project has neither an available provider-managed physical backup nor PITR. A passing check confirms that a recovery point is advertised; it does not replace a restoration drill.
+Run `npm run verify:backups` before a production release. It uses the explicitly configured project or derives it from `NEXT_PUBLIC_SUPABASE_URL`, rejects mismatches, and requires an operator-only `SUPABASE_ACCESS_TOKEN` with `backups_read` access. There is no default production project and no shell-based CLI invocation. It fails when metadata cannot be read or there is no completed backup/valid PITR range within `BACKUP_MAX_AGE_HOURS` (default 48). PITR enabled alone is insufficient. Exit zero means only that a recent recovery point is advertised, not that recovery is accessible on the current plan or that a restore drill succeeded.
+
+The local check on 2026-11-11 could not read live backup metadata because the management token was not configured. No live recovery point, Storage-file backup or restoration drill has been verified in this rollout.
 
 The scheduled GitHub workflow in `.github/workflows/production-monitor.yml` checks public health every 15 minutes. Add the repository Actions secret `PRODUCTION_CRON_SECRET` to enable its protected diagnostics check. Keep GitHub Actions failure notifications enabled for the maintainers responsible for production.
 
 Before launch, record the Supabase plan's database backup frequency and retention. Confirm how Storage objects are recovered; database backups may not include Storage object contents.
+
+For a zero-cost backup process, follow Supabase's [database export and restore guidance](https://supabase.com/docs/guides/platform/backups) and keep exports off the production project. Back up uploaded Storage objects separately, not just their database metadata. Choose an encrypted destination with sufficient space and a responsible operator before exporting private data. Do not place dumps in Git, public buckets, or ordinary CI logs/artifacts. An export existing is not proof of recoverability: perform the isolated restore drill below and verify files as well as database records. No automated export, retention deletion, or restore is installed by the resilience rollout.
+
+## Capacity and stalled-request checks
+
+Apply `20261111040000_add_resilience_snapshot.sql` after the previous resilience migrations. Run `npm run report:resilience` to read an aggregate snapshot. It exits nonzero for warnings, critical conditions, missing data or errors. Database and Storage thresholds default to 500,000,000 and 1,000,000,000 bytes; adjust `MONITOR_DATABASE_LIMIT_BYTES` and `MONITOR_STORAGE_LIMIT_BYTES` to the account's actual allowance. Warnings start at 80%, critical at 95%.
+
+`GET /api/health/resilience` exposes the same report only to callers presenting `Authorization: Bearer <CRON_SECRET>`, including in development. It returns 503 for warnings/critical conditions or unavailable checks. Public health remains unchanged. The snapshot includes application AI request/token/concurrency usage, shared cooldowns and expired pending chat reservations. It never returns message content, object names or credentials. An expired reservation is not changed by the monitor; normal reservation recovery still runs on a subsequent request for that owner.
+
+After deployment and a manual endpoint check, set repository variable `PRODUCTION_RESILIENCE_MONITOR_ENABLED=1` to opt the existing 15-minute GitHub monitor into this endpoint. The existing `PRODUCTION_CRON_SECRET` Actions secret is required. Without opt-in, nothing changes in the live monitor. Actions notification delivery is still controlled by maintainers' GitHub settings; no recipient or delivery test has been configured here.
+
+These are point-in-time measurements, not historical growth forecasts. Storage uses metadata sizes and explicitly flags objects without usable sizes. Database bytes exclude total disk/WAL pressure, and the quota model does not include other applications using the same Groq organization. Review the Supabase dashboard for disk/WAL and egress, and Vercel for hosting consumption. Provider backup status remains a separate operator check. Investigate transient AI concurrency alerts in context; the monitor does not claim every warning is an outage.
+
+Retention is deliberately unchanged. Before enabling cleanup, agree which conversation history must be kept, whether failed/empty conversations can expire, how completed request IDs remain available for safe replay, and where archived data will live. Do not remove completed request records independently of conversation retention without defining the retry horizon. The existing 24-hour AI budget cleanup continues on later calls for each active scope/model.
+
+## Isolated restoration drill
 
 Perform a restoration drill into a separate non-production project:
 

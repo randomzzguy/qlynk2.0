@@ -21,7 +21,10 @@
     "verify:integrations": "node --env-file=.env.local scripts/verify-production-integrations.mjs",
     "verify:migrations": "node scripts/verify-migrations.mjs",
     "verify:message-quota": "node --env-file=.env.local scripts/verify-message-quota.mjs",
-    "verify:backups": "node scripts/verify-backup-readiness.mjs",
+    "verify:ai-budget": "node --env-file=.env.local scripts/verify-ai-budget.mjs",
+    "report:ai-usage": "node --env-file=.env.local scripts/report-ai-usage.mjs",
+    "verify:backups": "node --env-file=.env.local scripts/verify-backup-readiness.mjs",
+    "report:resilience": "node --env-file=.env.local scripts/report-resilience.mjs",
     "verify:open-source": "node scripts/verify-open-source.mjs",
     "verify:free-creator": "node --env-file=.env.local scripts/verify-free-creator-readiness.mjs"
   },

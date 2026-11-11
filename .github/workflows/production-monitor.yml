@@ -40,3 +40,13 @@ jobs:
             --connect-timeout 10 --max-time 30 \
             --header "Authorization: Bearer ${PRODUCTION_CRON_SECRET}" \
             "${PRODUCTION_SITE_URL}/api/status" > /dev/null
+
+      - name: Verify protected resilience checks
+        if: ${{ vars.PRODUCTION_RESILIENCE_MONITOR_ENABLED == '1' }}
+        shell: bash
+        run: |
+          test -n "$PRODUCTION_CRON_SECRET" || { echo 'Protected resilience monitor requires PRODUCTION_CRON_SECRET'; exit 1; }
+          curl --fail --silent --show-error \
+            --connect-timeout 10 --max-time 20 \
+            --header "Authorization: Bearer ${PRODUCTION_CRON_SECRET}" \
+            "${PRODUCTION_SITE_URL}/api/health/resilience" > /dev/null

@@ -21,3 +21,22 @@ if (credit?.allowed !== false || credit.messages_used !== 0 || credit.remaining 
 } else {
   console.log('Monthly message quota RPC is installed. No customer records were changed.');
 }
+
+const nonexistentOwner = randomUUID();
+const requestId = randomUUID();
+const attemptId = randomUUID();
+const reservation = await admin.rpc('reserve_agent_chat_request', {
+  p_owner_id: nonexistentOwner, p_request_id: requestId, p_attempt_id: attemptId,
+  p_visitor_id: randomUUID(), p_fingerprint: 'readiness-probe',
+  p_question: 'Readiness probe', p_message_limit: 5000,
+});
+if (reservation.error || reservation.data?.status !== 'unavailable') {
+  throw new Error('Chat reservation RPC is missing or incompatible. Apply 20261111010000_add_chat_credit_reservations.sql before deploying this release.');
+}
+const settlement = await admin.rpc('finish_agent_chat_request', {
+  p_owner_id: nonexistentOwner, p_request_id: requestId, p_attempt_id: attemptId, p_answer: null,
+});
+if (settlement.error || settlement.data !== false) {
+  throw new Error('Chat settlement RPC is missing or incompatible. Apply 20261111010000_add_chat_credit_reservations.sql before deploying this release.');
+}
+console.log('Chat reservation and refund RPCs are installed. No customer records were changed.');

@@ -23,6 +23,7 @@ import {
 import QlynkBackground from '@/components/QlynkBackground';
 import AgentResponseIndicator from '@/components/AgentResponseIndicator';
 import ChatMarkdown from '@/components/ChatMarkdown';
+import { readChatEvents } from '@/lib/chat-stream';
 import ChatFont from '@/components/ChatFont';
 import { chatFontFamily, chatTint, normalizeWelcomeMessage } from '@/lib/chat-typography';
 import { getAgentTypeDefinition } from '@/lib/agent-type-catalog';
@@ -54,6 +55,7 @@ export default function FullPageChat({
   const [isLoading, setIsLoading] = useState(false);
   const [responsePhase, setResponsePhase] = useState('idle');
   const [conversationId, setConversationId] = useState(null);
+  const pendingRequest = useRef(null);
   const [feedbackByMessage, setFeedbackByMessage] = useState({});
   const [accessPassword, setAccessPassword] = useState('');
   const scrollRef = useRef(null);
@@ -174,13 +176,19 @@ export default function FullPageChat({
     if (preview) return;
     if (!input.trim() || isLoading) return;
 
+    const content = input.trim();
+    if (!pendingRequest.current || pendingRequest.current.content !== content) {
+      pendingRequest.current = { id: crypto.randomUUID(), content };
+    }
+    const requestId = pendingRequest.current.id;
+    const assistantId = `${requestId}:assistant`;
     const userMessage = {
-      id: Date.now().toString(),
+      id: requestId,
       role: 'user',
       content: input.trim()
     };
 
-    const updatedMessages = [...messages, userMessage];
+    const updatedMessages = [...messages.filter(message => ![requestId, assistantId, `${requestId}:error`].includes(message.id)), userMessage];
     setMessages(updatedMessages);
     setInput('');
     setIsLoading(true);
@@ -194,6 +202,7 @@ export default function FullPageChat({
           // The server reloads trusted conversation history by conversation ID.
           // Send only the new turn so long visible chats stay within request bounds.
           messages: [userMessage],
+          requestId,
           username: username,
           visitorId: visitorId,
           conversationId: conversationId,
@@ -215,40 +224,20 @@ export default function FullPageChat({
         throw requestError;
       }
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
       let assistantContent = '';
-      
-      const assistantId = (Date.now() + 1).toString();
       setMessages(prev => [...prev, { id: assistantId, role: 'assistant', content: '' }]);
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
-        
-        for (const line of lines) {
-          const trimmedLine = line.trim();
-          if (!trimmedLine || trimmedLine === 'data: [DONE]') continue;
-          
-          if (trimmedLine.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(trimmedLine.substring(6));
-              const content = data.choices[0]?.delta?.content || '';
-              if (content) {
-                if (!assistantContent) setResponsePhase('typing');
-                assistantContent += content;
-                setMessages(prev => prev.map(msg => 
-                  msg.id === assistantId ? { ...msg, content: assistantContent } : msg
-                ));
-              }
-            } catch { }
-          }
+      for await (const event of readChatEvents(response.body)) {
+        if (event.done) break;
+        const content = event.choices?.[0]?.delta?.content || '';
+        if (content) {
+          if (!assistantContent) setResponsePhase('typing');
+          assistantContent += content;
+          setMessages(prev => prev.map(message =>
+            message.id === assistantId ? { ...message, content: assistantContent } : message
+          ));
         }
       }
-
+      pendingRequest.current = null;
     } catch (error) {
       console.error('[Library-Free-Chat] Error:', error);
       if (error.status === 403 && agentConfig.access_level !== 'public') {
@@ -257,10 +246,11 @@ export default function FullPageChat({
         setShowGatekeeper(true);
         setGatekeeperError(error.message);
       }
+      setInput(userMessage.content);
       setMessages(prev => [
-        ...prev,
+        ...prev.filter(message => message.id !== assistantId),
         {
-          id: (Date.now() + 2).toString(),
+          id: `${requestId}:error`,
           role: 'assistant',
           content: error.message || 'Sorry, I could not connect right now. Please try again in a moment.'
         }
